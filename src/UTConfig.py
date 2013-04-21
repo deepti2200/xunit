@@ -18,8 +18,10 @@
 
 
 	[.unit.test]
-	TestBase=y
-	UnitTest=y
+	TestBase=10
+	UnitTest=20
+
+	the 10 and 20 is the sequence number the smallest is the for the 
 	
 '''
 import ConfigParser
