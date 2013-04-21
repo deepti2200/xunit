@@ -174,6 +174,18 @@ class UtTest(unittest.TestCase):
 		self.assertEqual(units[1] , 'base30.test')
 		self.assertEqual(units[2] , 'base100.test')
 		return
+
+	def test_unittestbad(self):
+		utcfg = UTConfig.UTConfigBase()
+		utcfg.AddSearchPath(os.path.dirname(__file__))
+		utcfg.LoadFile('tstbad.cfg')
+		ok = 1
+		try:
+			units = utcfg.GetUnitTests()
+		except  UTConfig.UTCfgKeyError as e:
+			ok = 0
+		self.assertEqual(ok,0)
+		return
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
