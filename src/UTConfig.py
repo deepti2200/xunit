@@ -220,16 +220,37 @@ class UTConfigBase:
 	def __SplitKey(self,k):
 		r = k.find('.')
 		s = k
-		v = None
+		o = None
 		if r >= 0:
-			r = k.rfind('.')
+			kpart = k
+			while len(kpart) > 0:
+				r = kpart.rfind('.')
+				if r < 0 :
+					break
+				s = k[:r]
+				o = k[r+1:]
+				# if it is end of '.' so we should make this ok
+				if self.__MainCfg.has_option(s,o):
+					return s,o
+				kpart = s
+
+			kpart = k
+			while len(kpart) > 0:
+				r = kpart.rfind('.')
+				if r < 0:
+					break
+				s = k[:r]
+				o = k[r+1:]
+				if self.__MainCfg.has_section(s):
+					return s,o
+				kpart = s
+
+			# now we should get the last
+			kpart = k
+			r = kpart.rfind('.')
 			s = k[:r]
-			v = k[r+1:]
-			# if it is end of '.' so we should make this ok
-			if len(v) == 0:
-				s = k
-				v = None
-		return s ,v
+			o = k[r+1:]
+		return s ,o
 
 	def __ExpandValue(self,section,option,k,values=None):
 		p = '%\(([^)]+)\)s'

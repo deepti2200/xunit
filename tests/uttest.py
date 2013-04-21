@@ -186,6 +186,8 @@ class UtTest(unittest.TestCase):
 			ok = 0
 		self.assertEqual(ok,0)
 		return
+
+	def 
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
