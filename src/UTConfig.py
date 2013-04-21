@@ -85,7 +85,7 @@ class UTConfigBase:
 			# now to add the search path
 			for c in cfg.options(s):
 				v = cfg.get(s,c)
-				if c not in self.__SearchPaths and v =='y':
+				if c not in self.__SearchPaths and v !='n':
 					path = self.__ExpandKey(s,c)
 					self.__SearchPaths.append(path)
 					if path not in sys.path:	
@@ -309,8 +309,6 @@ class UTConfigBase:
 	def GetIncludeFiles(self):
 		return self.__IncludeFiles
 
-	def GetUnitTests(self):
-		return self.__UnitTests
 		
 	def GetSearchPaths(self):
 		return self.__SearchPaths
@@ -336,6 +334,29 @@ class UTConfigBase:
 
 	def AddSearchPath(self,path):
 		return self.SetValue('.path',path,'y',1)
+
+	def GetSections(self,sec):
+		values={}
+		if self.__MainCfg and self.__MainCfg.has_section(sec):
+			for o in self.__MainCfg.options(sec):
+				v = self.GetValue(sec,o)				
+				values[o] = v
+		return values
+	def GetUnitTests(self):
+		units = []
+		values = self.GetSections('.unit.test')
+		sortv = {}
+		try:
+			for k in values.keys():
+				if values[k] != 'n':
+					sortv[int(values[k])]=k
+		except:
+			raise UTCfgKeyError('value of k %s in %s'%(k,values[k]))
+		
+		for k in sorted(sortv.keys()):
+			units.append(sortv[k])		
+		return units
+
 
 
 def singleton(cls):
