@@ -18,8 +18,10 @@
 
 
 	[.unit.test]
-	TestBase=y
-	UnitTest=y
+	TestBase=10
+	UnitTest=20
+
+	the 10 and 20 is the sequence number the smallest is the for the 
 	
 '''
 import ConfigParser
@@ -85,21 +87,13 @@ class UTConfigBase:
 			# now to add the search path
 			for c in cfg.options(s):
 				v = cfg.get(s,c)
-				if c not in self.__SearchPaths and v =='y':
+				if c not in self.__SearchPaths and v !='n':
 					path = self.__ExpandKey(s,c)
 					self.__SearchPaths.append(path)
 					if path not in sys.path:	
 						sys.path.append(path)
 		return
 
-	def __AddUnitTestSection(self,cfg):
-		s = '.unit.test'
-		if cfg.has_section(s):
-			for c in cfg.options(s):
-				v = cfg.get(s,c)
-				if v == 'y' and v not in self.__UnitTests:
-					self.__UnitTests.append(c)
-		return
 					
 
 	def __AddIncludeFiles(self,cfg):
@@ -211,23 +205,43 @@ class UTConfigBase:
 		############################
 		self.__AddSearchPathSection(cfg)
 		self.__AddIncludeFiles(cfg)
-		self.__AddUnitTestSection(cfg)
 		
 		return 
 
 	def __SplitKey(self,k):
 		r = k.find('.')
 		s = k
-		v = None
+		o = None
 		if r >= 0:
-			r = k.rfind('.')
+			kpart = k
+			while len(kpart) > 0:
+				r = kpart.rfind('.')
+				if r < 0 :
+					break
+				s = k[:r]
+				o = k[r+1:]
+				# if it is end of '.' so we should make this ok
+				if self.__MainCfg.has_option(s,o):
+					return s,o
+				kpart = s
+
+			kpart = k
+			while len(kpart) > 0:
+				r = kpart.rfind('.')
+				if r < 0:
+					break
+				s = k[:r]
+				o = k[r+1:]
+				if self.__MainCfg.has_section(s):
+					return s,o
+				kpart = s
+
+			# now we should get the last
+			kpart = k
+			r = kpart.rfind('.')
 			s = k[:r]
-			v = k[r+1:]
-			# if it is end of '.' so we should make this ok
-			if len(v) == 0:
-				s = k
-				v = None
-		return s ,v
+			o = k[r+1:]
+		return s ,o
 
 	def __ExpandValue(self,section,option,k,values=None):
 		p = '%\(([^)]+)\)s'
@@ -309,8 +323,6 @@ class UTConfigBase:
 	def GetIncludeFiles(self):
 		return self.__IncludeFiles
 
-	def GetUnitTests(self):
-		return self.__UnitTests
 		
 	def GetSearchPaths(self):
 		return self.__SearchPaths
@@ -331,11 +343,33 @@ class UTConfigBase:
 		############################
 		self.__AddSearchPathSection(cfg)
 		self.__AddIncludeFiles(cfg)
-		self.__AddUnitTestSection(cfg)			
 		return
 
 	def AddSearchPath(self,path):
 		return self.SetValue('.path',path,'y',1)
+
+	def GetSections(self,sec):
+		values={}
+		if self.__MainCfg and self.__MainCfg.has_section(sec):
+			for o in self.__MainCfg.options(sec):
+				v = self.GetValue(sec,o)
+				values[o] = v
+		return values
+	def GetUnitTests(self):
+		units = []
+		values = self.GetSections('.unit.test')
+		sortv = {}
+		try:
+			for k in values.keys():
+				if values[k] != 'n':
+					sortv[int(values[k])]=k
+		except:
+			raise UTCfgKeyError('value of k %s in %s'%(k,values[k]))
+		
+		for k in sorted(sortv.keys()):
+			units.append(sortv[k])		
+		return units
+
 
 
 def singleton(cls):

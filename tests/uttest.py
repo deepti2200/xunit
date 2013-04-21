@@ -165,6 +165,37 @@ class UtTest(unittest.TestCase):
 		self.assertEqual(v,'no_value')
 		return
 
+	def test_unittest(self):
+		utcfg = UTConfig.UTConfigBase()
+		utcfg.AddSearchPath(os.path.dirname(__file__))
+		utcfg.LoadFile('tst.cfg')
+		units = utcfg.GetUnitTests()
+		self.assertEqual(units[0] , 'base20.test')
+		self.assertEqual(units[1] , 'base30.test')
+		self.assertEqual(units[2] , 'base100.test')
+		return
+
+	def test_unittestbad(self):
+		utcfg = UTConfig.UTConfigBase()
+		utcfg.AddSearchPath(os.path.dirname(__file__))
+		utcfg.LoadFile('tstbad.cfg')
+		ok = 1
+		try:
+			units = utcfg.GetUnitTests()
+		except  UTConfig.UTCfgKeyError as e:
+			ok = 0
+		self.assertEqual(ok,0)
+		return
+
+	def test_splitunittest(self):
+		utcfg = UTConfig.UTConfigBase()
+		utcfg.AddSearchPath(os.path.dirname(__file__))
+		utcfg.LoadFile('tstparam.cfg')
+		units = utcfg.GetUnitTests()
+		self.assertTrue( units[0] == 'test.base1')
+		self.assertTrue( units[1] == 'test.base2')
+		self.assertTrue( units[2] == 'test.base3')
+		return
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
