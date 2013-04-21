@@ -94,14 +94,6 @@ class UTConfigBase:
 						sys.path.append(path)
 		return
 
-	def __AddUnitTestSection(self,cfg):
-		s = '.unit.test'
-		if cfg.has_section(s):
-			for c in cfg.options(s):
-				v = cfg.get(s,c)
-				if v == 'y' and v not in self.__UnitTests:
-					self.__UnitTests.append(c)
-		return
 					
 
 	def __AddIncludeFiles(self,cfg):
@@ -213,7 +205,6 @@ class UTConfigBase:
 		############################
 		self.__AddSearchPathSection(cfg)
 		self.__AddIncludeFiles(cfg)
-		self.__AddUnitTestSection(cfg)
 		
 		return 
 
@@ -352,7 +343,6 @@ class UTConfigBase:
 		############################
 		self.__AddSearchPathSection(cfg)
 		self.__AddIncludeFiles(cfg)
-		self.__AddUnitTestSection(cfg)			
 		return
 
 	def AddSearchPath(self,path):
@@ -362,7 +352,7 @@ class UTConfigBase:
 		values={}
 		if self.__MainCfg and self.__MainCfg.has_section(sec):
 			for o in self.__MainCfg.options(sec):
-				v = self.GetValue(sec,o)				
+				v = self.GetValue(sec,o)
 				values[o] = v
 		return values
 	def GetUnitTests(self):

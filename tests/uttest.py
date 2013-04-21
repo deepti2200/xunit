@@ -187,7 +187,15 @@ class UtTest(unittest.TestCase):
 		self.assertEqual(ok,0)
 		return
 
-	def 
+	def test_splitunittest(self):
+		utcfg = UTConfig.UTConfigBase()
+		utcfg.AddSearchPath(os.path.dirname(__file__))
+		utcfg.LoadFile('tstparam.cfg')
+		units = utcfg.GetUnitTests()
+		self.assertTrue( units[0] == 'test.base1')
+		self.assertTrue( units[1] == 'test.base2')
+		self.assertTrue( units[2] == 'test.base3')
+		return
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
