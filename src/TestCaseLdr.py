@@ -1,6 +1,7 @@
 #! pthon
 
 import unittest
+import logging
 
 import LocalException
 
@@ -8,9 +9,7 @@ class LoadModuleError(LocalException.LocalException):
 	pass
 
 
-class TestCaseLoader(unittest.TestSuite):
-	def LoadCase(self,casestrstr):
-		pass 
+class TestCaseLoaderBase(unittest.TestSuite):
 	def __LoadCase(self,mn,cn,fn=None):
 		rst = unittest.TestSuite()
 		try:
@@ -19,9 +18,9 @@ class TestCaseLoader(unittest.TestSuite):
 			if fn:
 				rst.addTest(cls(fn))
 			else:
-				tests = unittest.loader().loadTestsFromTestCase(cls)
+				tests = unittest.loader.TestLoader().loadTestsFromTestCase(cls)
 				rst.addTest(tests)
-		except:
+		except:			
 			raise LoadModuleError('can not load [%s].%s:%s module'%(mn,cn,fn))
 		return rst
 
@@ -42,10 +41,13 @@ class TestCaseLoader(unittest.TestSuite):
 		rst = None
 		while len(kpart) > 0:
 			r = kpart.rfind('.')
+			if r < 0 :
+				break
 			mn = mcname[:r]
-			cn = mcnam[r+1:]
+			cn = mcname[r+1:]
 			try:
 				rst = self.__LoadCase(mn,cn,fn)
+				break
 			except LoadModuleError as e :
 				kpart = mn
 
