@@ -4,11 +4,11 @@ import unittest
 import sys
 class AUnit(unittest.TestCase):
 	def test_A(self):
-		sys.stdout.write('AUnit.AUnit.test_A\n')
+		sys.stdout.write('AUnit.AUnit:test_A\n')
 		return
 
 	def test_B(self):
-		sys.stdout.write('AUnit.AUnit.test_B\n')
+		sys.stdout.write('AUnit.AUnit:test_B\n')
 		return
 if __name__ == '__main__':
 	m = __import__('__main__')

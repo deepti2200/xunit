@@ -4,6 +4,7 @@ import unittest
 import sys
 import logging
 import os
+import subprocess
 sys.path.append((len(os.path.dirname(__file__))>0 and os.path.dirname(__file__) or '.' )+os.sep+'..'+os.sep+'..'+os.sep+'src'+os.sep)
 sys.path.append((len(os.path.dirname(__file__))>0 and os.path.dirname(__file__) or '.' ))
 import TestCaseLdr
@@ -96,7 +97,87 @@ class  LdrUnitTest(unittest.TestCase):
 		self.assertEqual(_res,1)
 		_res = self.__hasUnitMethod(ldr,'test_BB','BUnit.BUnit')
 		self.assertEqual(_res,1)
-		return	
+		return
+
+	def __CallProcessReturn(self,cmd):
+		sp = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		op = sp.stdout
+		ls = op.readlines()
+		ol = []
+		for l in ls:
+			ol.append(l.rstrip('\r\n'))
+		return ol
+
+	def __FindLineIdx(self,ls,s):
+		i = 0
+		idx = -1
+		for l in ls:
+			if s == l:
+				idx = i
+				break
+			i += 1
+		return idx
+	def test_RunTestCase1(self):
+		d = os.path.dirname(__file__)
+		absd = len(d)  >0 and os.path.abspath(d) or os.path.abspath('.')
+		# now we should give the process running
+		cmd = 'python %s'%(absd)
+		cmd += os.sep
+		cmd += 'rtest.py'
+		cmd += ' -p %s'%(absd)
+		cmd += '  AUnit.AUnit:test_A '
+		ol = self.__CallProcessReturn(cmd)
+		self.assertTrue(len(ol) > 0)
+		idx = self.__FindLineIdx(ol,'AUnit.AUnit:test_A')
+		self.assertTrue(idx >= 0)
+		return
+
+	def test_RunTestCase2(self):
+		d = os.path.dirname(__file__)
+		absd = len(d)  >0 and os.path.abspath(d) or os.path.abspath('.')
+		cmd = 'python %s'%(absd)
+		cmd += os.sep
+		cmd += 'rtest.py'
+		cmd += ' -p %s'%(absd)
+		cmd += ' BUnit.BUnit:test_BB '
+		cmd += '  AUnit.AUnit:test_A '
+		ol = self.__CallProcessReturn(cmd)
+		ol = self.__CallProcessReturn(cmd)
+		self.assertTrue(len(ol) > 0)
+		aidx = self.__FindLineIdx(ol,'AUnit.AUnit:test_A')
+		self.assertTrue(aidx >= 0)
+		bidx = self.__FindLineIdx(ol,'BUnit.BUnit:test_BB')
+		self.assertTrue(bidx >= 0)
+		# call bunit earlier than aunit
+		self.assertTrue(bidx < aidx)
+		return
+
+	def test_RunTestCase3(self):
+		d = os.path.dirname(__file__)
+		absd = len(d)  >0 and os.path.abspath(d) or os.path.abspath('.')
+		cmd = 'python %s'%(absd)
+		cmd += os.sep
+		cmd += 'rtest.py'
+		cmd += ' -p %s'%(absd)
+		cmd += ' -p %s'%(absd)
+		cmd += os.sep
+		cmd += 'inc'
+		cmd += ' BUnit.BUnit:test_BB '
+		cmd += '  CUnit.CUnit:test_CC '
+		cmd += ' BUnit.BUnit:test_BC '
+		ol = self.__CallProcessReturn(cmd)
+		ol = self.__CallProcessReturn(cmd)
+		self.assertTrue(len(ol) > 0)
+		cidx = self.__FindLineIdx(ol,'CUnit.CUnit:test_CC')
+		self.assertTrue(cidx >= 0)
+		bidx = self.__FindLineIdx(ol,'BUnit.BUnit:test_BB')
+		self.assertTrue(bidx >= 0)
+		# call bunit earlier than aunit
+		self.assertTrue(bidx < cidx)
+		bcidx = self.__FindLineIdx(ol,'BUnit.BUnit:test_BC')
+		self.assertTrue(bcidx >= 0 )
+		self.assertTrue(cidx < bcidx)
+		return
 
 
 if __name__ == '__main__':
