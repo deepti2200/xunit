@@ -1,14 +1,15 @@
 #! python
 
 import unittest
-
+import sys
 class AUnit(unittest.TestCase):
 	def test_A(self):
-		pass
+		sys.stdout.write('AUnit.AUnit:test_A\n')
+		return
 
 	def test_B(self):
-		pass
-
+		sys.stdout.write('AUnit.AUnit:test_B\n')
+		return
 if __name__ == '__main__':
 	m = __import__('__main__')
 	cls = getattr(m,'AUnit')
