@@ -196,6 +196,37 @@ class UtTest(unittest.TestCase):
 		self.assertTrue( units[1] == 'test.base2')
 		self.assertTrue( units[2] == 'test.base3')
 		return
+
+	def test_GetSectionsPattern(self):
+		utcfg = UTConfig.UTConfigBase()
+		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
+		utcfg.LoadFile('ks.cfg')
+		sections = utcfg.GetSectionsPattern()
+		self.assertTrue('expsection' in sections)
+		self.assertTrue('newsection' in sections)
+
+		sections = utcfg.GetSectionsPattern('^\.\w+')
+		self.assertTrue('expsection' not in sections)
+		self.assertTrue('newsection' not in sections)
+		self.assertTrue('.path' in sections)
+		self.assertTrue('test.case' not in sections)
+		return
+
+	def test_GetOptionsPattern(self):
+		utcfg = UTConfig.UTConfigBase()
+		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
+		utcfg.LoadFile('ks.cfg')
+		options = utcfg.GetOptionsPattern('.path')
+		self.assertTrue('/usr/inc/lib' in options)
+		self.assertTrue('/usr/inc/share' in options)
+		options = utcfg.GetOptionsPattern('.path','share$')
+		self.assertTrue('/usr/inc/share' in options)
+		self.assertTrue('/usr/inc/lib' not in options)
+		self.assertTrue('/usr/share/lib' not in options)
+		options = utcfg.GetOptionsPattern('expsection')
+		self.assertTrue('value_exp_2'  in options)
+		return
+		
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:

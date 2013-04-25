@@ -57,6 +57,7 @@ class UTConfigBase:
 			self.__LoadFile(fname)
 			assert(self.__FuncLevel == 0)
 			self.__MainName = fname
+			self.__ExpandAllKeys()
 		else:
 			self.__MainName = None
 
@@ -306,8 +307,31 @@ class UTConfigBase:
 					v = self.__ExpandValue(section,item,tmpv,valuemap)
 				else:
 					# now expand ,so we get the raw value
-					v = self.__MainCfg.get(section,item,1)
-		return v
+ 					v = self.__MainCfg.get(section,item,1)
+ 		return v
+	def __ExpandAllKeys(self):
+		'''
+			if the keys to be regular string not including the %(section.option)s value replace
+		'''
+		if self.__MainCfg is None:
+			return
+		p = '%\(([^)]+)\)s'
+		vpat = re.compile(p)
+		findone = 1
+		while findone > 0:
+			findone = 0
+			for s in self.__MainCfg.sections():
+				for o in self.__MainCfg.options(s):
+					if vpat.search(o):
+						v = self.__MainCfg.get(s,o,1)
+						eo = self.__ExpandKey(s,o)
+						if self.__MainCfg.has_option(s,eo):
+							logging.warning('[%s].%s=%s'%(s,eo,self.__MainCfg.get(s,eo,1)))
+						self.__MainCfg.set(s,eo,v)
+						self.__MainCfg.remove_option(s,o)
+						# we rescan the options and sections
+						findone = 1
+		return
 
 	def GetValue(self,sec,opt,expand=1):
 		return self.__GetValue(sec,opt,expand)
@@ -317,7 +341,10 @@ class UTConfigBase:
 		self.__LoadFile(fname)
 		if self.__MainName is None:
 			self.__MainName = fname
+		# expand all keys
+		self.__ExpandAllKeys()
 		assert(self.__FuncLevel == 0)
+		
 		return 
 
 	def GetIncludeFiles(self):
@@ -370,8 +397,30 @@ class UTConfigBase:
 			units.append(sortv[k])		
 		return units
 
+	def GetSectionsPattern(self,pat=None):
+		vpat = None
+		if pat is not None:
+			vpat = re.compile(pat)
+		rs = [] 
 
+		if self.__MainCfg :
+			for s in self.__MainCfg.sections():
+				if vpat is None or vpat.search(s):
+					rs.append(s)
+		return rs
 
+	def GetOptionsPattern(self,sec,pat=None):
+		vpat = None
+		if pat is not  None:
+			vpat = re.compile(pat)
+		ro = []
+		if self.__MainCfg :
+			for o in self.__MainCfg.options(sec):
+				if vpat is None or vpat.search(o):
+					ro.append(o)
+		return ro
+		
+		
 def singleton(cls):
 	instances = {}
 	def get_instance():
