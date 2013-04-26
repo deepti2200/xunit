@@ -289,15 +289,15 @@ class UTConfigBase:
 		v = self.__MainCfg.get(section,option,0,values)
 		return v
 
-	def __GetValue(self,section,item,expand=1,valuemap={}):
+	def __GetValue(self,section,item,defval='',expand=1,valuemap={}):
 		'''
 			the  section name ,and expand will expand the value of 
 			expand == 1 : will expand the value '%(value)s' to the real value
 			level will be expand to it
 		'''
 		if self.__MainCfg is None:
-			return ''
-		v = ''
+			return defval
+		v = defval
 		if self.__MainCfg.has_section(section):
 			if self.__MainCfg.has_option(section,item):
 				# now we should give the value expand
@@ -333,8 +333,8 @@ class UTConfigBase:
 						findone = 1
 		return
 
-	def GetValue(self,sec,opt,expand=1):
-		return self.__GetValue(sec,opt,expand)
+	def GetValue(self,sec,opt,defval='',expand=1):
+		return self.__GetValue(sec,opt,defval,expand)
 
 	def LoadFile(self,fname):
 		assert(self.__FuncLevel == 0)
