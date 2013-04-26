@@ -4,10 +4,10 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
-import xunitcase
-import clsname
+import xunit.case
+import xunit.utils.cls
 import unittest
-class XUnitTest(xunitcase.XUnitCase):
+class XUnitTest(xunit.case.XUnitCase):
 	@classmethod
 	def XUnitsetUpClass(cls):
 		cls._cls_set =1

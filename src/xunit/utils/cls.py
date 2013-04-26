@@ -12,6 +12,16 @@ def FuncMethodSearh(obj):
 		return True
 	return False
 
+def ModuleAndMethod(obj):
+	if inspect.ismethod(obj):
+		return True
+	if inspect.isfunction(obj):
+		return True
+	if inspect.isclass(obj):
+		return True
+	if inspect.ismodule(obj):
+		return True
+	return False
 
 def __IsCodeInClass(clsobj,codeobj):
 	mns = inspect.getmembers(clsobj,predicate=FuncMethodSearh)
@@ -90,40 +100,56 @@ def __IsClassSame(clsroot,clsobj):
 	else:
 		return 0
 
-def __GetClassName(clsroot,clsobj,level=0):
+def __LogModules(mods):
+	i = 0
+	for m in mods:
+		logging.info('[%d] %s'%(i,m))
+		i += 1
+	return
+
+def __GetClassName(clsroot,clsobj,level=0,mods=[]):
 	if level > 300:
+		__LogModules(mods)
 		raise XUnitException('class object %s'%(repr(clsobj)))
 	if __IsClassSame(clsroot,clsobj):
 		return clsroot.__name__
 	mns = inspect.getmembers(clsroot,predicate=inspect.isclass)
 	for m in mns:
 		if m[0] != '__class__' and m[0] != '__base__':
-			n = __GetClassName(m[1],clsobj,level+1)
+			n = __GetClassName(m[1],clsobj,level+1,mods)
 			if n:
 				return clsroot.__name__ + '.' + n
 	return None
 	
-def __GetFullClassName(modobj,clsobj,level=0):
+def __GetFullClassName(modobj,clsobj,level=0,mods=[]):
 	#mns = inspect.getmembers(modobj,predicate=inspect.isclass)
 	if level > 300:
+		__LogModules(mods)
 		raise XUnitException('modobj %s clsobj %s'%(repr(modobj),repr(clsobj)))
-	mns = inspect.getmembers(modobj,predicate=None)
+	mns = inspect.getmembers(modobj,predicate=ModuleAndMethod)
 	#logging.info('%s'%(repr(mns)))
 	for m in mns:
 		if inspect.isclass(m[1]):
-			n = __GetClassName(m[1],clsobj,level+1)
+			n = __GetClassName(m[1],clsobj,level+1,mods)
 			if n:
 				return modobj.__name__ + '.' + n
 		elif inspect.ismodule(m[1]):
- 			n = __GetFullClassName(m[1],clsobj,level+1)
- 			if n:
-				return  n
+			if m[1].__file__ not in mods :
+				logging.info('append %s file %s'%(repr(m[1]),m[1].__file__))
+				mods.append(m[1].__file__)
+	 			n = __GetFullClassName(m[1],clsobj,level+1,mods)
+	 			if n:
+					return  n
+			else:
+				logging.info('%s in mods'%(m[1].__file__))
+				pass
 	return None
 	
 
 def GetClassName(obj):
 	cn = ''
 	if inspect	.isclass(obj):
+		logging.info('obj %s'%(repr(obj)))
 		m = __import__(obj.__module__)
 		cn = __GetFullClassName(m,obj)
 		if cn is None:

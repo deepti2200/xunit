@@ -2,7 +2,7 @@
 
 import unittest
 import logging
-import clsname
+from xunit.utils import cls
 
 class XUnitCase(unittest.TestCase):
 	@classmethod

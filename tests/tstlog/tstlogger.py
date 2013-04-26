@@ -4,15 +4,15 @@ import sys
 import os
 import unittest
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
-import xunitlogger
-import xunitcase
+from xunit import logger
+from xunit import case
 
 
 _logs={}
-class LoggerTest(xunitcase.XUnitCase):
+class LoggerTest(case.XUnitCase):
 	def test_Logger(self):
-		logg1 = xunitlogger.AdvLogger()
-		logg2 = xunitlogger.AdvLogger()
+		logg1 = logger.AdvLogger()
+		logg2 = logger.AdvLogger()
 		self.assertEqual(logg1,logg2)
 		if 'logger' in _logs.keys():
 			self.assertEqual(logg1,_logs['logger'])
@@ -21,8 +21,8 @@ class LoggerTest(xunitcase.XUnitCase):
 		return
 
 	def test_Logger2(self):
-		logg1 = xunitlogger.AdvLogger()
-		logg2 = xunitlogger.AdvLogger()
+		logg1 = logger.AdvLogger()
+		logg2 = logger.AdvLogger()
 		self.assertEqual(logg1,logg2)
 		if 'logger' in _logs.keys():
 			self.assertEqual(logg1,_logs['logger'])
@@ -33,10 +33,10 @@ class LoggerTest(xunitcase.XUnitCase):
 			self.assertNotEqual(logg1,_logs['logdiff'])
 		return
 
-class LogDiffTest(xunitcase.XUnitCase):
+class LogDiffTest(case.XUnitCase):
 	def test_Logger(self):
-		logg1 = xunitlogger.AdvLogger()
-		logg2 = xunitlogger.AdvLogger()
+		logg1 = logger.AdvLogger()
+		logg2 = logger.AdvLogger()
 		self.assertEqual(logg1,logg2)
 		if 'logdiff' in _logs.keys():
 			self.assertEqual(logg1,_logs['logdiff'])
@@ -45,8 +45,8 @@ class LogDiffTest(xunitcase.XUnitCase):
 		return
 
 	def test_Logger2(self):
-		logg1 = xunitlogger.AdvLogger()
-		logg2 = xunitlogger.AdvLogger()
+		logg1 = logger.AdvLogger()
+		logg2 = logger.AdvLogger()
 		self.assertEqual(logg1,logg2)
 		if 'logdiff' in _logs.keys():
 			self.assertEqual(logg1,_logs['logdiff'])
