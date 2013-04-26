@@ -6,21 +6,20 @@ import unittest
 import sys
 import logging
 import os
-sys.path.append((len(os.path.dirname(__file__))>0 and os.path.dirname(__file__) or '.' )+os.sep+'..'+os.sep+'..'+os.sep+'src'+os.sep)
-sys.path.append((len(os.path.dirname(__file__))>0 and os.path.dirname(__file__) or '.' ))
-import UTConfig
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
+sys.path.append((os.path.dirname(os.path.abspath(__file__))))
+import xunit.config
 
 class UtTest(unittest.TestCase):
 	def test_LoadBasic(self):
 		# now for 
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.LoadFile('base.cfg')
 		self.assertEqual(utcfg.GetValue('new','base2'),'hello world')
 		return
-
 	def test_IncludeFiles(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
@@ -31,7 +30,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_Unittests(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
@@ -42,7 +41,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_SearchPaths(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
@@ -51,40 +50,40 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_OverflowError(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
 		ok = 1
 		try:
 			v = utcfg.GetValue('value1','base1')
-		except UTConfig.UTCfgOverflowError as e:
+		except xunit.config.XUnitConfigOverflowError as e:
 			ok = 0
 		self.assertTrue( ok == 0)
 
 		ok = 1
 		try:
 			v = utcfg.GetValue('value2','base2')
-		except UTConfig.UTCfgOverflowError as e:
+		except xunit.config.XUnitConfigOverflowError as e:
 			ok = 0
 		self.assertTrue( ok == 0)
 		return
 
 	def test_SectionInnerOverflowError(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
 		ok = 1
 		try:
 			v = utcfg.GetValue('valuebase','base1')
-		except UTConfig.UTCfgOverflowError as e:
+		except xunit.config.XUnitConfigOverflowError as e:
 			ok = 0
 		self.assertTrue( ok == 0)
 		return
 
 	def test_NonValue(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
@@ -93,7 +92,7 @@ class UtTest(unittest.TestCase):
 		return
 		
 	def test_3LevelRef(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
@@ -102,7 +101,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_noref(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
@@ -111,7 +110,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_setgetvalue(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('inc.cfg')
@@ -123,15 +122,15 @@ class UtTest(unittest.TestCase):
 	def test_LoadError(self):
 		ok = 1
 		try:
-			utcfg = UTConfig.UTConfigBase()
+			utcfg = xunit.config.XUnitConfigBase()
 			utcfg.LoadFile('nocfg.cfg')
-		except UTConfig.UTCfgLoadFileError as e:
+		except xunit.config.XUnitConfigLoadFileError as e:
 			ok = 0
 		self.assertTrue(ok == 0)
 		return
 
 	def test_SearchPathExp(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('exp.cfg')
@@ -140,7 +139,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_SearchPathNoRef(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
 		utcfg.LoadFile('exp.cfg')
@@ -149,8 +148,8 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_Singleton(self):
-		utcfg = UTConfig.UTConfig()
-		ut2 = UTConfig.UTConfig()
+		utcfg = xunit.config.XUnitConfig()
+		ut2 = xunit.config.XUnitConfig()
 		self.assertTrue( utcfg == ut2)
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__))+os.sep+'inc')
@@ -166,7 +165,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_unittest(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.LoadFile('tst.cfg')
 		units = utcfg.GetUnitTests()
@@ -176,19 +175,19 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_unittestbad(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.LoadFile('tstbad.cfg')
 		ok = 1
 		try:
 			units = utcfg.GetUnitTests()
-		except  UTConfig.UTCfgKeyError as e:
+		except  xunit.config.XUnitConfigKeyError as e:
 			ok = 0
 		self.assertEqual(ok,0)
 		return
 
 	def test_splitunittest(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.LoadFile('tstparam.cfg')
 		units = utcfg.GetUnitTests()
@@ -198,7 +197,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_GetSectionsPattern(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.LoadFile('ks.cfg')
 		sections = utcfg.GetSectionsPattern()
@@ -213,7 +212,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_GetOptionsPattern(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		utcfg.AddSearchPath(os.path.dirname(os.path.abspath(__file__)))
 		utcfg.LoadFile('ks.cfg')
 		options = utcfg.GetOptionsPattern('.path')
@@ -228,7 +227,7 @@ class UtTest(unittest.TestCase):
 		return
 
 	def test_getdefaultvalue(self):
-		utcfg = UTConfig.UTConfigBase()
+		utcfg = xunit.config.XUnitConfigBase()
 		v = utcfg.GetValue('no_section','no_option','no_value')
 		self.assertTrue(v == 'no_value')
 		utcfg.LoadFile('ks.cfg')

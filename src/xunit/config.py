@@ -25,7 +25,7 @@
 	
 '''
 import ConfigParser
-from .utils import exception
+from xunit.utils import exception
 import logging
 import sys
 import re
@@ -163,7 +163,7 @@ class XUnitConfigBase:
 			most level to be 30
 		'''
 		if self.__FuncLevel >= 30:
-			raise UTCfgOverflowError('Load %s fname overflow'%(fname))
+			raise XUnitConfigOverflowError('Load %s fname overflow'%(fname))
 		if fname in self.__IncludeFiles:
 			# we have already include this file
 			return
@@ -184,11 +184,11 @@ class XUnitConfigBase:
 					if os.path.isfile('.'+os.sep+fname):
 						filefind = '.'+os.sep+fname
 					else:
-						raise UTCfgLoadFileError('could not find file %s in %s'%(fname,self.__SearchPaths))
+						raise XUnitConfigLoadFileError('could not find file %s in %s'%(fname,self.__SearchPaths))
 			cfg = ConfigParser.ConfigParser()
 			cfg.read(filefind)
 		except:
-			raise UTCfgLoadFileError('can not parse file %s'%(fname))
+			raise XUnitConfigLoadFileError('can not parse file %s'%(fname))
 		# now to add the option
 		if self.__MainCfg is None:
 			self.__MainCfg = ConfigParser.ConfigParser()
@@ -265,7 +265,7 @@ class XUnitConfigBase:
 						try:
 							self.__FuncLevel += 1
 							if self.__FuncLevel >= 30:
-								raise UTCfgOverflowError('expand value %s overflow '%(k))
+								raise XUnitConfigOverflowError('expand value %s overflow '%(k))
 							v = self.__ExpandValue(sec,opt,v,values)
 							values[s] = v
 							break
@@ -279,7 +279,7 @@ class XUnitConfigBase:
 						try:
 							self.__FuncLevel += 1
 							if self.__FuncLevel >= 30:
-								raise UTCfgOverflowError('expand value %s overflow '%(k))
+								raise XUnitConfigOverflowError('expand value %s overflow '%(k))
 							v = self.__MainCfg.get(section,sec,1)
 							v = self.__ExpandValue(section,sec,v,values)
 							values[s] = v
@@ -391,7 +391,7 @@ class XUnitConfigBase:
 				if values[k] != 'n':
 					sortv[int(values[k])]=k
 		except:
-			raise UTCfgKeyError('value of k %s in %s'%(k,values[k]))
+			raise XUnitConfigKeyError('value of k %s in %s'%(k,values[k]))
 		
 		for k in sorted(sortv.keys()):
 			units.append(sortv[k])		
@@ -430,5 +430,5 @@ def singleton(cls):
 	return get_instance
 
 @singleton
-class XUnitConfig(UTConfigBase):
+class XUnitConfig(XUnitConfigBase):
 	pass
