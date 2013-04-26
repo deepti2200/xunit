@@ -3,13 +3,13 @@
 import unittest
 import logging
 
-import LocalException
+from xunit.utils import exception
 
-class LoadModuleError(LocalException.LocalException):
+class LoadModuleError(exception.XUnitException):
 	pass
 
 
-class TestCaseLoaderBase(unittest.TestSuite):
+class XUnitSuiteBase(unittest.TestSuite):
 	def __LoadCase(self,mn,cn,fn=None):
 		rst = unittest.TestSuite()
 		try:
