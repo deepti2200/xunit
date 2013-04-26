@@ -25,11 +25,9 @@ class XUnitCase(unittest.TestCase):
 		return
 
 	def XUnitsetUp(self):
-		logging.info('\n')
 		return
 
 	def XUnittearDown(self):
-		logging.info('\n')
 		return
 
 	def setUp(self):	
