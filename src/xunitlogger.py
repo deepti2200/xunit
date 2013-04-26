@@ -4,7 +4,8 @@ import logging
 import clsname
 
 class BaseLogger:
-	pass
+	def __init__(self,cn):
+		pass
 
 
 
@@ -16,7 +17,7 @@ def singleton(cls):
 		cn = clsname.GetClassName(cls)
 		tn =  cn+':'+ ccn
  		if tn not in _instances  :
- 			_instances[tn] = cls()
+ 			_instances[tn] = cls(cn)
  		return _instances[tn]
 	return get_instance
 
