@@ -25,21 +25,21 @@
 	
 '''
 import ConfigParser
-import LocalException
+from .utils import exception
 import logging
 import sys
 import re
 import os
 
-class UTCfgKeyError(LocalException.LocalException):
+class XUnitConfigKeyError(exception.XUnitException):
 	pass
 
-class UTCfgOverflowError(LocalException.LocalException):
+class XUnitConfigOverflowError(exception.XUnitException):
 	pass
-class UTCfgLoadFileError(LocalException.LocalException):
+class XUnitConfigLoadFileError(exception.XUnitException):
 	pass
 
-class UTConfigBase:
+class XUnitConfigBase:
 	def __ResetCfg(self):
 		if hasattr(self,'__MainCfg') and self.__MainCfg:
 			del self.__MainCfg
@@ -430,5 +430,5 @@ def singleton(cls):
 	return get_instance
 
 @singleton
-class UTConfig(UTConfigBase):
+class XUnitConfig(UTConfigBase):
 	pass
