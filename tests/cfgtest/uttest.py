@@ -226,7 +226,15 @@ class UtTest(unittest.TestCase):
 		options = utcfg.GetOptionsPattern('expsection')
 		self.assertTrue('value_exp_2'  in options)
 		return
-		
+
+	def test_getdefaultvalue(self):
+		utcfg = UTConfig.UTConfigBase()
+		v = utcfg.GetValue('no_section','no_option','no_value')
+		self.assertTrue(v == 'no_value')
+		utcfg.LoadFile('ks.cfg')
+		v = utcfg.GetValue('no_section','no_option','no_value')
+		self.assertTrue(v == 'no_value')
+		return
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
