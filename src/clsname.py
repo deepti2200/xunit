@@ -81,3 +81,50 @@ def GetCallerClassName(level=2):
 		fc = frm[0].f_code
 		mn = GetCallerClassFullName(mm,fc)
 	return mn
+
+
+def __IsClassSame(clsroot,clsobj):
+	if clsroot == clsobj:
+		return 1
+	else:
+		return 0
+
+def __GetClassName(clsroot,clsobj,level=0):
+	if level > 300:
+		raise Exception('class object %s'%(repr(clsobj)))
+	if __IsClassSame(clsroot,clsobj):
+		return clsroot.__name__
+	mns = inspect.getmembers(clsroot,predicate=inspect.isclass)
+	for m in mns:
+		if m[0] != '__class__' and m[0] != '__base__':
+			n = __GetClassName(m[1],clsobj,level+1)
+			if n:
+				return clsroot.__name__ + '.' + n
+	return None
+	
+def __GetFullClassName(modobj,clsobj,level=0):
+	#mns = inspect.getmembers(modobj,predicate=inspect.isclass)
+	if level > 300:
+		raise Exception('modobj %s clsobj %s'%(repr(modobj),repr(clsobj)))
+	mns = inspect.getmembers(modobj,predicate=None)
+	#logging.info('%s'%(repr(mns)))
+	for m in mns:
+		if inspect.isclass(m[1]):
+			n = __GetClassName(m[1],clsobj,level+1)
+			if n:
+				return modobj.__name__ + '.' + n
+		elif inspect.ismodule(m[1]):
+ 			n = __GetFullClassName(m[1],clsobj,level+1)
+ 			if n:
+				return  n
+	return None
+	
+
+def GetClassName(obj):
+	cn = ''
+	if inspect	.isclass(obj):
+		m = __import__(obj.__module__)
+		cn = __GetFullClassName(m,obj)
+		if cn is None:
+			cn = obj.__module__ +'.'+obj.__name__
+	return cn

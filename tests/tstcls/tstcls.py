@@ -39,6 +39,17 @@ class ClsNameTest(unittest.TestCase):
 		self.assertTrue(b.GetMsg(),'incbunit.base.BUnit.BUnit.BUnit2')
 		b = incbunit.base.BUnit.BUnit.BUnit2.BUnit3()
 		self.assertTrue(b.GetMsg(),'incbunit.base.BUnit.BUnit.BUnit2.BUnit3')
+		b = incbunit.base.BUnit.BUnit.BUnit2.BUnit3.BUnit()
+		self.assertTrue(b.GetMsg(),'incbunit.base.BUnit.BUnit.BUnit2.BUnit3.BUnit')
+		return
+
+	def test_GetClassName(self):
+		cn = clsname.GetClassName(AUnit.AUnit2)
+		self.assertEqual(cn , '__main__.AUnit.AUnit2')
+		cn = clsname.GetClassName(incbunit.base.BUnit.BUnit.BUnit2)
+		self.assertEqual(cn , 'incbunit.base.BUnit.BUnit.BUnit2')
+		cn = clsname.GetClassName(incbunit.base.BUnit.BUnit.BUnit2.BUnit3.BUnit)
+		self.assertEqual(cn , 'incbunit.base.BUnit.BUnit.BUnit2.BUnit3.BUnit')
 		return
 
 

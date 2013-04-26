@@ -1,3 +1,2 @@
 
-
-from incbunit.base import BUnit
+import incbunit.base
