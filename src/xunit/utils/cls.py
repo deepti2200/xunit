@@ -2,6 +2,7 @@
 import inspect
 import types
 import logging
+from xunit.utils.exception import XUnitException
 def FuncMethodSearh(obj):
 	if inspect.ismethod(obj):
 		return True
@@ -91,7 +92,7 @@ def __IsClassSame(clsroot,clsobj):
 
 def __GetClassName(clsroot,clsobj,level=0):
 	if level > 300:
-		raise Exception('class object %s'%(repr(clsobj)))
+		raise XUnitException('class object %s'%(repr(clsobj)))
 	if __IsClassSame(clsroot,clsobj):
 		return clsroot.__name__
 	mns = inspect.getmembers(clsroot,predicate=inspect.isclass)
@@ -102,10 +103,10 @@ def __GetClassName(clsroot,clsobj,level=0):
 				return clsroot.__name__ + '.' + n
 	return None
 	
-def __GetFullClassName(modobj,clsobj,level=0,modsearch=[]):
+def __GetFullClassName(modobj,clsobj,level=0):
 	#mns = inspect.getmembers(modobj,predicate=inspect.isclass)
 	if level > 300:
-		raise Exception('modobj %s clsobj %s'%(repr(modobj),repr(clsobj)))
+		raise XUnitException('modobj %s clsobj %s'%(repr(modobj),repr(clsobj)))
 	mns = inspect.getmembers(modobj,predicate=None)
 	#logging.info('%s'%(repr(mns)))
 	for m in mns:
@@ -114,11 +115,9 @@ def __GetFullClassName(modobj,clsobj,level=0,modsearch=[]):
 			if n:
 				return modobj.__name__ + '.' + n
 		elif inspect.ismodule(m[1]):
-			if m[0] not in modsearch:
-				modsearch.append(m[0])
-	 			n = __GetFullClassName(m[1],clsobj,level+1,modsearch)
-	 			if n:
-					return  n
+ 			n = __GetFullClassName(m[1],clsobj,level+1)
+ 			if n:
+				return  n
 	return None
 	
 

@@ -1,2 +1,1 @@
-
-import incbunit.base
+__version__ = '0.1'

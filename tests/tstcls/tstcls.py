@@ -4,22 +4,21 @@
 import unittest
 import sys
 import os
-sys.path.append(os.path.abspath((os.path.dirname(os.path.abspath(__file__)))+os.sep+'..'+os.sep+'..'+os.sep+'src'))
-import clsname
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
+sys.path.append((os.path.dirname(os.path.abspath(__file__))))
+import xunit.utils.cls
 import logging
-#sys.path.append(os.path.abspath((os.path.dirname(os.path.abspath(__file__)))+os.sep+'inc'+os.sep+'base' ))
-import incbunit
-
+import incbunit.base.BUnit
 
 class AUnit(object):
 	def GetMsg(self):
-		return clsname.GetCallerClassName(1)
+		return xunit.utils.cls.GetCallerClassName(1)
 	class AUnit2(object):
 		def GetMsg(self):
-			return clsname.GetCallerClassName(1) 
+			return xunit.utils.cls.GetCallerClassName(1) 
 		class AUnit3(object):
 			def GetMsg(self):
-				return clsname.GetCallerClassName(1) 
+				return xunit.utils.cls.GetCallerClassName(1) 
 
 
 class ClsNameTest(unittest.TestCase):
@@ -44,11 +43,11 @@ class ClsNameTest(unittest.TestCase):
 		return
 
 	def test_GetClassName(self):
-		cn = clsname.GetClassName(AUnit.AUnit2)
+		cn = xunit.utils.cls.GetClassName(AUnit.AUnit2)
 		self.assertEqual(cn , '__main__.AUnit.AUnit2')
-		cn = clsname.GetClassName(incbunit.base.BUnit.BUnit.BUnit2)
+		cn = xunit.utils.cls.GetClassName(incbunit.base.BUnit.BUnit.BUnit2)
 		self.assertEqual(cn , 'incbunit.base.BUnit.BUnit.BUnit2')
-		cn = clsname.GetClassName(incbunit.base.BUnit.BUnit.BUnit2.BUnit3.BUnit)
+		cn = xunit.utils.cls.GetClassName(incbunit.base.BUnit.BUnit.BUnit2.BUnit3.BUnit)
 		self.assertEqual(cn , 'incbunit.base.BUnit.BUnit.BUnit2.BUnit3.BUnit')
 		return
 
