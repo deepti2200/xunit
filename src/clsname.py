@@ -102,7 +102,7 @@ def __GetClassName(clsroot,clsobj,level=0):
 				return clsroot.__name__ + '.' + n
 	return None
 	
-def __GetFullClassName(modobj,clsobj,level=0):
+def __GetFullClassName(modobj,clsobj,level=0,modsearch=[]):
 	#mns = inspect.getmembers(modobj,predicate=inspect.isclass)
 	if level > 300:
 		raise Exception('modobj %s clsobj %s'%(repr(modobj),repr(clsobj)))
@@ -114,9 +114,11 @@ def __GetFullClassName(modobj,clsobj,level=0):
 			if n:
 				return modobj.__name__ + '.' + n
 		elif inspect.ismodule(m[1]):
- 			n = __GetFullClassName(m[1],clsobj,level+1)
- 			if n:
-				return  n
+			if m[0] not in modsearch:
+				modsearch.append(m[0])
+	 			n = __GetFullClassName(m[1],clsobj,level+1,modsearch)
+	 			if n:
+					return  n
 	return None
 	
 
