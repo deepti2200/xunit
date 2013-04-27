@@ -24,22 +24,22 @@
 	the 10 and 20 is the sequence number the smallest is the for the 
 	
 '''
-import ConfigParser
-import LocalException
+import xunit.utils.XConfigParser
+from xunit.utils import exception
 import logging
 import sys
 import re
 import os
 
-class UTCfgKeyError(LocalException.LocalException):
+class XUnitConfigKeyError(exception.XUnitException):
 	pass
 
-class UTCfgOverflowError(LocalException.LocalException):
+class XUnitConfigOverflowError(exception.XUnitException):
 	pass
-class UTCfgLoadFileError(LocalException.LocalException):
+class XUnitConfigLoadFileError(exception.XUnitException):
 	pass
 
-class UTConfigBase:
+class XUnitConfigBase:
 	def __ResetCfg(self):
 		if hasattr(self,'__MainCfg') and self.__MainCfg:
 			del self.__MainCfg
@@ -163,7 +163,7 @@ class UTConfigBase:
 			most level to be 30
 		'''
 		if self.__FuncLevel >= 30:
-			raise UTCfgOverflowError('Load %s fname overflow'%(fname))
+			raise XUnitConfigOverflowError('Load %s fname overflow'%(fname))
 		if fname in self.__IncludeFiles:
 			# we have already include this file
 			return
@@ -184,14 +184,14 @@ class UTConfigBase:
 					if os.path.isfile('.'+os.sep+fname):
 						filefind = '.'+os.sep+fname
 					else:
-						raise UTCfgLoadFileError('could not find file %s in %s'%(fname,self.__SearchPaths))
-			cfg = ConfigParser.ConfigParser()
+						raise XUnitConfigLoadFileError('could not find file %s in %s'%(fname,self.__SearchPaths))
+			cfg = xunit.utils.XConfigParser.ConfigParser()
 			cfg.read(filefind)
 		except:
-			raise UTCfgLoadFileError('can not parse file %s'%(fname))
+			raise XUnitConfigLoadFileError('can not parse file %s'%(fname))
 		# now to add the option
 		if self.__MainCfg is None:
-			self.__MainCfg = ConfigParser.ConfigParser()
+			self.__MainCfg = xunit.utils.XConfigParser.ConfigParser()
 		self.__IncludeFiles.append(fname)
 
 		# we have to add option first ,because when call the 
@@ -265,7 +265,7 @@ class UTConfigBase:
 						try:
 							self.__FuncLevel += 1
 							if self.__FuncLevel >= 30:
-								raise UTCfgOverflowError('expand value %s overflow '%(k))
+								raise XUnitConfigOverflowError('expand value %s overflow '%(k))
 							v = self.__ExpandValue(sec,opt,v,values)
 							values[s] = v
 							break
@@ -279,7 +279,7 @@ class UTConfigBase:
 						try:
 							self.__FuncLevel += 1
 							if self.__FuncLevel >= 30:
-								raise UTCfgOverflowError('expand value %s overflow '%(k))
+								raise XUnitConfigOverflowError('expand value %s overflow '%(k))
 							v = self.__MainCfg.get(section,sec,1)
 							v = self.__ExpandValue(section,sec,v,values)
 							values[s] = v
@@ -356,8 +356,8 @@ class UTConfigBase:
 
 	def SetValue(self,section,option,value,force=0):
 		if self.__MainCfg is None:
-			self.__MainCfg = ConfigParser.ConfigParser()
-		cfg = ConfigParser.ConfigParser()
+			self.__MainCfg = xunit.utils.XConfigParser.ConfigParser()
+		cfg = xunit.utils.XConfigParser.ConfigParser()
 		cfg.add_section(section)
 		cfg.set(section,option,value)
 		self.__AddOption(self.__MainCfg,cfg)
@@ -391,7 +391,7 @@ class UTConfigBase:
 				if values[k] != 'n':
 					sortv[int(values[k])]=k
 		except:
-			raise UTCfgKeyError('value of k %s in %s'%(k,values[k]))
+			raise XUnitConfigKeyError('value of k %s in %s'%(k,values[k]))
 		
 		for k in sorted(sortv.keys()):
 			units.append(sortv[k])		
@@ -430,5 +430,5 @@ def singleton(cls):
 	return get_instance
 
 @singleton
-class UTConfig(UTConfigBase):
+class XUnitConfig(XUnitConfigBase):
 	pass

@@ -1,3 +1,1 @@
-
-
-from incbunit.base import BUnit
+__version__='0.1'

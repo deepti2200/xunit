@@ -2,6 +2,7 @@
 import inspect
 import types
 import logging
+from xunit.utils.exception import XUnitException
 def FuncMethodSearh(obj):
 	if inspect.ismethod(obj):
 		return True
@@ -11,6 +12,16 @@ def FuncMethodSearh(obj):
 		return True
 	return False
 
+def ModuleAndMethod(obj):
+	if inspect.ismethod(obj):
+		return True
+	if inspect.isfunction(obj):
+		return True
+	if inspect.isclass(obj):
+		return True
+	if inspect.ismodule(obj):
+		return True
+	return False
 
 def __IsCodeInClass(clsobj,codeobj):
 	mns = inspect.getmembers(clsobj,predicate=FuncMethodSearh)
@@ -81,3 +92,64 @@ def GetCallerClassName(level=2):
 		fc = frm[0].f_code
 		mn = GetCallerClassFullName(mm,fc)
 	return mn
+
+
+def __IsClassSame(clsroot,clsobj):
+	if clsroot == clsobj:
+		return 1
+	else:
+		return 0
+
+def __LogModules(mods):
+	i = 0
+	for m in mods:
+		logging.info('[%d] %s'%(i,m))
+		i += 1
+	return
+
+def __GetClassName(clsroot,clsobj,level=0,mods=[]):
+	if level > 300:
+		__LogModules(mods)
+		raise XUnitException('class object %s'%(repr(clsobj)))
+	if __IsClassSame(clsroot,clsobj):
+		return clsroot.__name__
+	mns = inspect.getmembers(clsroot,predicate=inspect.isclass)
+	for m in mns:
+		if m[0] != '__class__' and m[0] != '__base__':
+			n = __GetClassName(m[1],clsobj,level+1,mods)
+			if n:
+				return clsroot.__name__ + '.' + n
+	return None
+	
+def __GetFullClassName(modobj,clsobj,level=0,mods=[]):
+	#mns = inspect.getmembers(modobj,predicate=inspect.isclass)
+	if level > 300:
+		__LogModules(mods)
+		raise XUnitException('modobj %s clsobj %s'%(repr(modobj),repr(clsobj)))
+	mns = inspect.getmembers(modobj,predicate=ModuleAndMethod)
+	#logging.info('%s'%(repr(mns)))
+	for m in mns:
+		if inspect.isclass(m[1]):
+			n = __GetClassName(m[1],clsobj,level+1,mods)
+			if n:
+				return modobj.__name__ + '.' + n
+		elif inspect.ismodule(m[1]):
+			if m[1] not in mods:
+				mods.append(m[1])
+	 			n = __GetFullClassName(m[1],clsobj,level+1,mods)
+	 			if n:
+					return  n
+			else:
+				pass
+	return None
+	
+
+def GetClassName(obj):
+	cn = ''
+	if inspect	.isclass(obj):
+		mods = []
+		m = __import__(obj.__module__)
+		cn = __GetFullClassName(m,obj,0,mods)
+		if cn is None:
+			cn = obj.__module__ +'.'+obj.__name__
+	return cn

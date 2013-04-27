@@ -5,9 +5,9 @@ import sys
 import logging
 import os
 import subprocess
-sys.path.append((len(os.path.dirname(__file__))>0 and os.path.dirname(__file__) or '.' )+os.sep+'..'+os.sep+'..'+os.sep+'src'+os.sep)
-sys.path.append((len(os.path.dirname(__file__))>0 and os.path.dirname(__file__) or '.' ))
-import TestCaseLdr
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
+sys.path.append((os.path.dirname(os.path.abspath(__file__))))
+import xunit.suite
 import AUnit
 
 class  LdrUnitTest(unittest.TestCase):
@@ -30,14 +30,14 @@ class  LdrUnitTest(unittest.TestCase):
 			pass
 		return _res
 	def test_LoadFunction(self):
-		ldr = TestCaseLdr.TestCaseLoaderBase()
+		ldr = xunit.suite.XUnitSuiteBase()
 		ldr.LoadCase('AUnit.AUnit:test_A')
 		_res = self.__hasUnitMethod(ldr,'test_A','AUnit.AUnit')
 		self.assertEqual(_res,1)
 		return
 
 	def test_LoadModule(self):
-		ldr = TestCaseLdr.TestCaseLoaderBase()
+		ldr = xunit.suite.XUnitSuiteBase()
 		ldr.LoadCase('AUnit.AUnit')
 		_res = self.__hasUnitMethod(ldr,'test_B', 'AUnit.AUnit')
 		self.assertEqual(_res,1)
@@ -45,27 +45,27 @@ class  LdrUnitTest(unittest.TestCase):
 		
 
 	def test_NotFunction(self):
-		ldr = TestCaseLdr.TestCaseLoaderBase()
+		ldr = xunit.suite.XUnitSuiteBase()
 		ok = 1
 		try:
 			ldr.LoadCase('AUnit.AUnit:test_NoFunction')
-		except TestCaseLdr.LoadModuleError as e:
+		except xunit.suite.LoadModuleError as e:
 			ok = 0
 		self.assertEqual(ok,0)
 		return
  
 	def test_NotLoadModule(self):
-		ldr = TestCaseLdr.TestCaseLoaderBase()
+		ldr = xunit.suite.XUnitSuiteBase()
 		ok = 1
 		try:
 			ldr.LoadCase('NoModule.NoClass')
-		except TestCaseLdr.LoadModuleError as e:
+		except xunit.suite.LoadModuleError as e:
 			ok = 0
 		self.assertEqual(ok,0)
 		return
 
 	def test_2ClassAdd(self):
-		ldr = TestCaseLdr.TestCaseLoaderBase()
+		ldr = xunit.suite.XUnitSuiteBase()
 		ldr.LoadCase('BUnit.BUnit')
 		ldr.LoadCase('AUnit.AUnit')
 		_res = self.__hasUnitMethod(ldr,'test_B', 'AUnit.AUnit')
@@ -75,12 +75,12 @@ class  LdrUnitTest(unittest.TestCase):
 		return
 
 	def test_Load1SuccAndFailed(self):
-		ldr = TestCaseLdr.TestCaseLoaderBase()
+		ldr = xunit.suite.XUnitSuiteBase()
 		ldr.LoadCase('BUnit.BUnit')
 		ok = 1
 		try:
 			ldr.LoadCase('NoModule.NoClass')
-		except TestCaseLdr.LoadModuleError as e:
+		except xunit.suite.LoadModuleError as e:
 			ok = 0
 		self.assertEqual(ok,0)
 		_res = self.__hasUnitMethod(ldr,'test_BB','BUnit.BUnit')
@@ -88,7 +88,7 @@ class  LdrUnitTest(unittest.TestCase):
 		return
 
 	def test_LoadClassAndFunction(self):
-		ldr = TestCaseLdr.TestCaseLoaderBase()
+		ldr = xunit.suite.XUnitSuiteBase()
 		ldr.LoadCase('BUnit.BUnit')
 		ldr.LoadCase('AUnit.AUnit:test_A')
 		_res = self.__hasUnitMethod(ldr,'test_B', 'AUnit.AUnit')
@@ -118,8 +118,7 @@ class  LdrUnitTest(unittest.TestCase):
 			i += 1
 		return idx
 	def test_RunTestCase1(self):
-		d = os.path.dirname(__file__)
-		absd = len(d)  >0 and os.path.abspath(d) or os.path.abspath('.')
+		absd = os.path.dirname(os.path.abspath(__file__))
 		# now we should give the process running
 		cmd = 'python %s'%(absd)
 		cmd += os.sep
@@ -133,8 +132,7 @@ class  LdrUnitTest(unittest.TestCase):
 		return
 
 	def test_RunTestCase2(self):
-		d = os.path.dirname(__file__)
-		absd = len(d)  >0 and os.path.abspath(d) or os.path.abspath('.')
+		absd = os.path.dirname(os.path.abspath(__file__))
 		cmd = 'python %s'%(absd)
 		cmd += os.sep
 		cmd += 'rtest.py'
@@ -153,8 +151,7 @@ class  LdrUnitTest(unittest.TestCase):
 		return
 
 	def test_RunTestCase3(self):
-		d = os.path.dirname(__file__)
-		absd = len(d)  >0 and os.path.abspath(d) or os.path.abspath('.')
+		absd = os.path.dirname(os.path.abspath(__file__))
 		cmd = 'python %s'%(absd)
 		cmd += os.sep
 		cmd += 'rtest.py'
