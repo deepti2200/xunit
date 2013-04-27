@@ -3,24 +3,33 @@
 import os
 import sys
 import logging
+from optparse import OptionParser
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'src'))
+import xunit.config
+import xunit.suite
+import unittest
 
-targs = ''
-if len(sys.argv[1:]) > 0:
-	targs = ' '.join(sys.argv[1:])
 
-absdir = os.path.dirname(os.path.abspath(__file__))
+def Runtest(cfname):
+	utcfg = xunit.config.XUnitConfig()
+	# now to add the %(build.topdir)s
+	utcfg.SetValue('build','topdir',os.path.dirname(os.path.abspath(__file__)))
+	utcfg.LoadFile(cfname)
 
-testcases_files = [
-	os.path.join(absdir,'tests','cfgtest','test_config.py'),
-	os.path.join(absdir,'tests','ldrtest','test_suite.py'),
-	os.path.join(absdir,'tests','tstcase','test_case.py'),
-	os.path.join(absdir,'tests','tstcls','test_cls.py'),
-	os.path.join(absdir,'tests','tstlog','test_logger.py')
-]
+	# now we should get
+	units = utcfg.GetUnitTests()
+	suites = xunit.suite.XUnitSuiteBase()
+	if len(units) > 0:
+		for u in units:
+			suites.LoadCase(u)
 
-for f in testcases_files:
-	cmd = 'python %s %s'%(f,targs)
-	ret = os.system(cmd)
-	if ret != 0:
-		logging.error('can not run (%s) proper'%(cmd))
+	# now we should set for the case verbose is none we debug our self information
+	unittest.TextTestRunner().run(suites)
+	return
+
+if __name__ == '__main__':
+	if len(sys.argv[1:]) < 1:
+		sys.stderr.write('%s config_file'%(os.path.basename(__file__)))
 		sys.exit(3)
+	Runtest(sys.argv[1])

@@ -24,7 +24,7 @@
 	the 10 and 20 is the sequence number the smallest is the for the 
 	
 '''
-import ConfigParser
+import xunit.utils.XConfigParser
 from xunit.utils import exception
 import logging
 import sys
@@ -185,13 +185,13 @@ class XUnitConfigBase:
 						filefind = '.'+os.sep+fname
 					else:
 						raise XUnitConfigLoadFileError('could not find file %s in %s'%(fname,self.__SearchPaths))
-			cfg = ConfigParser.ConfigParser()
+			cfg = xunit.utils.XConfigParser.ConfigParser()
 			cfg.read(filefind)
 		except:
 			raise XUnitConfigLoadFileError('can not parse file %s'%(fname))
 		# now to add the option
 		if self.__MainCfg is None:
-			self.__MainCfg = ConfigParser.ConfigParser()
+			self.__MainCfg = xunit.utils.XConfigParser.ConfigParser()
 		self.__IncludeFiles.append(fname)
 
 		# we have to add option first ,because when call the 
@@ -356,8 +356,8 @@ class XUnitConfigBase:
 
 	def SetValue(self,section,option,value,force=0):
 		if self.__MainCfg is None:
-			self.__MainCfg = ConfigParser.ConfigParser()
-		cfg = ConfigParser.ConfigParser()
+			self.__MainCfg = xunit.utils.XConfigParser.ConfigParser()
+		cfg = xunit.utils.XConfigParser.ConfigParser()
 		cfg.add_section(section)
 		cfg.set(section,option,value)
 		self.__AddOption(self.__MainCfg,cfg)

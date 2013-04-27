@@ -32,7 +32,7 @@ if __name__== '__main__':
 	parser.add_option('-p','--path',action="append",dest="paths",help="to add the path to search")
 	(options,nargs) = parser.parse_args()
 	if nargs is None or len(nargs) < 1:
- 		Usage(parser,3,"Need at least one testcase")	
+ 		Usage(parser,3,"Need at least one testcase")
  	if options.paths and len(options.paths) > 0:
 		for p in options.paths:
 			if p not in sys.path:
