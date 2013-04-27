@@ -134,14 +134,12 @@ def __GetFullClassName(modobj,clsobj,level=0,mods=[]):
 			if n:
 				return modobj.__name__ + '.' + n
 		elif inspect.ismodule(m[1]):
-			if m[1].__file__ not in mods :
-				logging.info('append %s file %s'%(repr(m[1]),m[1].__file__))
-				mods.append(m[1].__file__)
+			if m[1] not in mods:
+				mods.append(m[1])
 	 			n = __GetFullClassName(m[1],clsobj,level+1,mods)
 	 			if n:
 					return  n
 			else:
-				logging.info('%s in mods'%(m[1].__file__))
 				pass
 	return None
 	
@@ -149,9 +147,9 @@ def __GetFullClassName(modobj,clsobj,level=0,mods=[]):
 def GetClassName(obj):
 	cn = ''
 	if inspect	.isclass(obj):
-		logging.info('obj %s'%(repr(obj)))
+		mods = []
 		m = __import__(obj.__module__)
-		cn = __GetFullClassName(m,obj)
+		cn = __GetFullClassName(m,obj,0,mods)
 		if cn is None:
 			cn = obj.__module__ +'.'+obj.__name__
 	return cn
