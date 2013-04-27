@@ -52,19 +52,31 @@ class BaseLogger:
 
 
 
-_instances = {}
+_logger_instances = {}
 
 def singleton(cls):
 	def get_instance():
 		ccn = xunit.utils.cls.GetCallerClassName(2)
-		cn = xunit.utils.cls.GetClassName(cls)
-		tn =  cn+':'+ ccn
- 		if tn not in _instances  :
- 			_instances[tn] = cls(cn)
- 		return _instances[tn]
+ 		if ccn not in _logger_instances  :
+ 			_logger_instances[ccn] = cls(ccn)
+ 		return _logger_instances[ccn]
 	return get_instance
 
 
+def singletonbyargs(class_):
+	def getinstance(*args, **kwargs):
+		pn = args[0]
+		tn =  pn
+		if tn not in _logger_instances:
+			_logger_instances[tn] = class_(*args, **kwargs)
+		return _logger_instances[tn]
+	return getinstance	
+	
+
 @singleton
 class AdvLogger(BaseLogger):
+	pass
+
+@singletonbyargs
+class ClassLogger(BaseLogger):
 	pass
