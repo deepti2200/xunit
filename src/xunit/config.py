@@ -65,15 +65,13 @@ class XUnitConfigBase:
 		self.__ResetCfg()
 		assert( self.__FuncLevel == 0)
 
-	def __AddOption(self,m,p):
+	def __AddOption(self,m,p,override=0):
 		for s in p.sections():
 			for c in p.options(s):
 				if m.has_section(s):
-					if m.has_option(s,c):
+					if m.has_option(s,c) and override == 0:
 						logging.warning('redefined [%s].%s'%(s,c))
-						m.set(s,c,p.get(s,c,1))
-					else:
-						m.set(s,c,p.get(s,c,1))
+					m.set(s,c,p.get(s,c,1))
 				else:
 					m.add_section(s)
 					m.set(s,c,p.get(s,c,1))
@@ -354,13 +352,13 @@ class XUnitConfigBase:
 	def GetSearchPaths(self):
 		return self.__SearchPaths
 
-	def SetValue(self,section,option,value,force=0):
+	def SetValue(self,section,option,value,override=0):
 		if self.__MainCfg is None:
 			self.__MainCfg = xunit.utils.XConfigParser.ConfigParser()
 		cfg = xunit.utils.XConfigParser.ConfigParser()
 		cfg.add_section(section)
 		cfg.set(section,option,value)
-		self.__AddOption(self.__MainCfg,cfg)
+		self.__AddOption(self.__MainCfg,cfg,override)
 		############################
 		#load special config 
 		# [.path]
