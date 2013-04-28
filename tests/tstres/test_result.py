@@ -59,10 +59,12 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		utcfg = xunit.config.XUnitConfig()
 		utcfg.SetValue('global','failfast','',1)
 
-		_res = xunit.result.XUnitResultBase()
+		_res = xunit.result.XUnitResultBase(0)
 
 		for s in sbase:
 			s(_res)
+			if _res.shouldStop:
+				break
 
 		self.assertEqual(_res.Cases(),4)
 		self.assertEqual(_res.Succs(),1)
@@ -84,9 +86,9 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		sbase.LoadCase(mn +'.'+cn+':'+'test_succwhenexpectfail')
 		# to set for it is not for 
 		utcfg = xunit.config.XUnitConfig()
-		utcfg.SetValue('global','failfast','',1)
+		utcfg.SetValue('global','failfast','y',1)
 
-		_res = xunit.result.XUnitResultBase()
+		_res = xunit.result.XUnitResultBase(0)
 
 		for s in sbase:
 			s.run(_res)
@@ -97,6 +99,61 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		self.assertEqual(_res.Succs(),1)
 		self.assertEqual(_res.Fails(),1)
 		self.assertEqual(_res.Skips(),1)
+		return
+
+
+	def test_resultfailfastfirst(self):
+		sbase = xunit.suite.XUnitSuiteBase()
+		# now for the name of current case
+		mn = self.__module__
+		cn = 'XUnitTested'
+		sbase.LoadCase(mn +'.'+cn+':'+'test_casefail')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_case1')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_skip')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_succwhenexpectfail')
+		# to set for it is not for 
+		utcfg = xunit.config.XUnitConfig()
+		utcfg.SetValue('global','failfast','y',1)
+
+		_res = xunit.result.XUnitResultBase(0)
+
+		for s in sbase:
+			s.run(_res)
+			if _res.shouldStop:
+				break
+
+		self.assertEqual(_res.Cases(),1)
+		self.assertEqual(_res.Succs(),0)
+		self.assertEqual(_res.Fails(),1)
+		self.assertEqual(_res.Skips(),0)
+		return
+
+
+	def test_resultunexpectedfail(self):
+		sbase = xunit.suite.XUnitSuiteBase()
+		# now for the name of current case
+		mn = self.__module__
+		cn = 'XUnitTested'
+		sbase.LoadCase(mn +'.'+cn+':'+'test_succwhenexpectfail')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_case1')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_skip')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_casefail')
+		# to set for it is not for 
+		utcfg = xunit.config.XUnitConfig()
+		utcfg.SetValue('global','failfast','y',1)
+
+		_res = xunit.result.XUnitResultBase(0)
+
+		for s in sbase:
+			s.run(_res)
+			if _res.shouldStop:
+				break
+
+		self.assertEqual(_res.Cases(),1)
+		self.assertEqual(_res.Succs(),0)
+		self.assertEqual(_res.Fails(),0)
+		self.assertEqual(_res.Skips(),0)
+		self.assertEqual(_res.UnexpectSuccs(),1)
 		return
 
 

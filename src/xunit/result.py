@@ -13,13 +13,14 @@ class FailFastException(exception.XUnitException):
 
 
 class XUnitResultBase(unittest.runner.TextTestResult):
-	def __init__(self):
+	def __init__(self,output=1):
 		self.__fails = 0
 		self.__succs = 0
 		self.__skips = 0
 		self.__cases = 0
 		self.__unexpectfails = 0
 		self.__unexpectsuccs = 0
+		self.__output = output
 		self.showAll = 0
 		self.dots = 0
 		self.shouldStop = False
@@ -34,7 +35,12 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 		v = utcfg.GetValue('global','failfast','')
 		if v == 'y':
 			self.__failfast = 1
+		self.__logger.TestStart('start :')
 		return
+
+	def __del__(self):
+		if self.__logger and self.__output:
+			self.__logger.TestEnd('Cases %d Succ %d Fail %d Skip %d'%(self.__cases,self.__succs,self.__fails,self.__skips))
 
 	def startTest(self, test):
 		if self.__verbose:
@@ -57,7 +63,6 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 			self.__logger.CaseError('Error')
 			self.__logger.CaseEnd('')
 		if self.__failfast:
-			logging.error('\n')
 			self.shouldStop = True
 		return
 
@@ -68,7 +73,6 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 			self.__logger.CaseFail('Failure')
 			self.__logger.CaseEnd('')
 		if self.__failfast:
-			logging.error('\n')
 			self.shouldStop = True
 		return
 	
@@ -88,7 +92,6 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 			self.__logger.CaseFail('Expected Failure')
 			self.__logger.CaseEnd('')
 		if self.__failfast:
-			logging.error('\n')
 			self.shouldStop = True
 		return
 
@@ -99,7 +102,6 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 			self.__logger.CaseFail('Unexpected Success')
 			self.__logger.CaseEnd('')
 		if self.__failfast:
-			logging.error('\n')
 			self.shouldStop = True
 		return
 

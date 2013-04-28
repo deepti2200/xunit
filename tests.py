@@ -25,11 +25,43 @@ def Runtest(cfname):
 			suites.LoadCase(u)
 
 	# now we should set for the case verbose is none we debug our self information
-	unittest.TextTestRunner().run(suites)
-	return
+	_res = xunit.result.XUnitResultBase()
+	for s in suites:
+		s(_res)
+		if _res.shouldStop:
+			break
+
+	_ret = -1
+	if _res.Fails() == 0 and _res.UnexpectFails() ==0 and _res.UnexpectSuccs() == 0:
+		_ret = 0
+	
+	return _ret
+
+def Usage(opt,ec,msg=None):
+	fp = sys.stderr
+	if ec == 0:
+		fp = sys.stdout
+	if msg :
+		fp.write('%s\n'%(msg))
+	opt.print_help(fp)
+	sys.exit(ec)
 
 if __name__ == '__main__':
-	if len(sys.argv[1:]) < 1:
-		sys.stderr.write('%s config_file'%(os.path.basename(__file__)))
+	args = OptionParser()
+	args.add_option('-v','--verbose',action='store_true',dest='verbose',help='verbose mode')
+	args.add_option('-f','--failfast',action="store_true",dest="failfast",help="failfast mode")
+
+	options ,nargs = args.parse_args(sys.argv[1:])
+	if len (nargs) < 1:
+		Usage(args,3,"need one config files")
+	utcfg = xunit.config.XUnitConfig()
+	
+	if options.verbose:
+		utcfg.SetValue('global','debug.mode','y',1)
+
+	if options.failfast:
+		utcfg.SetValue('global','failfast','y',1)
+	_ret = Runtest(nargs[0])
+	if _ret != 0:
 		sys.exit(3)
-	Runtest(sys.argv[1])
+	sys.exit(0)

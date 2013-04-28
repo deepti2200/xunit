@@ -30,6 +30,10 @@ class BaseLogger:
 	def Debug(self,msg):
 		self.__logger.debug(msg)
 
+	def TestStart(self,msg):
+		self.__caselen = 0
+		return
+
 	def CaseStart(self,msg):
 		_msg = msg
 		if self.__caselen > 0:
@@ -122,6 +126,11 @@ class BaseLogger:
 		sys.stdout.write(']')
 		sys.stdout.flush()
 		self.__caselen += 1
+		return
+
+	def TestEnd(self,msg):
+		sys.stdout.write('\n%s\n'%(msg))
+		self.__caselen = 0
 		return
 
 	def __xmltagstart(self,logger,tag,**kattrs):
