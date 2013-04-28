@@ -43,7 +43,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 			self.__logger.TestEnd('Cases %d Succ %d Fail %d Skip %d'%(self.__cases,self.__succs,self.__fails,self.__skips))
 
 	def startTest(self, test):
-		if self.__verbose:
+		if self.__verbose and self.__output > 0:
 			cn = cls.GetClassName(test.__class__)
 			self.__logger.CaseStart(cn+':'+test._testMethodName)
 		return
@@ -51,7 +51,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 	def addSuccess(self, test):
 		self.__succs += 1
 		self.__cases += 1
-		if self.__verbose:
+		if self.__verbose and self.__output > 0:
 			self.__logger.CaseSucc('Success')
 			self.__logger.CaseEnd('')
 		return
@@ -59,7 +59,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 	def addError(self, test, err):
 		self.__fails += 1
 		self.__cases += 1
-		if self.__verbose:
+		if self.__verbose and self.__output > 0:
 			self.__logger.CaseError('Error')
 			self.__logger.CaseEnd('')
 		if self.__failfast:
@@ -69,7 +69,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 	def addFailure(self, test, err):
 		self.__fails += 1
 		self.__cases += 1
-		if self.__verbose:
+		if self.__verbose and self.__output > 0:
 			self.__logger.CaseFail('Failure')
 			self.__logger.CaseEnd('')
 		if self.__failfast:
@@ -80,7 +80,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 	def addSkip(self, test, reason):
 		self.__skips += 1
 		self.__cases += 1
-		if self.__verbose:
+		if self.__verbose and self.__output > 0:
 			self.__logger.CaseSkip('Skip')
 			self.__logger.CaseEnd('')
 		return
@@ -88,7 +88,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 	def addExpectedFailure(self, test, err):
 		self.__unexpectfails += 1
 		self.__cases += 1
-		if self.__verbose:
+		if self.__verbose and self.__output > 0:
 			self.__logger.CaseFail('Expected Failure')
 			self.__logger.CaseEnd('')
 		if self.__failfast:
@@ -98,7 +98,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 	def addUnexpectedSuccess(self, test):
 		self.__unexpectsuccs += 1
 		self.__cases += 1
-		if self.__verbose:
+		if self.__verbose and self.__output > 0:
 			self.__logger.CaseFail('Unexpected Success')
 			self.__logger.CaseEnd('')
 		if self.__failfast:

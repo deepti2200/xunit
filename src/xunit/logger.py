@@ -6,8 +6,8 @@ import xunit.config
 import sys
 
 
-MAX_CASE_LEN = 50
-MAX_CASE_NAME_LEN = 30
+MAX_CASE_LEN = 70
+MAX_CASE_NAME_LEN = 55
 class BaseLogger:
 	def __init__(self,cn):
 		self.__logger = logging.getLogger(cn)
@@ -36,9 +36,6 @@ class BaseLogger:
 
 	def CaseStart(self,msg):
 		_msg = msg
-		if self.__caselen > 0:
-			for i in xrange(0,self.__caselen):
-				sys.stdout.write('\b')
 		self.__caselen = 0
 		if len(_msg) > MAX_CASE_NAME_LEN:
 			_tmp = '['
@@ -123,9 +120,9 @@ class BaseLogger:
 		self.__caselen += len(_msg)
 		return
 	def CaseEnd(self,msg):
-		sys.stdout.write(']')
+		sys.stdout.write(']\n')
 		sys.stdout.flush()
-		self.__caselen += 1
+		self.__caselen += 2
 		return
 
 	def TestEnd(self,msg):
