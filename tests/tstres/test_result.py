@@ -42,11 +42,14 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		_res = xunit.result.XUnitResultBase()
 
 		for s in sbase:
-			logging.info('%s'%(s))
 			s(_res)
-			logging.info('cases %d succ %d fail %d skip %d UnexpectFails %d  UnexpectSuccs %d '%(_res.Cases(),_res.Succs(),_res.Fails(),_res.Skips(),_res.UnexpectFails(),_res.UnexpectSuccs()))
 
-		logging.info('cases %d succ %d fail %d skip %d UnexpectFails %d  UnexpectSuccs %d '%(_res.Cases(),_res.Succs(),_res.Fails(),_res.Skips(),_res.UnexpectFails(),_res.UnexpectSuccs()))
+		self.assertEqual(_res.Cases(),4)
+		self.assertEqual(_res.Succs(),1)
+		self.assertEqual(_res.Fails(),1)
+		self.assertEqual(_res.Skips(),1)
+		self.assertEqual(_res.UnexpectFails(),0)
+		self.assertEqual(_res.UnexpectSuccs(),1)
 		return
 
 
