@@ -9,11 +9,27 @@ sys.path.append((os.path.dirname(os.path.abspath(__file__))))
 import xunit.result
 import xunit.suite
 import xunit.case
+import xunit.config
 import unittest
 import logging
 
 
 class XUnitTested(xunit.case.XUnitCase):
+	@classmethod
+	def XUnitsetUpClass(cls):
+		return
+
+	@classmethod
+	def XUnittearDownClass(cls):
+		return
+
+	def XUnitsetUp(self):
+		return
+
+	def XUnittearDown(self):
+		return
+
+	
 	def test_case1(self):
 		pass
 
@@ -32,12 +48,16 @@ class XUnitTested(xunit.case.XUnitCase):
 
 
 class XUnitTestResult(xunit.case.XUnitCase):
-	def test_result(self):
+	def test_resultnotfailfast(self):
 		sbase = xunit.suite.XUnitSuiteBase()
 		# now for the name of current case
 		mn = self.__module__
 		cn = 'XUnitTested'
 		sbase.LoadCase(mn +'.'+cn)
+
+		# to set for it is not for 
+		utcfg = xunit.config.XUnitConfig()
+		utcfg.SetValue('global','failfast','',1)
 
 		_res = xunit.result.XUnitResultBase()
 
@@ -53,14 +73,46 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		return
 
 
+	def test_resultfailfastwithskip(self):
+		sbase = xunit.suite.XUnitSuiteBase()
+		# now for the name of current case
+		mn = self.__module__
+		cn = 'XUnitTested'
+		sbase.LoadCase(mn +'.'+cn+':'+'test_case1')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_skip')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_casefail')
+		sbase.LoadCase(mn +'.'+cn+':'+'test_succwhenexpectfail')
+		# to set for it is not for 
+		utcfg = xunit.config.XUnitConfig()
+		utcfg.SetValue('global','failfast','',1)
+
+		_res = xunit.result.XUnitResultBase()
+
+		for s in sbase:
+			s.run(_res)
+			if _res.shouldStop:
+				break
+
+		self.assertEqual(_res.Cases(),3)
+		self.assertEqual(_res.Succs(),1)
+		self.assertEqual(_res.Fails(),1)
+		self.assertEqual(_res.Skips(),1)
+		return
+
+
 def MainTest():
 	verb = 1
 	ff = False
+	utcfg = xunit.config.XUnitConfig()
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
 		logging.basicConfig(level=logging.INFO,format="%(levelname)-8s [%(filename)-10s:%(funcName)-20s:%(lineno)-5s] %(message)s")
 		verb = 2
+		utcfg.SetValue('global','debug.mode','y')
+	else:
+		logging.basicConfig(level=logging.WARNING,format="%(levelname)-8s [%(filename)-10s:%(funcName)-20s:%(lineno)-5s] %(message)s")
 	if '-f' in sys.argv[1:] or '--failfast' in sys.argv[1:]:
 		ff = True
+		utcfg.SetValue('global','failfast','y')
 	suites = xunit.suite.XUnitSuiteBase()
 	suites.LoadCase('__main__.XUnitTestResult')
 

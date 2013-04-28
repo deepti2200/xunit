@@ -3,7 +3,11 @@
 import logging
 import xunit.utils.cls
 import xunit.config
+import sys
 
+
+MAX_CASE_LEN = 50
+MAX_CASE_NAME_LEN = 30
 class BaseLogger:
 	def __init__(self,cn):
 		self.__logger = logging.getLogger(cn)
@@ -12,6 +16,7 @@ class BaseLogger:
 		fh = logging.StreamHandler(None)
 		fh.setFormatter(formatter)
 		self.__logger.addHandler(fh)
+		self.__caselen = 0
 	
 	def Info(self,msg):
 		self.__logger.info(msg)
@@ -26,16 +31,98 @@ class BaseLogger:
 		self.__logger.debug(msg)
 
 	def CaseStart(self,msg):
-		sys.stdout.write('[%s'%(msg))
+		_msg = msg
+		if self.__caselen > 0:
+			for i in xrange(0,self.__caselen):
+				sys.stdout.write('\b')
+		self.__caselen = 0
+		if len(_msg) > MAX_CASE_NAME_LEN:
+			_tmp = '['
+			_tmp += _msg[:MAX_CASE_NAME_LEN]
+			_msg = _tmp
+		else:
+			cnt = MAX_CASE_NAME_LEN - len(_msg)
+			_tmp = '['
+			_tmp += ' ' * cnt
+			_tmp += _msg
+			_msg =_tmp 
+		sys.stdout.write('%s'%(_msg))
+		sys.stdout.flush()
+		self.__caselen = len(_msg)
+		return
 
 	def CaseFail(self,msg):
-		sys.stdout.write('\t%s'%(msg))
+		_msg = msg
+		if len(_msg) > (MAX_CASE_LEN - MAX_CASE_NAME_LEN):
+			_tmp = '\t'
+			_tmp += _msg[:(MAX_CASE_LEN - MAX_CASE_NAME_LEN)]
+			_msg = _tmp
+		else:
+			cnt =MAX_CASE_LEN - MAX_CASE_NAME_LEN - len(_msg)
+			_tmp = '\t'
+			_tmp += ' '*cnt
+			_tmp += _msg
+			_msg = _tmp
+			
+		sys.stdout.write('%s'%(_msg))
+		sys.stdout.flush()
+		self.__caselen += len(_msg)
+		return
+
+	def CaseError(self,msg):
+		_msg = msg
+		if len(_msg) > (MAX_CASE_LEN - MAX_CASE_NAME_LEN):
+			_tmp = '\t'
+			_tmp += _msg[:(MAX_CASE_LEN - MAX_CASE_NAME_LEN)]
+			_msg = _tmp
+		else:
+			cnt =MAX_CASE_LEN - MAX_CASE_NAME_LEN - len(_msg)
+			_tmp = '\t'
+			_tmp += ' '*cnt
+			_tmp += _msg
+			_msg = _tmp
+		sys.stdout.write('%s'%(_msg))
+		sys.stdout.flush()
+		self.__caselen += len(_msg)
+		return
 
 	def CaseSucc(self,msg):
-		sys.stdout.write('\t%s'%(msg))
-
+		_msg = msg
+		if len(_msg) > (MAX_CASE_LEN - MAX_CASE_NAME_LEN):
+			_tmp = '\t'
+			_tmp += _msg[:(MAX_CASE_LEN - MAX_CASE_NAME_LEN)]
+			_msg = _tmp
+		else:
+			cnt =MAX_CASE_LEN - MAX_CASE_NAME_LEN - len(_msg)
+			_tmp = '\t'
+			_tmp += ' '*cnt
+			_tmp += _msg
+			_msg = _tmp
+		sys.stdout.write('%s'%(_msg))
+		sys.stdout.flush()
+		self.__caselen += len(_msg)
+		return
+	def CaseSkip(self,msg):
+		_msg = msg
+		if len(_msg) > (MAX_CASE_LEN - MAX_CASE_NAME_LEN):
+			_tmp = '\t'
+			_tmp += _msg[:(MAX_CASE_LEN - MAX_CASE_NAME_LEN)]
+			_msg = _tmp
+		else:
+			cnt =MAX_CASE_LEN - MAX_CASE_NAME_LEN - len(_msg)
+			_tmp = '\t'
+			_tmp += ' '*cnt
+			_tmp += _msg
+			_msg = _tmp
+		sys.stdout.write('%s'%(_msg))
+		sys.stdout.flush()
+		self.__caselen += len(_msg)
+		return
 	def CaseEnd(self,msg):
-		sys.stdout.write(']\n')
+		sys.stdout.write(']')
+		sys.stdout.flush()
+		self.__caselen += 1
+		return
 
 	def __xmltagstart(self,logger,tag,**kattrs):
 		pass
