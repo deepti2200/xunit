@@ -30,7 +30,7 @@ class XUnitCase(unittest.TestCase):
 	def XUnittearDown(self):
 		return
 
-	def setUp(self):	
+	def setUp(self):
 		self.XUnitsetUp()
 		return
 
