@@ -234,6 +234,17 @@ class UtTest(unittest.TestCase):
 		v = utcfg.GetValue('no_section','no_option','no_value')
 		self.assertTrue(v == 'no_value')
 		return
+
+	def test_casesensitive(self):
+		utcfg = xunit.config.XUnitConfigBase()
+		utcfg.SetValue('Section','Option','Value')
+		utcfg.SetValue('section','option','value')
+
+		v = utcfg.GetValue('section','option','')
+		self.assertEqual(v,'value')
+		v = utcfg.GetValue('Section','Option','')
+		self.assertEqual(v,'Value')
+		return
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:

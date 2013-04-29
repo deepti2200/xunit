@@ -6,6 +6,7 @@ import unittest
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
 from xunit import logger
 from xunit import case
+from xunit.utils import cls
 
 
 _logs={}
@@ -54,6 +55,18 @@ class LogDiffTest(case.XUnitCase):
 			_logs['logdiff'] = logg1
 		if 'logger' in _logs.keys():
 			self.assertNotEqual(logg1,_logs['logger'])
+		return
+
+	def test_ClassLogger1(self):
+		logg1 = logger.ClassLogger('class1')
+		logg2 = logger.ClassLogger('class1')
+		self.assertEqual(logg1,logg2)
+		logg2 = logger.ClassLogger('class2')
+		self.assertNotEqual(logg1,logg2)
+		cn = cls.GetCallerClassName(1)
+		logg1 = logger.AdvLogger()
+		logg2 = logger.ClassLogger(cn)
+		self.assertEqual(logg1,logg2)
 		return
 	
 
