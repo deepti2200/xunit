@@ -59,6 +59,9 @@ class LoggerTest(case.XUnitCase):
 		self.assertTrue(vpat.search(v))
 		vpat = re.compile('make')
 		self.assertTrue(vpat.search(v))
+		# to get the none if nothing in it
+		v = log1.Flush()
+		self.assertEqual( v , '')
 		return
 
 class LogDiffTest(case.XUnitCase):

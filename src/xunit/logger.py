@@ -27,6 +27,9 @@ def DebugString2(msg,level=1):
 MAX_CASE_LEN = 70
 MAX_CASE_NAME_LEN = 55
 class BaseLogger:
+	def DebugString2(self,msg):
+		self.__outfh.write(msg)
+		return
 	def __init__(self,cn):
 		'''
 		    init the logger ,and we do this by the string 
@@ -36,6 +39,7 @@ class BaseLogger:
 		self.__strio = None
 		self.__level = WARNING_LEVEL
 		self.__output = 1
+		self.__outfh = sys.stdout
 		self.__ResetStrLogger()
 		
 
@@ -54,12 +58,25 @@ class BaseLogger:
 		self.__caselen = 0
 		return
 
+	def __flush(self):
+		v = ''
+		if self.__strio:
+			try:
+				v = self.__strio.getvalue()
+				if len(v) > 0 and self.__output > 0:
+					self.__outfh.write(v)
+				if len(v) == 0:
+					v = ''
+			except TypeError:
+				# this error because when call in the __del__ on global remove
+				v = ''
+		return v
 
 	def __del__(self):
-		#DebugString2('delete %s'%(repr(self)))
-		self.Flush()
+		self.__flush()
 		del self.__strio
 		self.__strio = None
+		self.__outfh = None
 		return
 
 	def SetLevel(self,level=WARNING_LEVEL):
@@ -96,14 +113,9 @@ class BaseLogger:
 			self.__strio.write(_msg)
 
 	def Flush(self):
-		value = None
+		value = ''
 		if self.__strio :
-			try:
-				value = self.__strio.getvalue()
-				if self.__output > 0:
-					sys.stdout.write(value)
-			except TypeError:
-				value = None
+			value = self.__flush()
 			self.__ResetStrLogger()
 		return value
 
@@ -124,8 +136,8 @@ class BaseLogger:
 			_tmp += ' ' * cnt
 			_tmp += _msg
 			_msg =_tmp 
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen = len(_msg)
 		return
 
@@ -142,8 +154,8 @@ class BaseLogger:
 			_tmp += _msg
 			_msg = _tmp
 			
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 
@@ -159,8 +171,8 @@ class BaseLogger:
 			_tmp += ' '*cnt
 			_tmp += _msg
 			_msg = _tmp
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 
@@ -176,8 +188,8 @@ class BaseLogger:
 			_tmp += ' '*cnt
 			_tmp += _msg
 			_msg = _tmp
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 	def CaseSkip(self,msg):
@@ -192,18 +204,18 @@ class BaseLogger:
 			_tmp += ' '*cnt
 			_tmp += _msg
 			_msg = _tmp
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 	def CaseEnd(self,msg):
-		sys.stdout.write(']\n')
-		sys.stdout.flush()
+		self.__outfh.write(']\n')
+		self.__outfh.flush()
 		self.__caselen += 2
 		return
 
 	def TestEnd(self,msg):
-		sys.stdout.write('\n%s\n'%(msg))
+		self.__outfh.write('\n%s\n'%(msg))
 		self.__caselen = 0
 		return
 
