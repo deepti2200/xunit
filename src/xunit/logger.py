@@ -6,6 +6,7 @@ import xunit.config
 import sys
 import StringIO
 import inspect
+import atexit
 
 
 CRITICAL_LEVEL=1
@@ -61,14 +62,10 @@ class BaseLogger:
 	def __flush(self):
 		v = ''
 		if self.__strio:
-			try:
-				v = self.__strio.getvalue()
-				if len(v) > 0 and self.__output > 0:
-					self.__outfh.write(v)
-				if len(v) == 0:
-					v = ''
-			except TypeError:
-				# this error because when call in the __del__ on global remove
+			v = self.__strio.getvalue()
+			if len(v) > 0 and self.__output > 0:
+				self.__outfh.write(v)
+			if len(v) == 0:
 				v = ''
 		return v
 
@@ -257,6 +254,15 @@ def singletonbyargs(class_):
 	return getinstance	
 	
 
+def logger_cleanup():
+	while len(_logger_instances.keys()) > 0:
+		k = _logger_instances.keys()[0]
+		log1 = _logger_instances[k]
+		del log1
+		log1 = None
+		del _logger_instances[k]
+	return
+
 @singleton
 class AdvLogger(BaseLogger):
 	pass
@@ -264,3 +270,5 @@ class AdvLogger(BaseLogger):
 @singletonbyargs
 class ClassLogger(BaseLogger):
 	pass
+
+atexit.register(logger_cleanup)
