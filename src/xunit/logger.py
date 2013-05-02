@@ -4,31 +4,117 @@ import logging
 import xunit.utils.cls
 import xunit.config
 import sys
+import StringIO
+import inspect
+import atexit
+
+
+CRITICAL_LEVEL=1
+ERROR_LEVEL=2
+WARNING_LEVEL=3
+INFO_LEVEL=4
+DEBUG_LEVEL=5
+
+def DebugString(msg,level=1):
+	_f = inspect.stack()[level]
+	_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
+	sys.stderr.write(_msg+'\n')
+
+def DebugString2(msg,level=1):
+	_msg = '%s'%(msg)
+	sys.stderr.write(_msg+'\n')
 
 
 MAX_CASE_LEN = 70
 MAX_CASE_NAME_LEN = 55
 class BaseLogger:
+	def DebugString2(self,msg):
+		self.__outfh.write(msg)
+		return
 	def __init__(self,cn):
-		self.__logger = logging.getLogger(cn)
-		self.__logger.setLevel(logging.INFO)
-		formatter = logging.Formatter("[%(filename)-10s:%:%(lineno)-5s] %(message)s")
-		fh = logging.StreamHandler(None)
-		fh.setFormatter(formatter)
-		self.__logger.addHandler(fh)
+		'''
+		    init the logger ,and we do this by the string 
+		    input
+		    @cn class name of logger get
+		'''
+		self.__strio = None
+		self.__level = WARNING_LEVEL
+		self.__output = 1
+		self.__outfh = sys.stdout
+		self.__ResetStrLogger()
+		
+
+	def __ResetStrLogger(self):
+		if self.__strio :
+			self.__strio.close()
+			del self.__strio
+			self.__strio = None
+
+		# now to set the logger format
+		try:
+			# this will call error on delete function call sequence
+			self.__strio = StringIO.StringIO()
+		except:
+			pass
 		self.__caselen = 0
+		return
+
+	def __flush(self):
+		v = ''
+		if self.__strio:
+			v = self.__strio.getvalue()
+			if len(v) > 0 and self.__output > 0:
+				self.__outfh.write(v)
+			if len(v) == 0:
+				v = ''
+		return v
+
+	def __del__(self):
+		self.__flush()
+		del self.__strio
+		self.__strio = None
+		self.__outfh = None
+		return
+
+	def SetLevel(self,level=WARNING_LEVEL):
+		oldlevel = self.__level
+		self.__level = level
+		return oldlevel
+	def SetOutput(self,output=1):
+		oldoutput = self.__output
+		self.__output = output
+		return oldoutput
 	
 	def Info(self,msg):
-		self.__logger.info(msg)
+		if self.__level >= INFO_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			self.__strio.write(_msg)
 
 	def Warn(self,msg):
-		self.__logger.warning(msg)
+		if self.__level >= WARNING_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			self.__strio.write(_msg)
 
 	def Error(self,msg):
-		self.__logger.error(msg)
+		if self.__level >= ERROR_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			self.__strio.write(_msg)
 
 	def Debug(self,msg):
-		self.__logger.debug(msg)
+		if self.__level >= DEBUG_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			self.__strio.write(_msg)
+
+	def Flush(self):
+		value = ''
+		if self.__strio :
+			value = self.__flush()
+			self.__ResetStrLogger()
+		return value
 
 	def TestStart(self,msg):
 		self.__caselen = 0
@@ -47,8 +133,8 @@ class BaseLogger:
 			_tmp += ' ' * cnt
 			_tmp += _msg
 			_msg =_tmp 
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen = len(_msg)
 		return
 
@@ -65,8 +151,8 @@ class BaseLogger:
 			_tmp += _msg
 			_msg = _tmp
 			
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 
@@ -82,8 +168,8 @@ class BaseLogger:
 			_tmp += ' '*cnt
 			_tmp += _msg
 			_msg = _tmp
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 
@@ -99,8 +185,8 @@ class BaseLogger:
 			_tmp += ' '*cnt
 			_tmp += _msg
 			_msg = _tmp
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 	def CaseSkip(self,msg):
@@ -115,18 +201,18 @@ class BaseLogger:
 			_tmp += ' '*cnt
 			_tmp += _msg
 			_msg = _tmp
-		sys.stdout.write('%s'%(_msg))
-		sys.stdout.flush()
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
 		self.__caselen += len(_msg)
 		return
 	def CaseEnd(self,msg):
-		sys.stdout.write(']\n')
-		sys.stdout.flush()
+		self.__outfh.write(']\n')
+		self.__outfh.flush()
 		self.__caselen += 2
 		return
 
 	def TestEnd(self,msg):
-		sys.stdout.write('\n%s\n'%(msg))
+		self.__outfh.write('\n%s\n'%(msg))
 		self.__caselen = 0
 		return
 
@@ -148,10 +234,11 @@ class BaseLogger:
 _logger_instances = {}
 
 def singleton(cls):
-	def get_instance():
+	def get_instance(*args, **kwargs):
 		ccn = xunit.utils.cls.GetCallerClassName(2)
  		if ccn not in _logger_instances  :
- 			_logger_instances[ccn] = cls(ccn)
+ 			_logger_instances[ccn] = cls(ccn,*args, **kwargs)
+			#DebugString('caller %s %s\n'%(ccn,repr(_logger_instances[ccn])))
  		return _logger_instances[ccn]
 	return get_instance
 
@@ -160,11 +247,21 @@ def singletonbyargs(class_):
 	def getinstance(*args, **kwargs):
 		pn = args[0]
 		tn =  pn
-		if tn not in _logger_instances:
+		if tn not in _logger_instances:			
 			_logger_instances[tn] = class_(*args, **kwargs)
+			#DebugString('caller %s %s\n'%(tn,repr(_logger_instances[tn])))
 		return _logger_instances[tn]
 	return getinstance	
 	
+
+def logger_cleanup():
+	while len(_logger_instances.keys()) > 0:
+		k = _logger_instances.keys()[0]
+		log1 = _logger_instances[k]
+		del log1
+		log1 = None
+		del _logger_instances[k]
+	return
 
 @singleton
 class AdvLogger(BaseLogger):
@@ -173,3 +270,5 @@ class AdvLogger(BaseLogger):
 @singletonbyargs
 class ClassLogger(BaseLogger):
 	pass
+
+atexit.register(logger_cleanup)
