@@ -62,6 +62,16 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		self.assertFalse(vpat.search(rval))
 		return
 
+	def test_timeouterror(self):
+		cmd = 'sleep 10'
+		ok = 1
+		try:
+			match = self.__tel.Execute(cmd)
+		except exptel.HostCmdTimeoutError:
+			ok = 0
+		self.assertEqual(ok,0)
+		return
+
 
 def maintest():
 	sbase = xunit.suite.XUnitSuiteBase()
