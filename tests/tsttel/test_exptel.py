@@ -3,6 +3,7 @@ import logging
 import sys
 import os
 import unittest
+import socket
 from optparse import OptionParser
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
 
@@ -70,6 +71,28 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		except exptel.HostCmdTimeoutError:
 			ok = 0
 		self.assertEqual(ok,0)
+		return
+	def test_connectrefused(self):
+		lip = socket.gethostbyname(socket.gethostname())
+		vpat = re.compile('^192\.')
+		# we assume that in the 10.0 subnet
+		cip = '192.168.0.3'
+		if vpat.search(lip):
+			# we are now in 192.168. subnet
+			cip = '10.0.6.89'
+		ok = 1
+		tel = None
+		try:
+			host = cip
+			port = 23
+			user = 'root'
+			password = 'password'
+			stream = None
+			tel = exptel.XUnitTelnet(host,port,user,password,stream)
+		except exptel.HostRefusedError:
+			ok = 0
+		self.assertEqual(ok,0)
+		
 		return
 
 

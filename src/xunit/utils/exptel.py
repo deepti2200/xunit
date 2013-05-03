@@ -69,7 +69,7 @@ class XUnitTelnet:
 							return
 				ct = time.time()
 			self.__CloseTel()
-			raise HostCmdTimeoutError('export ps1(%s) timeout on cmd (%s) totr (%s)'%(self.__ps1,cmd,totr))
+			raise HostRefusedError('export ps1(%s) timeout on cmd (%s) totr (%s)'%(self.__ps1,cmd,totr))
 		except:
 			self.__CloseTel()
 			raise HostRefusedError('can not connect %s:%d (user:%s:pass:%s)'%(self.__host,self.__port,self.__user,self.__pass))
