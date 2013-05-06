@@ -216,6 +216,14 @@ class BaseLogger:
 		self.__caselen = 0
 		return
 
+	def write(self,msg):
+		if self.__level >= INFO_LEVEL:
+			self.__strio.write(msg)
+		return
+	def flush(self):
+		return self.Flush()
+		
+
 	def __xmltagstart(self,logger,tag,**kattrs):
 		pass
 
