@@ -50,14 +50,16 @@ class XUnitTelnet:
 			ct = st
 			# this is the command ps1 to get
 			vpat = re.compile('\n%s'%(self.__ps1))
-			while ct <= et or self.__timeout ==0 :
+			while ct < et or self.__timeout ==0 :
 				# now to get the export
 				rlist = [self.__tel.fileno()]
 				wlist = []
 				xlist = []
 				ltime = et - ct
 				if self.__timeout == 0:
-					ltime = 0
+					# if we should listen all the time ,so we should
+					# give the return 1 seconds ,for key interrupt
+					ltime = 1
 				ret = select.select(rlist,wlist,xlist,ltime)
 				if len(ret) > 0 and len(ret[0]) > 0:
 					r = self.__tel.read_very_eager()
@@ -123,14 +125,15 @@ class XUnitTelnet:
 		st = time.time()
 		et = st + timeout
 		ct = st
-		while ct <= et or timeout == 0:
+		while ct < et or timeout == 0:
 			# now to get the export
 			rlist = [self.__tel.fileno()]
 			wlist = []
 			xlist = []
 			ltime = et - ct
 			if timeout == 0:
-				ltime = 0
+				# 1 second for key interrupt
+				ltime = 1
 			ret = select.select(rlist,wlist,xlist,ltime)
 			if len(ret) > 0 and len(ret[0]) > 0:
 				r = self.__tel.read_very_eager()

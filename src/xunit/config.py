@@ -245,7 +245,12 @@ class XUnitConfigBase:
 	def __ExpandValue(self,section,option,k,values=None):
 		p = '%\(([^)]+)\)s'
 		vpat = re.compile(p)
-		v = k
+		try:
+			# we try to expand the key value from "\x20\x33" to " 3"
+			# if we have already in " 3" so we just make
+			v = eval(k)
+		except :
+			v = k
 		if values is None:
 			values = {}
 		if vpat.search(k):
@@ -262,10 +267,13 @@ class XUnitConfigBase:
 						v = self.__MainCfg.get(sec,opt,1)
 						try:
 							self.__FuncLevel += 1
-							if self.__FuncLevel >= 30:
-								raise XUnitConfigOverflowError('expand value %s overflow '%(k))
+ 							if self.__FuncLevel >= 30:
+ 								raise XUnitConfigOverflowError('expand value %s overflow '%(k))
 							v = self.__ExpandValue(sec,opt,v,values)
-							values[s] = v
+							try:
+								values[s] = eval(v)
+							except :
+								values[s] = v
 							break
 						finally:
 							self.__FuncLevel -= 1
@@ -280,11 +288,20 @@ class XUnitConfigBase:
 								raise XUnitConfigOverflowError('expand value %s overflow '%(k))
 							v = self.__MainCfg.get(section,sec,1)
 							v = self.__ExpandValue(section,sec,v,values)
-							values[s] = v
+							try:
+								values[s] = eval(v)
+							except :
+								values[s] = v
 						finally:
 							self.__FuncLevel -= 1
 		# we will expand for the value				
-		v = self.__MainCfg.get(section,option,0,values)
+		tmpv = self.__MainCfg.get(section,option,0,values)		
+		try:
+			# we try to expand the key value from "\x20\x33" to " 3"
+			# if we have already in " 3" so we just make
+			v = eval(tmpv)
+		except :
+			v = tmpv		
 		return v
 
 	def __GetValue(self,section,item,defval='',expand=1,valuemap={}):

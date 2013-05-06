@@ -14,18 +14,29 @@ import re
 import xunit.suite
 import xunit.result
 
+
+import random
+import time
+
+
+CharacterUse='abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789'
+
 class ExpTelUnitCase(xunit.case.XUnitCase):
 	def XUnitsetUp(self):
 		utcfg = xunit.config.XUnitConfig()
-		host = utcfg.GetValue('global','host','')
-		port = utcfg.GetValue('global','port','23')
-		user = utcfg.GetValue('global','username',None)
-		password = utcfg.GetValue('global','password',None)
-		
+		host = utcfg.GetValue('.telnet','host','')
+		port = utcfg.GetValue('.telnet','port','23')
+		user = utcfg.GetValue('.telnet','username',None)
+		password = utcfg.GetValue('.telnet','password',None)
+		loginnote = utcfg.GetValue('.telnet','loginnote','login:')
+		passwordnote = utcfg.GetValue('.telnet','passwordnote','assword:')
+		cmdnote = utcfg.GetValue('.telnet','cmdnote','# ')
+		timeout = utcfg.GetValue('.telnet','timeout','5')
 		port = int(port)
+		timeout = int(timeout)
 		
 		self.__stream = None
-		logfile = utcfg.GetValue('global','telnet.logfile','none')
+		logfile = utcfg.GetValue('.telnet','telnet.logfile','none')
 		if logfile == 'stdout' :
 			self.__stream = sys.stdout
 		elif logfile == 'stderr':
@@ -34,7 +45,7 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 			self.__stream = None
 		else:
 			self.__stream = open(logfile,'a+b')
-		self.__tel = exptel.XUnitTelnet(host,port,user,password,self.__stream)		
+		self.__tel = exptel.XUnitTelnet(host,port,user,password,self.__stream,timeout,loginnote,passwordnote,cmdnote)		
 		return 
 
 
@@ -94,6 +105,76 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		self.assertEqual(ok,0)
 		
 		return
+		
+		
+	def test_writelog(self):
+		# first to close the code file
+		if self.__tel:
+			del self.__tel
+		self.__tel = None
+		if self.__stream :
+			if self.__stream != sys.stdout and self.__stream != sys.stderr:
+				self.__stream.close()
+		self.__stream = None
+
+		# now to test for the job
+		random.seed(time.time())
+		fname = ''
+		flen = random.randint(10,20)
+		clen = len(CharacterUse)
+		clen -= 1
+		for i in xrange(flen):
+			fname += CharacterUse[random.randint(0,clen)]
+		fname += '.log'
+		self.__stream = open(fname,'w+b')
+		utcfg = xunit.config.XUnitConfig()
+		host = utcfg.GetValue('.telnet','host','')
+		port = utcfg.GetValue('.telnet','port','23')
+		user = utcfg.GetValue('.telnet','username',None)
+		password = utcfg.GetValue('.telnet','password',None)
+		timeout = utcfg.GetValue('.telnet','timeout','5')
+		loginnote = utcfg.GetValue('.telnet','loginnote','login:')
+		passwordnote = utcfg.GetValue('.telnet','passwordnote','assword:')
+		cmdnote = utcfg.GetValue('.telnet','cmdnote','# ')
+		port =int(port)
+		timeout=int(timeout)
+		self.__tel = exptel.XUnitTelnet(host,port,user,password,self.__stream,timeout,loginnote,passwordnote,cmdnote)
+		# now we should 
+		slen = random.randint(20,50)
+		clen = len(CharacterUse)
+		clen -= 1
+		s = ''
+		for i in xrange(slen):
+			s += CharacterUse[random.randint(0,clen)]
+
+		cmd = 'echo "%s"'%(s)
+		ret ,sret = self.__tel.Execute(cmd)
+		self.assertEqual(ret,1)
+		vpat = re.compile(s)
+		self.assertTrue(vpat.search(sret))
+		self.__stream.flush()
+
+		# now to open the file
+		fh = open(fname,'r+b')
+		matched = 0
+		for l in fh:
+			if vpat.search(l):
+				matched = 1
+				break
+		self.assertEqual(matched,1)
+		del self.__tel
+		self.__tel = None		
+		self.__stream.close()
+		self.__stream = None
+		del fh
+		fh = None
+		# now to remove the file
+		os.remove(fname)
+		# now to make the 
+		return
+
+		
+		
 
 
 def maintest():
@@ -110,7 +191,6 @@ def maintest():
 		if _res.shouldStop:
 			break
 	if _res.Fails() != 0 or _res.UnexpectSuccs() !=0:
-		logging.error('on fails %d unexpect succs %d'%(_res.Fails() , _res.UnexpectSuccs() ))
 		sys.exit(3)
 	sys.exit(0)
 
@@ -134,19 +214,30 @@ if __name__ == '__main__':
 	args.add_option('-p','--port',action='store',dest='port',nargs=1,help='specify the port default is 23')
 	args.add_option('-u','--user',action='store',dest='user',nargs=1,help='specify username')
 	args.add_option('-P','--pass',action='store',dest='password',nargs=1,help='specify password')
+	args.add_option('-l','--login',action='store',dest='loginnote',nargs=1,help='login note default is (login:)')
+	args.add_option('-e','--passnote',action='store',dest='passwordnote',nargs=1,help='password note default is (assword:)')
+	args.add_option('-c','--cmdnote',action='store',dest='cmdnote',nargs=1,help='cmd note default is (# )')
+	args.add_option('-t','--timeout',action='store',dest='timeout',nargs=1,help='set timeout value default is 5')
 	options ,nargs = args.parse_args(sys.argv[1:])
 	if options.verbose:
 		verb = 1
 	if options.failfast:
 		ff = True
 	if options.host:
-		utcfg.SetValue('global','host',options.host,1)
+		utcfg.SetValue('.telnet','host',options.host,1)
 	if options.port:
-		utcfg.SetValue('global','port',options.port,1)
+		utcfg.SetValue('.telnet','port',options.port,1)
 	if options.user:
-		utcfg.SetValue('global','username',options.user,1)
+		utcfg.SetValue('.telnet','username',options.user,1)
 	if options.password:
-		utcfg.SetValue('global','password',options.password,1)
+		utcfg.SetValue('.telnet','password',options.password,1)
+
+	if options.loginnote:
+		utcfg.SetValue('.telnet','loginnote',options.loginnote,1)
+	if options.passwordnote:
+		utcfg.SetValue('.telnet','passwordnote',options.passwordnote,1)
+	if options.cmdnote:
+		utcfg.SetValue('.telnet','cmdnote',options.cmdnote,1)
 	if verb :
 		logging.basicConfig(level=logging.INFO,format="%(levelname)-8s [%(filename)-10s:%(funcName)-20s:%(lineno)-5s] %(message)s")
 		utcfg.SetValue('global','debug.mode','y',1)
