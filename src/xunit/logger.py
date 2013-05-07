@@ -354,7 +354,8 @@ class XmlLogger(AbstractLogger):
 class _AdvLogger:
 	def __init__(self,cn):
 		self.__loggers = []
-		self.__loggers.append(BaseLogger(cn))
+		_logger = BaseLogger(cn)
+		self.__loggers.append(_logger)
 		return
 
 	def __del__(self):
@@ -365,95 +366,105 @@ class _AdvLogger:
 			_logger = None
 		return
 
+
 	def SetLevel(self,level=WARNING_LEVEL):
 		l = level
-		for _logger in self.__loggers:
-			l = _logger.SetLevel(level)
+		for _log in self.__loggers:
+			l = _log.SetLevel(level)
 		return l
 	def SetOutput(self,output=1):
 		o = output
-		for _logger in self.__loggers:
-			o = _logger.SetOutput(output)
+		for _log in self.__loggers:
+			o = _log.SetOutput(output)
 		return o
-		
 	def Info(self,msg):
-		for _logger in self.__loggers:
-			_logger.Info(msg)
-		return
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.Info(msg)
+		return ret
 	def Warn(self,msg):
-		for _logger in self.__loggers:
-			_logger.Info(msg)
-		return
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.Warn(msg)
+		return ret
 	def Error(self,msg):
-		raise NotDefinedClassMethodException('not defined Error')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.Error(msg)
+		return ret
 	def Debug(self,msg):
-		raise NotDefinedClassMethodException('not defined Debug')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.Debug(msg)
+		return ret
 	def Flush(self):
-		raise NotDefinedClassMethodException('not defined Flush')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.Flush()
+		return ret
 	def TestStart(self,msg):
-		raise NotDefinedClassMethodException('not defined TestStart')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.TestStart(msg)
+		return ret
 	def CaseStart(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseStart')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.CaseStart(msg)
+		return ret
 	def CaseFail(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseFail')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.CaseFail(msg)
+		return ret
 	def CaseError(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseError')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.CaseError(msg)
+		return ret
 	def CaseSucc(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseSucc')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.CaseSucc(msg)
+		return ret
 	def CaseSkip(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseSkip')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.CaseSkip(msg)
+		return ret
 	def CaseEnd(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseEnd')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.CaseEnd(msg)
+		return ret
 	def TestEnd(self,msg):
-		raise NotDefinedClassMethodException('not defined TestEnd')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.TestEnd(msg)
+		return ret
 	def write(self,msg):
-		raise NotDefinedClassMethodException('not defined write')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.write(msg)
+		return ret
 	def flush(self):
-		raise NotDefinedClassMethodException('not defined flush')
+		ret = None
+		for _log in self.__loggers:
+			ret = _log.flush()
+		return ret
 
 
 
-class ComBind:
-	def __appendClass(self,cls):
-		mm = __import__(self.__module__)
-		if not hasattr(mm,cls):
-			raise Exception('can not get %s'%(cls))
-		_cls = getattr(mm,cls)
-		self.__clss.append(_cls())
-		return
-	def __init__(self,*cls):
-		self.__clss = []
-		for clsn in cls:
-			self.__appendClass(clsn)
-	def __getattr__(self, name):
-		if hasattr(self,name):
-			return self.__dict__[name]
-
-		def _missing(*args,**kwargs):
-			ret =''
-			for c in self.__clss:
-				_f = getattr(c,name)
-				if len(args) > 0 and len(kwargs.keys())>0:
-					ret=_f(args,kwargs)
-				elif len(args) > 0:
-					ret=_f(args)
-				elif len(kwargs.keys()) >0:
-					ret=_f(kwargs)
-				else:
-					ret=_f()
-			return ret
-		return _missing
-	
 	
 
 
 _logger_instances = {}
 
-def singleton(cls):
+def singleton(class_):
 	def get_instance(*args, **kwargs):
 		ccn = xunit.utils.cls.GetCallerClassName(2)
  		if ccn not in _logger_instances  :
- 			_logger_instances[ccn] = cls(ccn,*args, **kwargs)
+ 			_logger_instances[ccn] = class_(ccn,*args, **kwargs)
 			#DebugString('caller %s %s\n'%(ccn,repr(_logger_instances[ccn])))
  		return _logger_instances[ccn]
 	return get_instance
@@ -480,11 +491,11 @@ def logger_cleanup():
 	return
 
 @singleton
-class AdvLogger(BaseLogger):
+class AdvLogger(_AdvLogger):
 	pass
 
 @singletonbyargs
-class ClassLogger(BaseLogger):
+class ClassLogger(_AdvLogger):
 	pass
 
 atexit.register(logger_cleanup)

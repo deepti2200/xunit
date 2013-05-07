@@ -58,6 +58,7 @@ if __name__ == '__main__':
 	
 	if options.verbose:
 		utcfg.SetValue('global','debug.mode','y',1)
+		logging.basicConfig(level=logging.INFO,format="%(levelname)-8s [%(filename)-10s:%(funcName)-20s:%(lineno)-5s] %(message)s")
 
 	if options.failfast:
 		utcfg.SetValue('global','failfast','y',1)
