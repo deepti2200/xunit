@@ -367,13 +367,13 @@ class XmlLogger(AbstractLogger):
 		self.__ResetStrLogger()
 		return v
 	def TestStart(self,msg):
-		_msg = '<test msg="%s">'%(msg)
+		_msg = '<test msg="%s">\n'%(msg)
 		if self.__outfh :
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
-		_msg = '<case msg="%s" '%(msg)
+		_msg = '<case func="%s" '%(msg)
 		if self.__outfh :
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
@@ -425,32 +425,39 @@ class XmlLogger(AbstractLogger):
 	
 
 
-__default_xmllog__ = None
-__default_xmlhandler__ = None
 
 class _AdvLogger:
+	default_xmllog = None
+	default_xmlhandler = None
 	def __GetXmlLogDefault(self):
 		utcfg = xunit.config.XUnitConfig()		
-		__default_xmllog__ = utcfg.GetValue('global','xmllog','')
+		_AdvLogger.default_xmllog = utcfg.GetValue('global','xmllog','')
+		logging.info('xmllog (%s)'%(repr(_AdvLogger.default_xmllog)))
 		return
 
-	def 
 	def __init__(self,cn):
 		self.__loggers = []
 		self.__xmlhandler = None
-		if __default_xmllog__ is None:
-			self.__GetXmlLogDefault() 
+		if _AdvLogger.default_xmllog is None:
+			self.__GetXmlLogDefault()
+			logging.info('xmllog (%s) len(%d)'%(repr(_AdvLogger.default_xmllog),len(_AdvLogger.default_xmllog)))
 		_logger = BaseLogger(cn)
 		self.__loggers.append(_logger)
 
 		# now to open the log file
-		if len(__default_xmllog__) >0 and  __default_xmlhandler__ is None:
-			__default_xmlhandler__ = open(__default_xmllog__,"w")
+		if len(_AdvLogger.default_xmllog) >0 and  _AdvLogger.default_xmlhandler is None:
+			_AdvLogger.default_xmlhandler = open(_AdvLogger.default_xmllog,"w")
 
-		_fh = __default_xmllog__
+		_fh = _AdvLogger.default_xmlhandler
 		sec = '.' + cn
-		v = 
-
+		utcfg = xunit.config.XUnitConfig()
+		v = utcfg.GetValue(sec,'xmllog','')
+		if len(v) > 0:
+			self.__xmlhandler = open(v,'w')
+			_fh = self.__xmlhandler
+		if _fh :
+			_logger = XmlLogger(cn,_fh)
+			self.__loggers.append(_logger)
 		
 		return
 
@@ -460,7 +467,7 @@ class _AdvLogger:
 			self.__loggers.remove(_logger)
 			del _logger
 			_logger = None
-		if self.__xmlhandler :
+		if self.__xmlhandler  :
 			self.__xmlhandler.close()
 		self.__xmlhandler = None
 		return
@@ -587,11 +594,11 @@ def logger_cleanup():
 		del log1
 		log1 = None
 		del _logger_instances[k]
-	if __default_xmlhandler__ :
-		__default_xmlhandler__.close()
-		del __default_xmlhandler__
-	__default_xmlhandler__ = None
-	__default_xmllog__ = None		
+	if _AdvLogger.default_xmlhandler :
+		_AdvLogger.default_xmlhandler.close()
+		del _AdvLogger.default_xmlhandler
+	_AdvLogger.default_xmlhandler = None
+	_AdvLogger.default_xmllog = None		
 	return
 
 @singleton
