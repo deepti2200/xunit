@@ -7,6 +7,7 @@ import sys
 import StringIO
 import inspect
 import atexit
+import xml.etree.ElementTree as ET
 
 from xunit.utils import exception
 
@@ -106,6 +107,7 @@ class BaseLogger(AbstractLogger):
 			v = self.__strio.getvalue()
 			if len(v) > 0 and self.__output > 0:
 				self.__outfh.write(v)
+				self.__outfh.flush()
 			if len(v) == 0:
 				v = ''
 		return v
@@ -268,7 +270,7 @@ class BaseLogger(AbstractLogger):
 
 
 class XmlLogger(AbstractLogger):
-	def __init__(self,cn):
+	def __init__(self,cn,stream=sys.stdout):
 		'''
 		    init the logger ,and we do this by the string 
 		    input
@@ -277,7 +279,7 @@ class XmlLogger(AbstractLogger):
 		self.__strio = None
 		self.__level = WARNING_LEVEL
 		self.__output = 1
-		self.__outfh = sys.stdout
+		self.__outfh = stream
 		self.__cn = cn
 		self.__ResetStrLogger()
 		
@@ -300,9 +302,10 @@ class XmlLogger(AbstractLogger):
 	def __flush(self):
 		v = ''
 		if self.__strio:
-			v = self.__strio.getvalue()
+			v = self.__strio.getvalue()			
 			if len(v) > 0 and self.__output > 0:
 				self.__outfh.write(v)
+				self.__outfh.flush()
 			if len(v) == 0:
 				v = ''
 		return v
@@ -325,36 +328,36 @@ class XmlLogger(AbstractLogger):
 	def Info(self,msg):
 		if self.__level >= INFO_LEVEL:
 			_f = inspect.stack()[1]
-			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
 			elem = ET.Element('infomsg')
-			elem.update('class',self.__cn)
+			elem.set('class',self.__cn)
 			elem.text = _msg
 			_msg = ET.tostring(elem,method='xml')
 			self.__strio.write(_msg+'\n')
 	def Warn(self,msg):
 		if self.__level >= WARNING_LEVEL:
 			_f = inspect.stack()[1]
-			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
 			elem = ET.Element('warnmsg')
-			elem.update('class',self.__cn)
+			elem.set('class',self.__cn)
 			elem.text = _msg
 			_msg = ET.tostring(elem,method='xml')
 			self.__strio.write(_msg+'\n')
 	def Error(self,msg):
 		if self.__level >= ERROR_LEVEL:
 			_f = inspect.stack()[1]
-			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
 			elem = ET.Element('errormsg')
-			elem.update('class',self.__cn)
+			elem.set('class',self.__cn)
 			elem.text = _msg
 			_msg = ET.tostring(elem,method='xml')
 			self.__strio.write(_msg+'\n')
 	def Debug(self,msg):
 		if self.__level >= DEBUG_LEVEL:
 			_f = inspect.stack()[1]
-			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
 			elem = ET.Element('debugmsg')
-			elem.update('class',self.__cn)
+			elem.set('class',self.__cn)
 			elem.text = _msg
 			_msg = ET.tostring(elem,method='xml')
 			self.__strio.write(_msg+'\n')

@@ -6,7 +6,7 @@ CharacterUse='abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789'
 #CharacterUse='ab\'\"='
 NumberUse='0123456789'
 
-def InitRandom()
+def InitRandom():
 	random.seed(time.time())
 	return
 
