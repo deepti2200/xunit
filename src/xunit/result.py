@@ -6,6 +6,7 @@ import xunit.config
 from xunit.utils import cls
 import xunit.logger
 import time
+import traceback
 from xunit.utils import exception
 
 class FailFastException(exception.XUnitException):
@@ -42,6 +43,32 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 		if self.__logger and self.__output:
 			self.__logger.TestEnd('Cases %d Succ %d Fail %d Skip %d'%(self.__cases,self.__succs,self.__fails,self.__skips))
 
+	def _exc_info_to_string(self, err, test):
+		"""Converts a sys.exc_info()-style tuple of values into a string."""
+		exctype, value, tb = err
+		# Skip test runner traceback levels
+		while tb and self._is_relevant_tb_level(tb):
+			tb = tb.tb_next
+
+		if exctype is test.failureException:
+			# Skip assert*() traceback levels
+			length = self._count_relevant_tb_levels(tb)
+			msgLines = traceback.format_exception(exctype, value, tb, length)
+		else:
+			msgLines = traceback.format_exception(exctype, value, tb)		
+		return ''.join(msgLines)
+
+	def _is_relevant_tb_level(self, tb):
+		return '__unittest' in tb.tb_frame.f_globals
+
+	def _count_relevant_tb_levels(self, tb):
+		length = 0
+		while tb and not self._is_relevant_tb_level(tb):
+			length += 1
+			tb = tb.tb_next
+		return length
+
+
 	def startTest(self, test):
 		if self.__verbose and self.__output > 0:
 			cn = cls.GetClassName(test.__class__)
@@ -64,6 +91,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 			self.__logger.CaseEnd('')
 		if self.__failfast:
 			self.shouldStop = True
+		self.errors.append((test, self._exc_info_to_string(err, test)))
 		return
 
 	def addFailure(self, test, err):
@@ -74,6 +102,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 			self.__logger.CaseEnd('')
 		if self.__failfast:
 			self.shouldStop = True
+		self.failures.append((test, self._exc_info_to_string(err, test)))
 		return
 	
 
@@ -121,6 +150,9 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 
 	def UnexpectSuccs(self):
 		return self.__unexpectsuccs
+
+	def wasSuccessful(self):
+		return self.__fails == 0 and self.__unexpectfails == 0 and self.__unexpectsuccs == 0
 
 def singleton(cls):
 	instances = {}
