@@ -8,7 +8,6 @@ import StringIO
 import inspect
 import atexit
 
-
 from xunit.utils import exception
 
 class NotDefinedClassMethodException(exception.XUnitException):
@@ -144,6 +143,7 @@ class BaseLogger(AbstractLogger):
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
 			self.__strio.write(_msg)
+		
 
 	def Debug(self,msg):
 		if self.__level >= DEBUG_LEVEL:
@@ -278,6 +278,7 @@ class XmlLogger(AbstractLogger):
 		self.__level = WARNING_LEVEL
 		self.__output = 1
 		self.__outfh = sys.stdout
+		self.__cn = cn
 		self.__ResetStrLogger()
 		
 
@@ -314,39 +315,101 @@ class XmlLogger(AbstractLogger):
 		return
 
 	def SetLevel(self,level=WARNING_LEVEL):
-		raise NotDefinedClassMethodException('not defined SetLevel')
+		oldlevel = self.__level
+		self.__level = level
+		return oldlevel
 	def SetOutput(self,output=1):
-		raise NotDefinedClassMethodException('not defined SetOutput')	
+		oldoutput = self.__output
+		self.__output = output
+		return oldoutput
 	def Info(self,msg):
-		raise NotDefinedClassMethodException('not defined Info')
+		if self.__level >= INFO_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			elem = ET.Element('infomsg')
+			elem.update('class',self.__cn)
+			elem.text = _msg
+			_msg = ET.tostring(elem,method='xml')
+			self.__strio.write(_msg+'\n')
 	def Warn(self,msg):
-		raise NotDefinedClassMethodException('not defined Warn')
+		if self.__level >= WARNING_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			elem = ET.Element('warnmsg')
+			elem.update('class',self.__cn)
+			elem.text = _msg
+			_msg = ET.tostring(elem,method='xml')
+			self.__strio.write(_msg+'\n')
 	def Error(self,msg):
-		raise NotDefinedClassMethodException('not defined Error')
+		if self.__level >= ERROR_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			elem = ET.Element('errormsg')
+			elem.update('class',self.__cn)
+			elem.text = _msg
+			_msg = ET.tostring(elem,method='xml')
+			self.__strio.write(_msg+'\n')
 	def Debug(self,msg):
-		raise NotDefinedClassMethodException('not defined Debug')
+		if self.__level >= DEBUG_LEVEL:
+			_f = inspect.stack()[1]
+			_msg = '[%s:%s] %s\n'%(_f[1],_f[2],msg)
+			elem = ET.Element('debugmsg')
+			elem.update('class',self.__cn)
+			elem.text = _msg
+			_msg = ET.tostring(elem,method='xml')
+			self.__strio.write(_msg+'\n')
 	def Flush(self):
-		raise NotDefinedClassMethodException('not defined Flush')
+		v = self.__flush()
+		self.__ResetStrLogger()
+		return v
 	def TestStart(self,msg):
-		raise NotDefinedClassMethodException('not defined TestStart')
+		_msg = '<test msg="%s">'%(msg)
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
+		return
 	def CaseStart(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseStart')
+		_msg = '<case msg="%s" '%(msg)
+		self.__outfh.write('%s'%(_msg))
+		self.__outfh.flush()
+		return
 	def CaseFail(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseFail')
+		_msg = 'result="fail">%s'%(msg)
+		self.__outfh.write(_msg)
+		self.__outfh.flush()
+		return
 	def CaseError(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseError')
+		_msg = 'result="error">%s'%(_msg)
+		self.__outfh.write(_msg)
+		self.__outfh.flush()
+		return
 	def CaseSucc(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseSucc')
+		_msg = 'result="succ">%s'%(msg)
+		self.__outfh.write(_msg)
+		self.__outfh.flush()
+		return
 	def CaseSkip(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseSkip')
+		_msg = 'result="skip">%s'%(msg)
+		self.__outfh.write(_msg)
+		self.__outfh.flush()
+		return
 	def CaseEnd(self,msg):
-		raise NotDefinedClassMethodException('not defined CaseEnd')
+		_msg = '%s</case>\n'%(msg)
+		self.__outfh.write(_msg)
+		self.__outfh.flush()
+		return
 	def TestEnd(self,msg):
-		raise NotDefinedClassMethodException('not defined TestEnd')
+		_msg = '</test>\n'
+		self.__outfh.write(_msg)
+		self.__outfh.flush()
+		return
+		
 	def write(self,msg):
-		raise NotDefinedClassMethodException('not defined write')
+		self.Info(msg)
+		self.Flush()
+		return
 	def flush(self):
-		raise NotDefinedClassMethodException('not defined flush')
+		self.Flush()
+		return
 	
 
 
