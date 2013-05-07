@@ -245,6 +245,27 @@ class UtTest(unittest.TestCase):
 		v = utcfg.GetValue('Section','Option','')
 		self.assertEqual(v,'Value')
 		return
+
+	def test_spaceword(self):
+		utcfg = xunit.config.XUnitConfigBase()
+		utcfg.SetValue('spaces','spcopt','o ',1)
+		v = utcfg.GetValue('spaces','spcopt','')
+		self.assertEqual(v,'o ')
+
+		return
+
+	def test_spacefile(self):
+		utcfg = xunit.config.XUnitConfigBase()
+		utcfg.LoadFile('spc.cfg')
+		v = utcfg.GetValue('space section','space option','')
+		self.assertEqual(v,'o ')
+		v = utcfg.GetValue('expand section','expand option','')
+		self.assertEqual(v,'o ')
+		v = utcfg.GetValue('expand section','expand 2option','')
+		self.assertEqual(v,' cc ')
+		return
+
+	
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:

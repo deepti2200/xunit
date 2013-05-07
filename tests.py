@@ -50,6 +50,7 @@ if __name__ == '__main__':
 	args = OptionParser()
 	args.add_option('-v','--verbose',action='store_true',dest='verbose',help='verbose mode')
 	args.add_option('-f','--failfast',action="store_true",dest="failfast",help="failfast mode")
+	args.add_option('-x','--xmllog',action='store',dest='xmllog',nargs=1,help='set xmllog file default is none')
 
 	options ,nargs = args.parse_args(sys.argv[1:])
 	if len (nargs) < 1:
@@ -58,9 +59,12 @@ if __name__ == '__main__':
 	
 	if options.verbose:
 		utcfg.SetValue('global','debug.mode','y',1)
+		logging.basicConfig(level=logging.INFO,format="%(levelname)-8s [%(filename)-10s:%(funcName)-20s:%(lineno)-5s] %(message)s")
 
 	if options.failfast:
 		utcfg.SetValue('global','failfast','y',1)
+	if options.xmllog:
+		utcfg.SetValue('global','xmllog',options.xmllog,1)
 	_ret = Runtest(nargs[0])
 	if _ret != 0:
 		sys.exit(3)
