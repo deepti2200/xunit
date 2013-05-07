@@ -8,6 +8,7 @@ import StringIO
 import inspect
 import atexit
 import xml.etree.ElementTree as ET
+import xunit.config
 
 from xunit.utils import exception
 
@@ -303,7 +304,7 @@ class XmlLogger(AbstractLogger):
 		v = ''
 		if self.__strio:
 			v = self.__strio.getvalue()			
-			if len(v) > 0 and self.__output > 0:
+			if len(v) > 0 and self.__output > 0 and self.__outfh:
 				self.__outfh.write(v)
 				self.__outfh.flush()
 			if len(v) == 0:
@@ -367,43 +368,51 @@ class XmlLogger(AbstractLogger):
 		return v
 	def TestStart(self,msg):
 		_msg = '<test msg="%s">'%(msg)
-		self.__outfh.write('%s'%(_msg))
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
 		_msg = '<case msg="%s" '%(msg)
-		self.__outfh.write('%s'%(_msg))
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 	def CaseFail(self,msg):
 		_msg = 'result="fail">%s'%(msg)
-		self.__outfh.write(_msg)
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 	def CaseError(self,msg):
 		_msg = 'result="error">%s'%(_msg)
-		self.__outfh.write(_msg)
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 	def CaseSucc(self,msg):
 		_msg = 'result="succ">%s'%(msg)
-		self.__outfh.write(_msg)
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 	def CaseSkip(self,msg):
 		_msg = 'result="skip">%s'%(msg)
-		self.__outfh.write(_msg)
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 	def CaseEnd(self,msg):
 		_msg = '%s</case>\n'%(msg)
-		self.__outfh.write(_msg)
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 	def TestEnd(self,msg):
 		_msg = '</test>\n'
-		self.__outfh.write(_msg)
-		self.__outfh.flush()
+		if self.__outfh :
+			self.__outfh.write(_msg)
+			self.__outfh.flush()
 		return
 		
 	def write(self,msg):
@@ -416,12 +425,33 @@ class XmlLogger(AbstractLogger):
 	
 
 
+__default_xmllog__ = None
+__default_xmlhandler__ = None
 
 class _AdvLogger:
+	def __GetXmlLogDefault(self):
+		utcfg = xunit.config.XUnitConfig()		
+		__default_xmllog__ = utcfg.GetValue('global','xmllog','')
+		return
+
+	def 
 	def __init__(self,cn):
 		self.__loggers = []
+		self.__xmlhandler = None
+		if __default_xmllog__ is None:
+			self.__GetXmlLogDefault() 
 		_logger = BaseLogger(cn)
 		self.__loggers.append(_logger)
+
+		# now to open the log file
+		if len(__default_xmllog__) >0 and  __default_xmlhandler__ is None:
+			__default_xmlhandler__ = open(__default_xmllog__,"w")
+
+		_fh = __default_xmllog__
+		sec = '.' + cn
+		v = 
+
+		
 		return
 
 	def __del__(self):
@@ -430,6 +460,9 @@ class _AdvLogger:
 			self.__loggers.remove(_logger)
 			del _logger
 			_logger = None
+		if self.__xmlhandler :
+			self.__xmlhandler.close()
+		self.__xmlhandler = None
 		return
 
 
@@ -554,6 +587,11 @@ def logger_cleanup():
 		del log1
 		log1 = None
 		del _logger_instances[k]
+	if __default_xmlhandler__ :
+		__default_xmlhandler__.close()
+		del __default_xmlhandler__
+	__default_xmlhandler__ = None
+	__default_xmllog__ = None		
 	return
 
 @singleton
