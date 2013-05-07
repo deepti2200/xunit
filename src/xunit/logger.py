@@ -9,6 +9,11 @@ import inspect
 import atexit
 
 
+from xunit.utils import exception
+
+class NotDefinedClassMethodException(exception.XUnitException):
+	pass
+
 CRITICAL_LEVEL=1
 ERROR_LEVEL=2
 WARNING_LEVEL=3
@@ -20,17 +25,54 @@ def DebugString(msg,level=1):
 	_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
 	sys.stderr.write(_msg+'\n')
 
-def DebugString2(msg,level=1):
-	_msg = '%s'%(msg)
-	sys.stderr.write(_msg+'\n')
-
 
 MAX_CASE_LEN = 70
 MAX_CASE_NAME_LEN = 55
-class BaseLogger:
-	def DebugString2(self,msg):
-		self.__outfh.write(msg)
-		return
+
+
+class AbstractLogger:
+	def __init__(self,cn):
+		pass
+
+	def __del__(self):
+		pass
+
+	def SetLevel(self,level=WARNING_LEVEL):
+		raise NotDefinedClassMethodException('not defined SetLevel')
+	def SetOutput(self,output=1):
+		raise NotDefinedClassMethodException('not defined SetOutput')	
+	def Info(self,msg):
+		raise NotDefinedClassMethodException('not defined Info')
+	def Warn(self,msg):
+		raise NotDefinedClassMethodException('not defined Warn')
+	def Error(self,msg):
+		raise NotDefinedClassMethodException('not defined Error')
+	def Debug(self,msg):
+		raise NotDefinedClassMethodException('not defined Debug')
+	def Flush(self):
+		raise NotDefinedClassMethodException('not defined Flush')
+	def TestStart(self,msg):
+		raise NotDefinedClassMethodException('not defined TestStart')
+	def CaseStart(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseStart')
+	def CaseFail(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseFail')
+	def CaseError(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseError')
+	def CaseSucc(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseSucc')
+	def CaseSkip(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseSkip')
+	def CaseEnd(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseEnd')
+	def TestEnd(self,msg):
+		raise NotDefinedClassMethodException('not defined TestEnd')
+	def write(self,msg):
+		raise NotDefinedClassMethodException('not defined write')
+	def flush(self):
+		raise NotDefinedClassMethodException('not defined flush')
+
+class BaseLogger(AbstractLogger):
 	def __init__(self,cn):
 		'''
 		    init the logger ,and we do this by the string 
@@ -224,19 +266,185 @@ class BaseLogger:
 		return self.Flush()
 		
 
-	def __xmltagstart(self,logger,tag,**kattrs):
-		pass
 
-	def __xmltagend(self,logger,tag):
-		pass
+class XmlLogger(AbstractLogger):
+	def __init__(self,cn):
+		'''
+		    init the logger ,and we do this by the string 
+		    input
+		    @cn class name of logger get
+		'''
+		self.__strio = None
+		self.__level = WARNING_LEVEL
+		self.__output = 1
+		self.__outfh = sys.stdout
+		self.__ResetStrLogger()
+		
 
-	def __xmltagvalue(self,logger,tag,value):
-		pass
+	def __ResetStrLogger(self):
+		if self.__strio :
+			self.__strio.close()
+			del self.__strio
+			self.__strio = None
 
-	def __directmsg(self,logger,msg):
-		pass
+		# now to set the logger format
+		try:
+			# this will call error on delete function call sequence
+			self.__strio = StringIO.StringIO()
+		except:
+			pass
+		self.__caselen = 0
+		return
+
+	def __flush(self):
+		v = ''
+		if self.__strio:
+			v = self.__strio.getvalue()
+			if len(v) > 0 and self.__output > 0:
+				self.__outfh.write(v)
+			if len(v) == 0:
+				v = ''
+		return v
+
+	def __del__(self):
+		self.__flush()
+		del self.__strio
+		self.__strio = None
+		self.__outfh = None
+		return
+
+	def SetLevel(self,level=WARNING_LEVEL):
+		raise NotDefinedClassMethodException('not defined SetLevel')
+	def SetOutput(self,output=1):
+		raise NotDefinedClassMethodException('not defined SetOutput')	
+	def Info(self,msg):
+		raise NotDefinedClassMethodException('not defined Info')
+	def Warn(self,msg):
+		raise NotDefinedClassMethodException('not defined Warn')
+	def Error(self,msg):
+		raise NotDefinedClassMethodException('not defined Error')
+	def Debug(self,msg):
+		raise NotDefinedClassMethodException('not defined Debug')
+	def Flush(self):
+		raise NotDefinedClassMethodException('not defined Flush')
+	def TestStart(self,msg):
+		raise NotDefinedClassMethodException('not defined TestStart')
+	def CaseStart(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseStart')
+	def CaseFail(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseFail')
+	def CaseError(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseError')
+	def CaseSucc(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseSucc')
+	def CaseSkip(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseSkip')
+	def CaseEnd(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseEnd')
+	def TestEnd(self,msg):
+		raise NotDefinedClassMethodException('not defined TestEnd')
+	def write(self,msg):
+		raise NotDefinedClassMethodException('not defined write')
+	def flush(self):
+		raise NotDefinedClassMethodException('not defined flush')
+	
 
 
+
+class _AdvLogger:
+	def __init__(self,cn):
+		self.__loggers = []
+		self.__loggers.append(BaseLogger(cn))
+		return
+
+	def __del__(self):
+		while len(self.__loggers) > 0:
+			_logger =self.__loggers[0]
+			self.__loggers.remove(_logger)
+			del _logger
+			_logger = None
+		return
+
+	def SetLevel(self,level=WARNING_LEVEL):
+		l = level
+		for _logger in self.__loggers:
+			l = _logger.SetLevel(level)
+		return l
+	def SetOutput(self,output=1):
+		o = output
+		for _logger in self.__loggers:
+			o = _logger.SetOutput(output)
+		return o
+		
+	def Info(self,msg):
+		for _logger in self.__loggers:
+			_logger.Info(msg)
+		return
+	def Warn(self,msg):
+		for _logger in self.__loggers:
+			_logger.Info(msg)
+		return
+	def Error(self,msg):
+		raise NotDefinedClassMethodException('not defined Error')
+	def Debug(self,msg):
+		raise NotDefinedClassMethodException('not defined Debug')
+	def Flush(self):
+		raise NotDefinedClassMethodException('not defined Flush')
+	def TestStart(self,msg):
+		raise NotDefinedClassMethodException('not defined TestStart')
+	def CaseStart(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseStart')
+	def CaseFail(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseFail')
+	def CaseError(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseError')
+	def CaseSucc(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseSucc')
+	def CaseSkip(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseSkip')
+	def CaseEnd(self,msg):
+		raise NotDefinedClassMethodException('not defined CaseEnd')
+	def TestEnd(self,msg):
+		raise NotDefinedClassMethodException('not defined TestEnd')
+	def write(self,msg):
+		raise NotDefinedClassMethodException('not defined write')
+	def flush(self):
+		raise NotDefinedClassMethodException('not defined flush')
+
+
+
+class ComBind:
+	def __appendClass(self,cls):
+		mm = __import__(self.__module__)
+		if not hasattr(mm,cls):
+			raise Exception('can not get %s'%(cls))
+		_cls = getattr(mm,cls)
+		self.__clss.append(_cls())
+		return
+	def __init__(self,*cls):
+		self.__clss = []
+		for clsn in cls:
+			self.__appendClass(clsn)
+	def __getattr__(self, name):
+		if hasattr(self,name):
+			return self.__dict__[name]
+
+		def _missing(*args,**kwargs):
+			ret =''
+			for c in self.__clss:
+				_f = getattr(c,name)
+				if len(args) > 0 and len(kwargs.keys())>0:
+					ret=_f(args,kwargs)
+				elif len(args) > 0:
+					ret=_f(args)
+				elif len(kwargs.keys()) >0:
+					ret=_f(kwargs)
+				else:
+					ret=_f()
+			return ret
+		return _missing
+	
+	
 
 
 _logger_instances = {}
