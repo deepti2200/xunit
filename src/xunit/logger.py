@@ -368,49 +368,49 @@ class XmlLogger(AbstractLogger):
 		return v
 	def TestStart(self,msg):
 		_msg = '<test msg="%s">\n'%(msg)
-		if self.__outfh :
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
 		_msg = '<case func="%s" '%(msg)
-		if self.__outfh :
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseFail(self,msg):
 		_msg = 'result="fail">%s'%(msg)
-		if self.__outfh :
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseError(self,msg):
 		_msg = 'result="error">%s'%(_msg)
-		if self.__outfh :
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSucc(self,msg):
 		_msg = 'result="succ">%s'%(msg)
-		if self.__outfh :
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSkip(self,msg):
 		_msg = 'result="skip">%s'%(msg)
-		if self.__outfh :
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseEnd(self,msg):
 		_msg = '%s</case>\n'%(msg)
-		if self.__outfh :
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def TestEnd(self,msg):
-		_msg = '</test>\n'
-		if self.__outfh :
+		_msg = '\n%s\n</test>\n'%(msg)
+		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return

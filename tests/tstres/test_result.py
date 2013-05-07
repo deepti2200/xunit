@@ -59,19 +59,26 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		utcfg = xunit.config.XUnitConfig()
 		utcfg.SetValue('global','failfast','',1)
 
-		_res = xunit.result.XUnitResultBase(0)
+		_res2 = None
+		try:
+			_res2 = xunit.result.XUnitResultBase(0)
 
-		for s in sbase:
-			s(_res)
-			if _res.shouldStop:
-				break
+			for s in sbase:
+				s(_res2)
+				if _res2.shouldStop:
+					break
 
-		self.assertEqual(_res.Cases(),4)
-		self.assertEqual(_res.Succs(),1)
-		self.assertEqual(_res.Fails(),1)
-		self.assertEqual(_res.Skips(),1)
-		self.assertEqual(_res.UnexpectFails(),0)
-		self.assertEqual(_res.UnexpectSuccs(),1)
+			self.assertEqual(_res2.Cases(),4)
+			self.assertEqual(_res2.Succs(),1)
+			self.assertEqual(_res2.Fails(),1)
+			self.assertEqual(_res2.Skips(),1)
+			self.assertEqual(_res2.UnexpectFails(),0)
+			self.assertEqual(_res2.UnexpectSuccs(),1)
+		finally:
+			if _res2:
+				_res2.RestoreLogOutput()
+				del _res2
+			_res2 = None
 		return
 
 
@@ -88,17 +95,24 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		utcfg = xunit.config.XUnitConfig()
 		utcfg.SetValue('global','failfast','y',1)
 
-		_res = xunit.result.XUnitResultBase(0)
+		_res2 = None
+		try:
+			_res2 = xunit.result.XUnitResultBase(0)
 
-		for s in sbase:
-			s.run(_res)
-			if _res.shouldStop:
-				break
+			for s in sbase:
+				s.run(_res2)
+				if _res2.shouldStop:
+					break
 
-		self.assertEqual(_res.Cases(),3)
-		self.assertEqual(_res.Succs(),1)
-		self.assertEqual(_res.Fails(),1)
-		self.assertEqual(_res.Skips(),1)
+			self.assertEqual(_res2.Cases(),3)
+			self.assertEqual(_res2.Succs(),1)
+			self.assertEqual(_res2.Fails(),1)
+			self.assertEqual(_res2.Skips(),1)
+		finally:
+			if _res2:
+				_res2.RestoreLogOutput()
+				del _res2
+			_res2 = None
 		return
 
 
@@ -115,17 +129,24 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		utcfg = xunit.config.XUnitConfig()
 		utcfg.SetValue('global','failfast','y',1)
 
-		_res = xunit.result.XUnitResultBase(0)
+		_res2 = None
+		try:
+			_res2 = xunit.result.XUnitResultBase(0)
 
-		for s in sbase:
-			s.run(_res)
-			if _res.shouldStop:
-				break
+			for s in sbase:
+				s.run(_res2)
+				if _res2.shouldStop:
+					break
 
-		self.assertEqual(_res.Cases(),1)
-		self.assertEqual(_res.Succs(),0)
-		self.assertEqual(_res.Fails(),1)
-		self.assertEqual(_res.Skips(),0)
+			self.assertEqual(_res2.Cases(),1)
+			self.assertEqual(_res2.Succs(),0)
+			self.assertEqual(_res2.Fails(),1)
+			self.assertEqual(_res2.Skips(),0)
+		finally:
+			if _res2:
+				_res2.RestoreLogOutput()
+				del _res2
+			_res2 = None
 		return
 
 
@@ -142,18 +163,25 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		utcfg = xunit.config.XUnitConfig()
 		utcfg.SetValue('global','failfast','y',1)
 
-		_res = xunit.result.XUnitResultBase(0)
+		_res2 = None
+		try:
+			_res2 = xunit.result.XUnitResultBase(0)
 
-		for s in sbase:
-			s.run(_res)
-			if _res.shouldStop:
-				break
+			for s in sbase:
+				s.run(_res2)
+				if _res2.shouldStop:
+					break
 
-		self.assertEqual(_res.Cases(),1)
-		self.assertEqual(_res.Succs(),0)
-		self.assertEqual(_res.Fails(),0)
-		self.assertEqual(_res.Skips(),0)
-		self.assertEqual(_res.UnexpectSuccs(),1)
+			self.assertEqual(_res2.Cases(),1)
+			self.assertEqual(_res2.Succs(),0)
+			self.assertEqual(_res2.Fails(),0)
+			self.assertEqual(_res2.Skips(),0)
+			self.assertEqual(_res2.UnexpectSuccs(),1)
+		finally:
+			if _res2:
+				_res2.RestoreLogOutput()
+				del _res2
+			_res2 = None
 		return
 
 

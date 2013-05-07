@@ -29,6 +29,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 		utcfg = xunit.config.XUnitConfig()
 		v = utcfg.GetValue('global','debug.mode','')
 		self.__logger = xunit.logger.ClassLogger('__main__')
+		self.__logoutput = self.__logger.SetOutput(self.__output)
 		self.__verbose = 0
 		if v == 'y':
 			self.__verbose = 1
@@ -39,9 +40,16 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 		self.__logger.TestStart('start :')
 		return
 
+	def RestoreLogOutput(self):
+		if self.__logger:
+			self.__logger.SetOutput(self.__logoutput)
+		
+
 	def __del__(self):
 		if self.__logger and self.__output:
 			self.__logger.TestEnd('Cases %d Succ %d Fail %d Skip %d'%(self.__cases,self.__succs,self.__fails,self.__skips))
+
+		self.RestoreLogOutput()
 
 	def _exc_info_to_string(self, err, test):
 		"""Converts a sys.exc_info()-style tuple of values into a string."""
