@@ -14,6 +14,7 @@ import re
 import xunit.suite
 import xunit.result
 
+from xunit.logger import ClassLogger
 
 import random
 import time
@@ -36,15 +37,15 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		timeout = int(timeout)
 		
 		self.__stream = None
-		logfile = utcfg.GetValue('.telnet','telnet.logfile','none')
-		if logfile == 'stdout' :
+		logclass = utcfg.GetValue('.telnet','logclass','none')
+		if logclass == 'stdout' :
 			self.__stream = sys.stdout
-		elif logfile == 'stderr':
+		elif logclass == 'stderr':
 			self.__stream = sys.stderr
-		elif logfile.lower() == 'none':
+		elif logclass.lower() == 'none':
 			self.__stream = None
 		else:
-			self.__stream = open(logfile,'a+b')
+			self.__stream = ClassLogger(logclass)
 		self.__tel = exptel.XUnitTelnet(host,port,user,password,self.__stream,timeout,loginnote,passwordnote,cmdnote)		
 		return 
 
@@ -53,10 +54,6 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		if self.__tel:
 			del self.__tel
 			self.__tel = None
-		if self.__stream:
-			if self.__stream != sys.stdout and self.__stream != sys.stderr:
-				self.__stream.close()
-				del self.__stream
 		self.__stream = None
 		return
 	def test_telnethostok(self):
@@ -112,11 +109,7 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		if self.__tel:
 			del self.__tel
 		self.__tel = None
-		if self.__stream :
-			if self.__stream != sys.stdout and self.__stream != sys.stderr:
-				self.__stream.close()
 		self.__stream = None
-
 		# now to test for the job
 		random.seed(time.time())
 		fname = ''
@@ -153,7 +146,6 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		vpat = re.compile(s)
 		self.assertTrue(vpat.search(sret))
 		self.__stream.flush()
-
 		# now to open the file
 		fh = open(fname,'r+b')
 		matched = 0
@@ -177,13 +169,15 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		
 
 
-def maintest():
+def maintest(cfname,variables=[]):
 	sbase = xunit.suite.XUnitSuiteBase()
 	# now for the name of current case
 	mn = '__main__'
 	cn = 'ExpTelUnitCase'
 	sbase.LoadCase(mn +'.'+cn)
-	utcfg = xunit.config.XUnitConfig()
+	utcfg.SetValue('build','topdir',os.path.dirname(os.path.abspath(__file__)))
+	utcfg.LoadFile(cfname)
+	
 	_res = xunit.result.XUnitResultBase(1)
 
 	for s in sbase:
@@ -218,6 +212,7 @@ if __name__ == '__main__':
 	args.add_option('-e','--passnote',action='store',dest='passwordnote',nargs=1,help='password note default is (assword:)')
 	args.add_option('-c','--cmdnote',action='store',dest='cmdnote',nargs=1,help='cmd note default is (# )')
 	args.add_option('-t','--timeout',action='store',dest='timeout',nargs=1,help='set timeout value default is 5')
+	args.add_option('-x','--xmllog',action='store',dest='xmllog',nargs=1,help='set xml log')
 	options ,nargs = args.parse_args(sys.argv[1:])
 	if options.verbose:
 		verb = 1
@@ -248,6 +243,9 @@ if __name__ == '__main__':
 		utcfg.SetValue('global','failfast','y',1)
 	else:
 		utcfg.SetValue('global','failfast','n',1)
+
+	if options.xmllog:
+		utcfg.SetValue('global','xmllog',options.xmllog,1)
 	
 	maintest()
 	

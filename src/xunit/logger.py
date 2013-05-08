@@ -262,7 +262,7 @@ class BaseLogger(AbstractLogger):
 		return
 
 	def write(self,msg):
-		if self.__level >= INFO_LEVEL:
+		if self.__level >= DEBUG_LEVEL:
 			self.__strio.write(msg)
 		return
 	def flush(self):
@@ -416,7 +416,7 @@ class XmlLogger(AbstractLogger):
 		return
 		
 	def write(self,msg):
-		self.Info(msg)
+		self.Debug(msg)
 		self.Flush()
 		return
 	def flush(self):
@@ -429,9 +429,13 @@ class XmlLogger(AbstractLogger):
 class _AdvLogger:
 	default_xmllog = None
 	default_xmlhandler = None
+	default_xmllevel = 3
+	default_baselevel = 3
 	def __GetXmlLogDefault(self):
 		utcfg = xunit.config.XUnitConfig()		
 		_AdvLogger.default_xmllog = utcfg.GetValue('global','xmllog','')
+		_AdvLogger.default_xmllevel = int(utcfg.GetValue('global','xmllevel','3'))
+		logging.info('_AdvLogger.default_xmllevel %d'%(_AdvLogger.default_xmllevel))
 		return
 
 	def __init__(self,cn):
@@ -439,23 +443,31 @@ class _AdvLogger:
 		self.__xmlhandler = None
 		if _AdvLogger.default_xmllog is None:
 			self.__GetXmlLogDefault()
-		_logger = BaseLogger(cn)
-		self.__loggers.append(_logger)
 
 		# now to open the log file
 		if len(_AdvLogger.default_xmllog) >0 and  _AdvLogger.default_xmlhandler is None:
 			_AdvLogger.default_xmlhandler = open(_AdvLogger.default_xmllog,"w")
 
 		_fh = _AdvLogger.default_xmlhandler
+		_lv = _AdvLogger.default_xmllevel
 		sec = '.' + cn
 		utcfg = xunit.config.XUnitConfig()
 		v = utcfg.GetValue(sec,'xmllog','')
+		vl = utcfg.GetValue(sec,'xmllevel','')
+		if len(vl) > 0:
+			_lv = int(vl)
 		if len(v) > 0:
 			self.__xmlhandler = open(v,'w')
 			_fh = self.__xmlhandler
+			self.__xmlhandler.SetLevel(_lv)
+		_logger = BaseLogger(cn)
+		self.__loggers.append(_logger)
 		if _fh :
-			_logger = XmlLogger(cn,_fh)
+			_logger = XmlLogger(cn,_fh)			
 			self.__loggers.append(_logger)
+			logging.info('lv %d'%(_lv))
+
+		self.SetLevel(_lv)
 		
 		return
 

@@ -265,7 +265,17 @@ class UtTest(unittest.TestCase):
 		self.assertEqual(v,' cc ')
 		return
 
-	
+
+	def test_colon(self):
+		utcfg = xunit.config.XUnitConfigBase()
+		utcfg.LoadFile('colon.cfg')
+		v = utcfg.GetSectionsPattern()		
+		self.assertTrue( 'colon' in v)
+		v = utcfg.GetOptionsPattern('colon')
+		self.assertTrue( 'value:after' in v)
+		v = utcfg.GetValue('colon','value:after','')
+		self.assertEqual(v,30)
+		return
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
