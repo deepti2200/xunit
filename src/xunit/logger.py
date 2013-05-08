@@ -385,7 +385,7 @@ class XmlLogger(AbstractLogger):
 			self.__outfh.flush()
 		return
 	def CaseError(self,msg):
-		_msg = '<result tag="error">%s</result>\n'%(_msg)
+		_msg = '<result tag="error">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
@@ -432,7 +432,6 @@ class _AdvLogger:
 	def __GetXmlLogDefault(self):
 		utcfg = xunit.config.XUnitConfig()		
 		_AdvLogger.default_xmllog = utcfg.GetValue('global','xmllog','')
-		logging.info('xmllog (%s)'%(repr(_AdvLogger.default_xmllog)))
 		return
 
 	def __init__(self,cn):
@@ -440,7 +439,6 @@ class _AdvLogger:
 		self.__xmlhandler = None
 		if _AdvLogger.default_xmllog is None:
 			self.__GetXmlLogDefault()
-			logging.info('xmllog (%s) len(%d)'%(repr(_AdvLogger.default_xmllog),len(_AdvLogger.default_xmllog)))
 		_logger = BaseLogger(cn)
 		self.__loggers.append(_logger)
 
