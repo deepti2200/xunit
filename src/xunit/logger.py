@@ -435,7 +435,7 @@ class _AdvLogger:
 		utcfg = xunit.config.XUnitConfig()		
 		_AdvLogger.default_xmllog = utcfg.GetValue('global','xmllog','')
 		_AdvLogger.default_xmllevel = int(utcfg.GetValue('global','xmllevel','3'))
-		logging.info('_AdvLogger.default_xmllevel %d'%(_AdvLogger.default_xmllevel))
+		#logging.info('_AdvLogger.default_xmllevel %d'%(_AdvLogger.default_xmllevel))
 		return
 
 	def __init__(self,cn):
@@ -465,7 +465,6 @@ class _AdvLogger:
 		if _fh :
 			_logger = XmlLogger(cn,_fh)			
 			self.__loggers.append(_logger)
-			logging.info('lv %d'%(_lv))
 
 		self.SetLevel(_lv)
 		
@@ -601,6 +600,7 @@ def logger_cleanup():
 	while len(_logger_instances.keys()) > 0:
 		k = _logger_instances.keys()[0]
 		log1 = _logger_instances[k]
+		log1.flush()
 		del log1
 		log1 = None
 		del _logger_instances[k]

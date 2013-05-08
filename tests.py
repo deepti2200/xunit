@@ -76,16 +76,16 @@ def Usage(opt,ec,msg=None):
 
 def Parse_Callback(option, opt_str, value, parser):
 	#print 'option %s opt_str %s value %s parser %s'%(repr(option), repr(opt_str), repr(value), repr(parser))
-	if opt_str == '-V' or opt_str == '--variable':
-		if hasattr(parser.values,'variables'):
-			if value :
-				parser.values.variables.append(value)
-		else:
-			#print 'init unittest_args %s'%(opt_str)
+	if opt_str == '-D' or opt_str == '--variable':
+		if not hasattr(parser.values,'variables'):
 			parser.values.variables = []
-			if value :
-				parser.values.variables.append(value)
-			
+		if value :
+			parser.values.variables.append(value)
+	elif opt_str == '-V' or opt_str == '--debug':
+		if not hasattr(parser.values,'variables'):
+			parser.values.variables = []
+		parser.values.variables.append('[global].xmllevel=5')
+		
 	else:
 		Usage(parser,3,'unknown option (%s)'%(option))
 
@@ -94,8 +94,9 @@ if __name__ == '__main__':
 	args = OptionParser()
 	args.add_option('-v','--verbose',action='store_true',dest='verbose',help='verbose mode')
 	args.add_option('-f','--failfast',action="store_true",dest="failfast",help="failfast mode")
-	args.add_option('-x','--xmllog',action='store',dest='xmllog',nargs=1,help='set xmllog file default is none')
-	args.add_option('-V','--variable',action="callback",callback=Parse_Callback,type="string",nargs=1,help='specify a variable format is [section].option=value')
+	args.add_option('-x','--xmllog',action='store',dest='xmllog',nargs=1,help='set xmllog file defautlt is none')
+	args.add_option('-D','--variable',action="callback",callback=Parse_Callback,type="string",nargs=1,help='specify a variable format is [section].option=value')
+	args.add_option('-V','--debug',action="callback",callback=Parse_Callback,help='debug mode ')
 	
 
 	options ,nargs = args.parse_args(sys.argv[1:])
