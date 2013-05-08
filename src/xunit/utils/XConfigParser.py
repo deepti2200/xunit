@@ -443,6 +443,7 @@ class RawConfigParser:
         r'(?P<header>[^]]+)'                  # very permissive!
         r'\]'                                 # ]
         )
+    '''
     OPTCRE = re.compile(
         r'(?P<option>[^:=\s][^:=]*)'          # very permissive!
         r'\s*(?P<vi>[:=])\s*'                 # any number of space/tab,
@@ -460,6 +461,25 @@ class RawConfigParser:
                                               # space/tab
         r'(?P<value>.*))?$'                   # everything up to eol
         )
+    '''
+    OPTCRE = re.compile(
+        r'(?P<option>[^=\s][^=]*)'          # very permissive!
+        r'\s*(?P<vi>[=])\s*'                 # any number of space/tab,
+                                              # followed by separator
+                                              # (either : or =), followed
+                                              # by any # space/tab
+        r'(?P<value>.*)$'                     # everything up to eol
+        )
+    OPTCRE_NV = re.compile(
+        r'(?P<option>[^=\s][^=]*)'          # very permissive!
+        r'\s*(?:'                             # any number of space/tab,
+        r'(?P<vi>[=])\s*'                    # optionally followed by
+                                              # separator (either : or
+                                              # =), followed by any #
+                                              # space/tab
+        r'(?P<value>.*))?$'                   # everything up to eol
+        )
+    
 
     def _read(self, fp, fpname):
         """Parse a sectioned setup file.
@@ -519,7 +539,8 @@ class RawConfigParser:
                         # This check is fine because the OPTCRE cannot
                         # match if it would set optval to None
                         if optval is not None:
-                            if vi in ('=', ':') and ';' in optval:
+                            #if vi in ('=', ':') and ';' in optval:
+                            if vi in ('=') and ';' in optval:
                                 # ';' is a comment delimiter only if it follows
                                 # a spacing character
                                 pos = optval.find(';')

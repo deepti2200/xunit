@@ -262,7 +262,7 @@ class BaseLogger(AbstractLogger):
 		return
 
 	def write(self,msg):
-		if self.__level >= INFO_LEVEL:
+		if self.__level >= DEBUG_LEVEL:
 			self.__strio.write(msg)
 		return
 	def flush(self):
@@ -373,31 +373,31 @@ class XmlLogger(AbstractLogger):
 			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
-		_msg = '<case func="%s" '%(msg)
+		_msg = '<case func="%s">\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseFail(self,msg):
-		_msg = 'result="fail">%s'%(msg)
+		_msg = '<result tag="fail">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseError(self,msg):
-		_msg = 'result="error">%s'%(_msg)
+		_msg = '<result tag="error">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSucc(self,msg):
-		_msg = 'result="succ">%s'%(msg)
+		_msg = '<result tag="succ">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSkip(self,msg):
-		_msg = 'result="skip">%s'%(msg)
+		_msg = '<result tag="skip">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
@@ -416,7 +416,7 @@ class XmlLogger(AbstractLogger):
 		return
 		
 	def write(self,msg):
-		self.Info(msg)
+		self.Debug(msg)
 		self.Flush()
 		return
 	def flush(self):
@@ -429,10 +429,13 @@ class XmlLogger(AbstractLogger):
 class _AdvLogger:
 	default_xmllog = None
 	default_xmlhandler = None
+	default_xmllevel = 3
+	default_baselevel = 3
 	def __GetXmlLogDefault(self):
 		utcfg = xunit.config.XUnitConfig()		
 		_AdvLogger.default_xmllog = utcfg.GetValue('global','xmllog','')
-		logging.info('xmllog (%s)'%(repr(_AdvLogger.default_xmllog)))
+		_AdvLogger.default_xmllevel = int(utcfg.GetValue('global','xmllevel','3'))
+		#logging.info('_AdvLogger.default_xmllevel %d'%(_AdvLogger.default_xmllevel))
 		return
 
 	def __init__(self,cn):
@@ -440,24 +443,30 @@ class _AdvLogger:
 		self.__xmlhandler = None
 		if _AdvLogger.default_xmllog is None:
 			self.__GetXmlLogDefault()
-			logging.info('xmllog (%s) len(%d)'%(repr(_AdvLogger.default_xmllog),len(_AdvLogger.default_xmllog)))
-		_logger = BaseLogger(cn)
-		self.__loggers.append(_logger)
 
 		# now to open the log file
 		if len(_AdvLogger.default_xmllog) >0 and  _AdvLogger.default_xmlhandler is None:
 			_AdvLogger.default_xmlhandler = open(_AdvLogger.default_xmllog,"w")
 
 		_fh = _AdvLogger.default_xmlhandler
+		_lv = _AdvLogger.default_xmllevel
 		sec = '.' + cn
 		utcfg = xunit.config.XUnitConfig()
 		v = utcfg.GetValue(sec,'xmllog','')
+		vl = utcfg.GetValue(sec,'xmllevel','')
+		if len(vl) > 0:
+			_lv = int(vl)
 		if len(v) > 0:
 			self.__xmlhandler = open(v,'w')
 			_fh = self.__xmlhandler
+			self.__xmlhandler.SetLevel(_lv)
+		_logger = BaseLogger(cn)
+		self.__loggers.append(_logger)
 		if _fh :
-			_logger = XmlLogger(cn,_fh)
+			_logger = XmlLogger(cn,_fh)			
 			self.__loggers.append(_logger)
+
+		self.SetLevel(_lv)
 		
 		return
 
@@ -591,6 +600,7 @@ def logger_cleanup():
 	while len(_logger_instances.keys()) > 0:
 		k = _logger_instances.keys()[0]
 		log1 = _logger_instances[k]
+		log1.flush()
 		del log1
 		log1 = None
 		del _logger_instances[k]
