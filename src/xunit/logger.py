@@ -373,31 +373,31 @@ class XmlLogger(AbstractLogger):
 			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
-		_msg = '<case func="%s" '%(msg)
+		_msg = '<case func="%s">\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseFail(self,msg):
-		_msg = 'result="fail">%s'%(msg)
+		_msg = '<result tag="fail">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseError(self,msg):
-		_msg = 'result="error">%s'%(_msg)
+		_msg = '<result tag="error">%s</result>\n'%(_msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSucc(self,msg):
-		_msg = 'result="succ">%s'%(msg)
+		_msg = '<result tag="succ">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSkip(self,msg):
-		_msg = 'result="skip">%s'%(msg)
+		_msg = '<result tag="skip">%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
