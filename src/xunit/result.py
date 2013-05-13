@@ -24,6 +24,7 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 		self.__output = output
 		self.showAll = 0
 		self.dots = 0
+		self.descriptions = False
 		self.shouldStop = False
 		super(unittest.runner.TextTestResult,self).__init__(None,'',0)
 		utcfg = xunit.config.XUnitConfig()
@@ -39,14 +40,33 @@ class XUnitResultBase(unittest.runner.TextTestResult):
 		if v == 'y':
 			self.__failfast = 1
 		self.__logger.TestStart('start :')
+		self.__ps1 = '=' * 60
+		self.__ps2 = '-' * 60
 		return
 
 	def RestoreLogOutput(self):
 		if self.__logger:
 			self.__logger.SetOutput(self.__logoutput)
+
+	def __printErrorslist(self,note,errors):
+		for test, err in errors:
+			self.__logger.write(self.__ps1+'\n')
+			self.__logger.write("%s: %s\n" % (note,test))
+			self.__logger.write(self.__ps2+'\n')
+			self.__logger.write("%s\n" % err)		
+		return
+
+	def __printErros(self):
+		self.__printErrorslist('ERROR',self.errors)
+		self.__printErrorslist('FAIL',self.failures)
+		self.__logger.flush()
+		return
+		
 	def ResultAll(self):
 		if self.__resultout :
 			return
+		if self.__logger and self.__output:
+			self.__printErros()
 		if self.__logger and self.__output:
 			self.__logger.TestEnd('Cases %d Succ %d Fail %d Skip %d'%(self.__cases,self.__succs,self.__fails,self.__skips))
 		self.RestoreLogOutput()

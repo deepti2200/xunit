@@ -2,7 +2,8 @@
 
 import sys
 import os
-
+import subprocess
+import re
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
 sys.path.append((os.path.dirname(os.path.abspath(__file__))))
 
@@ -182,6 +183,60 @@ class XUnitTestResult(xunit.case.XUnitCase):
 				_res2.RestoreLogOutput()
 				del _res2
 			_res2 = None
+		return
+
+	def __CallProcessReturn(self,cmd):
+		sp = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		ep = sp.stderr
+		op = sp.stdout
+		ls = []
+		ls += ep.readlines()
+		ls += op.readlines()
+		ol = []
+		for l in ls:
+			ol.append(l.rstrip('\r\n'))
+		return ol
+
+	def __FindLineIdx(self,ls,s):
+		i = 0
+		idx = -1
+		vpat = re.compile(s)
+		for l in ls:
+			if vpat.search(l):
+				idx = i
+				break
+			i += 1
+		return idx
+
+	def test_errormsgerror(self):
+		curpath = os.path.dirname(os.path.abspath(__file__))
+		errpy = os.path.join(curpath,'test_errres.py')
+		lss = self.__CallProcessReturn('python %s -v __main__.ErrorTest:test_error'%(errpy))
+		idx = self.__FindLineIdx(lss,'test_error')
+		self.assertTrue(idx>=0)
+		idx = self.__FindLineIdx(lss,'test_error2')
+		self.assertTrue(idx == -1)
+		return
+
+
+	def test_errormsgfast(self):
+		curpath = os.path.dirname(os.path.abspath(__file__))
+		errpy = os.path.join(curpath,'test_errres.py')
+		lss = self.__CallProcessReturn('python %s -v -f'%(errpy))
+		idx = self.__FindLineIdx(lss,'Traceback')
+		self.assertTrue(idx>=0)
+		idx = self.__FindLineIdx(lss[idx+1:],'Traceback')
+		self.assertTrue(idx == -1)
+		return
+
+	def test_errormsgnotfast(self):
+		curpath = os.path.dirname(os.path.abspath(__file__))
+		errpy = os.path.join(curpath,'test_errres.py')
+		lss = self.__CallProcessReturn('python %s -v'%(errpy))
+		idx = self.__FindLineIdx(lss,'Traceback')
+		self.assertTrue(idx>=0)
+		idx = self.__FindLineIdx(lss[idx+1:],'Traceback')
+		self.assertTrue(idx >= 0)
 		return
 
 
