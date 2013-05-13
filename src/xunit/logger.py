@@ -453,13 +453,11 @@ class _AdvLogger:
 		sec = '.' + cn
 		utcfg = xunit.config.XUnitConfig()
 		v = utcfg.GetValue(sec,'xmllog','')
-		vl = utcfg.GetValue(sec,'xmllevel','')
-		if len(vl) > 0:
-			_lv = int(vl)
+		# default level is warning
+		_lv = utcfg.GetValue(sec,'xmllevel',3)
 		if len(v) > 0:
 			self.__xmlhandler = open(v,'w')
 			_fh = self.__xmlhandler
-			self.__xmlhandler.SetLevel(_lv)
 		_logger = BaseLogger(cn)
 		self.__loggers.append(_logger)
 		if _fh :

@@ -92,7 +92,7 @@ def Parse_Callback(option, opt_str, value, parser):
 
 if __name__ == '__main__':
 	args = OptionParser()
-	args.add_option('-v','--verbose',action='store_true',dest='verbose',help='verbose mode')
+	args.add_option('-v','--verbose',action='count',dest='verbose',help='verbose mode if -vvv debug most')
 	args.add_option('-f','--failfast',action="store_true",dest="failfast",help="failfast mode")
 	args.add_option('-x','--xmllog',action='store',dest='xmllog',nargs=1,help='set xmllog file defautlt is none')
 	args.add_option('-D','--variable',action="callback",callback=Parse_Callback,type="string",nargs=1,help='specify a variable format is [section].option=value')
@@ -108,8 +108,10 @@ if __name__ == '__main__':
 
 	
 	if options.verbose:
-		_vars.append('[global].debug.mode=y')
 		logging.basicConfig(level=logging.INFO,format="%(levelname)-8s [%(filename)-10s:%(funcName)-20s:%(lineno)-5s] %(message)s")
+		_vars.append('[global].debug.mode=y')
+		if options.verbose >= 3:
+			_vars.append('[.__main__].xmllevel=5')
 
 	if options.failfast:
 		_vars.append('[global].failfast=y')
