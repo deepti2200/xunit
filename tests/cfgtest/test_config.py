@@ -9,8 +9,9 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
 sys.path.append((os.path.dirname(os.path.abspath(__file__))))
 import xunit.config
+from xunit.case import XUnitCase
 
-class UtTest(unittest.TestCase):
+class UtTest(XUnitCase):
 	def test_LoadBasic(self):
 		# now for 
 		utcfg = xunit.config.XUnitConfigBase()

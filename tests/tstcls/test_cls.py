@@ -9,6 +9,7 @@ sys.path.append((os.path.dirname(os.path.abspath(__file__))))
 import xunit.utils.cls
 import logging
 import incbunit.base.BUnit
+from xunit.case import XUnitCase
 
 class AUnit(object):
 	def GetMsg(self):
@@ -21,7 +22,7 @@ class AUnit(object):
 				return xunit.utils.cls.GetCallerClassName(1) 
 
 
-class ClsNameTest(unittest.TestCase):
+class ClsNameTest(XUnitCase):
 	def test_mainClass(self):
 		a = AUnit()
 		self.assertTrue(a.GetMsg(),'__main__.AUnit')
