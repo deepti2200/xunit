@@ -1,8 +1,13 @@
 #! python
 
-import unittest
 import sys
-class CUnit(unittest.TestCase):
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','..','src')))
+sys.path.append((os.path.dirname(os.path.abspath(__file__))))
+
+
+from xunit.case import XUnitCase
+class CUnit(XUnitCase):
 	@classmethod
 	def setUpClass(cls):
 		sys.stdout.write('CUnit.CUnit:setUpClass\n')

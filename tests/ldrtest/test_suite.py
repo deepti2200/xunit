@@ -9,8 +9,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__f
 sys.path.append((os.path.dirname(os.path.abspath(__file__))))
 import xunit.suite
 import AUnit
+from xunit.case import XUnitCase
 
-class  LdrUnitTest(unittest.TestCase):
+class  LdrUnitTest(XUnitCase):
 	def __hasUnitMethod(self,suite,fn,cn):
 		_res = 0
 		try:
