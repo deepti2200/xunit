@@ -7,10 +7,12 @@ import sys
 import StringIO
 import inspect
 import atexit
-import xml.etree.ElementTree as ET
+#import xml.etree.ElementTree as ET
 import xunit.config
 
 from xunit.utils import exception
+from xunit.utils import cls
+from xunit.case import XUnitCase
 
 class NotDefinedClassMethodException(exception.XUnitException):
 	pass
@@ -318,6 +320,38 @@ class XmlLogger(AbstractLogger):
 		self.__outfh = None
 		return
 
+	def __GetTestCaseName(self):
+		# default value is __main__ ,if we find ,we do not use this
+		stks = inspect.stack()
+		for i in xrange(0,len(stks)-1):
+			frm = stks[i]
+			mm = inspect.getmodule(frm[0])
+			fc = frm[0].f_code
+			fn = frm[3]
+			if fn.lower().startswith('test_'):
+				# if we find the test_ case name ,so we should test whether it is the XUnitCase class functions,
+				# if so we return the whole module.class:function format
+				_cls = fc.co_varnames[0]
+				inst = frm[0].f_locals[_cls]
+				# it is the class we search for ,so we return it
+				if issubclass(inst.__class__, XUnitCase):
+					cn = cls.GetClassName(inst.__class__) + ':' + fn
+					return cn
+		# we do not get the name, so we should get the class
+		for i in xrange(0,len(stks)-1):
+			frm = stks[i]
+			mm = inspect.getmodule(frm[0])
+			fc = frm[0].f_code
+			fn = frm[3]
+			_cls = fc.co_varnames[0]
+			inst = frm[0].f_locals[_cls]
+			# it is the class we search for ,so we return it
+			if issubclass(inst.__class__, XUnitCase):
+				cn = cls.GetClassName(inst.__class__)
+				return cn
+		# nothing find ,so we should return __main__
+		return '__main__'
+
 	def SetLevel(self,level=WARNING_LEVEL):
 		oldlevel = self.__level
 		self.__level = level
@@ -330,74 +364,63 @@ class XmlLogger(AbstractLogger):
 		if self.__level >= INFO_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
-			elem = ET.Element('infomsg')
-			elem.set('class',self.__cn)
-			elem.text = _msg
-			_msg = ET.tostring(elem,method='xml')
+			_msg = '<infomsg><func>%s</func>%s</infomsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Warn(self,msg):
 		if self.__level >= WARNING_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
-			elem = ET.Element('warnmsg')
-			elem.set('class',self.__cn)
-			elem.text = _msg
-			_msg = ET.tostring(elem,method='xml')
+			_msg = '<warnmsg><func>%s</func>%s</warnmsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Error(self,msg):
 		if self.__level >= ERROR_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
-			elem = ET.Element('errormsg')
-			elem.set('class',self.__cn)
-			elem.text = _msg
-			_msg = ET.tostring(elem,method='xml')
+			_msg = '<errormsg><func>%s</func>%s</errormsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Debug(self,msg):
 		if self.__level >= DEBUG_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
-			elem = ET.Element('debugmsg')
-			elem.set('class',self.__cn)
-			elem.text = _msg
-			_msg = ET.tostring(elem,method='xml')
+			self.__GetTestCaseName()
+			_msg = '<debugmsg><func>%s</func>%s</debugmsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Flush(self):
 		v = self.__flush()
 		self.__ResetStrLogger()
 		return v
 	def TestStart(self,msg):
-		_msg = '<test msg="%s">\n'%(msg)
+		_msg = '<test><msg>%s</msg>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
-		_msg = '<case func="%s">\n'%(msg)
+		_msg = '<case ><func>%s</func>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseFail(self,msg):
-		_msg = '<result tag="fail">%s</result>\n'%(msg)
+		_msg = '<result><tag>fail</tag>%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseError(self,msg):
-		_msg = '<result tag="error">%s</result>\n'%(msg)
+		_msg = '<result><tag>error</tag>%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSucc(self,msg):
-		_msg = '<result tag="succ">%s</result>\n'%(msg)
+		_msg = '<result><tag>succ</tag>%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSkip(self,msg):
-		_msg = '<result tag="skip">%s</result>\n'%(msg)
+		_msg = '<result><tag>skip</tag>%s</result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
