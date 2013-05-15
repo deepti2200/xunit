@@ -7,12 +7,14 @@ import sys
 import StringIO
 import inspect
 import atexit
-#import xml.etree.ElementTree as ET
+import time
+import datetime
 import xunit.config
 
 from xunit.utils import exception
 from xunit.utils import cls
 from xunit.case import XUnitCase
+from xunit.config import XUnitConfig
 
 class NotDefinedClassMethodException(exception.XUnitException):
 	pass
@@ -390,13 +392,14 @@ class XmlLogger(AbstractLogger):
 		self.__ResetStrLogger()
 		return v
 	def TestStart(self,msg):
-		_msg = '<test><msg>%s</msg>\n'%(msg)
+		utcfg = XUnitConfig()
+		_msg = '<test>\n<starttime>%s</starttime>\n<configfile>%s</configfile>\n<msg>%s</msg>\n'%(datetime.datetime.now(),utcfg.GetConfigFile(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
-		_msg = '<case ><func>%s</func>\n'%(msg)
+		_msg = '<case ><starttime>%s</starttime><func>%s</func>\n'%(datetime.datetime.now(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
@@ -426,13 +429,13 @@ class XmlLogger(AbstractLogger):
 			self.__outfh.flush()
 		return
 	def CaseEnd(self,msg):
-		_msg = '%s</case>\n'%(msg)
+		_msg = '<endtime>%s</endtime>%s</case>\n'%(datetime.datetime.now(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def TestEnd(self,msg):
-		_msg = '\n%s\n</test>\n'%(msg)
+		_msg = '<endtime>%s</endtime>\n%s\n</test>\n'%(datetime.datetime.now(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()

@@ -277,6 +277,18 @@ class UtTest(XUnitCase):
 		v = utcfg.GetValue('colon','value:after','')
 		self.assertEqual(v,30)
 		return
+
+	def test_loadcfgfilename(self):
+		utcfg = xunit.config.XUnitConfigBase()
+		utcfg.LoadFile('colon.cfg')
+		fname = utcfg.GetConfigFile()
+		self.assertEqual('colon.cfg',fname)
+		utcfg = xunit.config.XUnitConfigBase('ks.cfg')
+		fname = utcfg.GetConfigFile()
+		self.assertEqual('ks.cfg',fname)
+		return
+		
+		
 		
 if __name__ == '__main__':
 	if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
