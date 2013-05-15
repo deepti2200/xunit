@@ -1,0 +1,256 @@
+<?xml version="1.0"?>
+<xunittest>
+<starttime>2013-05-15 17:17:10.359000</starttime>
+<configfile>mainvirt.cfg</configfile>
+<testsubject>start :</testsubject>
+<xunitcase ><starttime>2013-05-15 17:17:10.359000</starttime><func>test_config.UtTest:test_3LevelRef</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.375000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.375000</starttime><func>test_config.UtTest:test_GetOptionsPattern</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.375000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.375000</starttime><func>test_config.UtTest:test_GetSectionsPattern</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.375000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.375000</starttime><func>test_config.UtTest:test_IncludeFiles</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.375000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.375000</starttime><func>test_config.UtTest:test_LoadBasic</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.390000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.390000</starttime><func>test_config.UtTest:test_LoadError</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.390000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.390000</starttime><func>test_config.UtTest:test_NonValue</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.390000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.390000</starttime><func>test_config.UtTest:test_OverflowError</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.406000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.406000</starttime><func>test_config.UtTest:test_SearchPathExp</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.406000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.406000</starttime><func>test_config.UtTest:test_SearchPathNoRef</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.406000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.406000</starttime><func>test_config.UtTest:test_SearchPaths</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.421000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.421000</starttime><func>test_config.UtTest:test_SectionInnerOverflowError</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.421000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.421000</starttime><func>test_config.UtTest:test_Singleton</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.437000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.437000</starttime><func>test_config.UtTest:test_Unittests</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.437000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.437000</starttime><func>test_config.UtTest:test_casesensitive</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.437000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.437000</starttime><func>test_config.UtTest:test_colon</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.437000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.437000</starttime><func>test_config.UtTest:test_getdefaultvalue</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.437000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.437000</starttime><func>test_config.UtTest:test_loadcfgfilename</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.453000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.453000</starttime><func>test_config.UtTest:test_noref</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.453000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.453000</starttime><func>test_config.UtTest:test_setgetvalue</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.453000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.453000</starttime><func>test_config.UtTest:test_spacefile</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.453000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.453000</starttime><func>test_config.UtTest:test_spaceword</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.453000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.453000</starttime><func>test_config.UtTest:test_splitunittest</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.468000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.468000</starttime><func>test_config.UtTest:test_unittest</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.468000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.468000</starttime><func>test_config.UtTest:test_unittestbad</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.468000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.468000</starttime><func>test_suite.LdrUnitTest:test_2ClassAdd</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.484000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.484000</starttime><func>test_suite.LdrUnitTest:test_Load1SuccAndFailed</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.484000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.500000</starttime><func>test_suite.LdrUnitTest:test_LoadClassAndFunction</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.500000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.500000</starttime><func>test_suite.LdrUnitTest:test_LoadFunction</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.500000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.515000</starttime><func>test_suite.LdrUnitTest:test_LoadModule</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.515000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.515000</starttime><func>test_suite.LdrUnitTest:test_NotFunction</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.515000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.531000</starttime><func>test_suite.LdrUnitTest:test_NotLoadModule</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.531000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.546000</starttime><func>test_suite.LdrUnitTest:test_RunTestCase1</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.609000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.625000</starttime><func>test_suite.LdrUnitTest:test_RunTestCase2</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.765000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.765000</starttime><func>test_suite.LdrUnitTest:test_RunTestCase3</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.921000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.921000</starttime><func>test_case.XUnitTest:test_OneCase</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.921000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.921000</starttime><func>test_cls.ClsNameTest:test_CallImportClass</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.921000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.921000</starttime><func>test_cls.ClsNameTest:test_GetClassName</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.921000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.921000</starttime><func>test_cls.ClsNameTest:test_mainClass</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.937000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.937000</starttime><func>test_logger.LoggerTest:test_Logger</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.937000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.937000</starttime><func>test_logger.LoggerTest:test_Logger2</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.937000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.937000</starttime><func>test_logger.LoggerTest:test_LoggerString</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.953000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.953000</starttime><func>test_xmllogger.TestXmlLogger:test_xmldebug</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.968000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.968000</starttime><func>test_xmllogger.TestXmlLogger:test_xmlfiledebug</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.968000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.968000</starttime><func>test_xmllogger.TestXmlLogger:test_xmlfilewarn</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:10.968000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:10.968000</starttime><func>test_result.XUnitTestResult:test_errormsgerror</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:11.046000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:11.046000</starttime><func>test_result.XUnitTestResult:test_errormsgfast</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:11.125000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:11.125000</starttime><func>test_result.XUnitTestResult:test_errormsgnotfast</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:11.218000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:11.218000</starttime><func>test_result.XUnitTestResult:test_resultfailfastfirst</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:11.218000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:11.218000</starttime><func>test_result.XUnitTestResult:test_resultfailfastwithskip</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:11.218000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:11.218000</starttime><func>test_result.XUnitTestResult:test_resultnotfailfast</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:11.218000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:11.218000</starttime><func>test_result.XUnitTestResult:test_resultunexpectedfail</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:11.218000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:11.218000</starttime><func>test_exptel.ExpTelUnitCase:test_connectrefused</func>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:16.234000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:16.234000</starttime><func>test_exptel.ExpTelUnitCase:test_matchecho</func>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446] Ubuntu 12.04.2 LTS
+gmi-virtual-machine login:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446]  gmi
+Password:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446]  
+Last login: Wed May 15 17:11:50 CST 2013 from bogon on pts/4
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.5.0-23-generic i686)
+
+ * Documentation:  https://help.ubuntu.com/
+
+162 packages can be updated.
+66 updates are security updates.
+
+gmi@gmi-virtual-machine:~$</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446]  e</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446] xport PS1='# #>>'
+# #>></msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446] s</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446] tty -echo
+# #>></msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446] hello world</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446] 
+# #>></msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_matchecho</func><msg>[Z:\xunit\src\xunit\logger.py:446] # #>></msg></debugmsg>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:28.218000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:28.218000</starttime><func>test_exptel.ExpTelUnitCase:test_telnethostok</func>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_telnethostok</func><msg>[Z:\xunit\src\xunit\logger.py:446] Ubuntu 12.04.2 LTS
+gmi-virtual-machine login:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_telnethostok</func><msg>[Z:\xunit\src\xunit\logger.py:446]  gmi
+Password:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_telnethostok</func><msg>[Z:\xunit\src\xunit\logger.py:446]  
+Last login: Wed May 15 17:17:20 CST 2013 from bogon on pts/2
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.5.0-23-generic i686)
+
+ * Documentation:  https://help.ubuntu.com/
+
+162 packages can be updated.
+66 updates are security updates.
+
+gmi@gmi-virtual-machine:~$</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_telnethostok</func><msg>[Z:\xunit\src\xunit\logger.py:446]  e</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_telnethostok</func><msg>[Z:\xunit\src\xunit\logger.py:446] xport PS1='# #>>'
+# #>></msg></debugmsg>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:39.390000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:39.390000</starttime><func>test_exptel.ExpTelUnitCase:test_timeouterror</func>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_timeouterror</func><msg>[Z:\xunit\src\xunit\logger.py:446] Ubuntu 12.04.2 LTS
+gmi-virtual-machine login:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_timeouterror</func><msg>[Z:\xunit\src\xunit\logger.py:446]  gmi
+Password:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_timeouterror</func><msg>[Z:\xunit\src\xunit\logger.py:446]  
+Last login: Wed May 15 17:17:32 CST 2013 from bogon on pts/4
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.5.0-23-generic i686)
+
+ * Documentation:  https://help.ubuntu.com/
+
+162 packages can be updated.
+66 updates are security updates.
+
+gmi@gmi-virtual-machine:~$</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_timeouterror</func><msg>[Z:\xunit\src\xunit\logger.py:446]  e</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_timeouterror</func><msg>[Z:\xunit\src\xunit\logger.py:446] xport PS1='# #>>'
+# #>></msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_timeouterror</func><msg>[Z:\xunit\src\xunit\logger.py:446] s</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_timeouterror</func><msg>[Z:\xunit\src\xunit\logger.py:446] tty -echo
+# #>></msg></debugmsg>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:17:55.656000</endtime><msg></msg></xunitcase>
+<xunitcase ><starttime>2013-05-15 17:17:55.656000</starttime><func>test_exptel.ExpTelUnitCase:test_writelog</func>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_writelog</func><msg>[Z:\xunit\src\xunit\logger.py:446] Ubuntu 12.04.2 LTS
+gmi-virtual-machine login:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_writelog</func><msg>[Z:\xunit\src\xunit\logger.py:446]  gmi
+Password:</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_writelog</func><msg>[Z:\xunit\src\xunit\logger.py:446]  
+Last login: Wed May 15 17:17:43 CST 2013 from bogon on pts/5
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.5.0-23-generic i686)
+
+ * Documentation:  https://help.ubuntu.com/
+
+162 packages can be updated.
+66 updates are security updates.
+
+gmi@gmi-virtual-machine:~$</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_writelog</func><msg>[Z:\xunit\src\xunit\logger.py:446]  e</msg></debugmsg>
+<debugmsg><func>test_exptel.ExpTelUnitCase:test_writelog</func><msg>[Z:\xunit\src\xunit\logger.py:446] xport PS1='# #>>'
+# #>></msg></debugmsg>
+<result><indication>succ</indication><msg>Success</msg></result>
+<endtime>2013-05-15 17:18:18.515000</endtime><msg></msg></xunitcase>
+<endtime>2013-05-15 17:18:18.546000</endtime>
+<msg>Cases 57 Succ 57 Fail 0 Skip 0</msg></xunittest>

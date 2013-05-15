@@ -366,26 +366,26 @@ class XmlLogger(AbstractLogger):
 		if self.__level >= INFO_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
-			_msg = '<infomsg><func>%s</func>%s</infomsg>'%(self.__GetTestCaseName(),_msg)
+			_msg = '<infomsg><func>%s</func><msg>%s</msg></infomsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Warn(self,msg):
 		if self.__level >= WARNING_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
-			_msg = '<warnmsg><func>%s</func>%s</warnmsg>'%(self.__GetTestCaseName(),_msg)
+			_msg = '<warnmsg><func>%s</func><msg>%s</msg></warnmsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Error(self,msg):
 		if self.__level >= ERROR_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
-			_msg = '<errormsg><func>%s</func>%s</errormsg>'%(self.__GetTestCaseName(),_msg)
+			_msg = '<errormsg><func>%s</func><msg>%s</msg></errormsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Debug(self,msg):
 		if self.__level >= DEBUG_LEVEL:
 			_f = inspect.stack()[1]
 			_msg = '[%s:%s] %s'%(_f[1],_f[2],msg)
 			self.__GetTestCaseName()
-			_msg = '<debugmsg><func>%s</func>%s</debugmsg>'%(self.__GetTestCaseName(),_msg)
+			_msg = '<debugmsg><func>%s</func><msg>%s</msg></debugmsg>'%(self.__GetTestCaseName(),_msg)
 			self.__strio.write(_msg+'\n')
 	def Flush(self):
 		v = self.__flush()
@@ -393,49 +393,50 @@ class XmlLogger(AbstractLogger):
 		return v
 	def TestStart(self,msg):
 		utcfg = XUnitConfig()
-		_msg = '<test>\n<starttime>%s</starttime>\n<configfile>%s</configfile>\n<msg>%s</msg>\n'%(datetime.datetime.now(),utcfg.GetConfigFile(),msg)
+		_msg = '<?xml version="1.0"?>\n'
+		_msg += '<xunittest>\n<starttime>%s</starttime>\n<configfile>%s</configfile>\n<testsubject>%s</testsubject>\n'%(datetime.datetime.now(),utcfg.GetConfigFile(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseStart(self,msg):
-		_msg = '<case ><starttime>%s</starttime><func>%s</func>\n'%(datetime.datetime.now(),msg)
+		_msg = '<xunitcase ><starttime>%s</starttime><func>%s</func>\n'%(datetime.datetime.now(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseFail(self,msg):
-		_msg = '<result><tag>fail</tag>%s</result>\n'%(msg)
+		_msg = '<result><indication>fail</indication><msg>%s</msg></result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseError(self,msg):
-		_msg = '<result><tag>error</tag>%s</result>\n'%(msg)
+		_msg = '<result><indication>error</indication><msg>%s</msg></result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSucc(self,msg):
-		_msg = '<result><tag>succ</tag>%s</result>\n'%(msg)
+		_msg = '<result><indication>succ</indication><msg>%s</msg></result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseSkip(self,msg):
-		_msg = '<result><tag>skip</tag>%s</result>\n'%(msg)
+		_msg = '<result><indication>skip</indication><msg>%s</msg></result>\n'%(msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def CaseEnd(self,msg):
-		_msg = '<endtime>%s</endtime>%s</case>\n'%(datetime.datetime.now(),msg)
+		_msg = '<endtime>%s</endtime><msg>%s</msg></xunitcase>\n'%(datetime.datetime.now(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
 		return
 	def TestEnd(self,msg):
-		_msg = '<endtime>%s</endtime>\n%s\n</test>\n'%(datetime.datetime.now(),msg)
+		_msg = '<endtime>%s</endtime>\n<msg>%s</msg></xunittest>\n'%(datetime.datetime.now(),msg)
 		if self.__outfh and self.__output > 0:
 			self.__outfh.write(_msg)
 			self.__outfh.flush()
@@ -489,9 +490,7 @@ class _AdvLogger:
 		if _fh :
 			_logger = XmlLogger(cn,_fh)			
 			self.__loggers.append(_logger)
-
 		self.SetLevel(_lv)
-		
 		return
 
 	def __del__(self):
@@ -634,6 +633,9 @@ def logger_cleanup():
 	_AdvLogger.default_xmlhandler = None
 	_AdvLogger.default_xmllog = None		
 	return
+
+
+
 
 @singleton
 class AdvLogger(_AdvLogger):
