@@ -23,7 +23,7 @@ import time
 CharacterUse='abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789'
 
 class ExpTelUnitCase(xunit.case.XUnitCase):
-	def XUnitsetUp(self):
+	def __Login(self):
 		utcfg = xunit.config.XUnitConfig()
 		host = utcfg.GetValue('.telnet','host','')
 		port = utcfg.GetValue('.telnet','port','23')
@@ -47,38 +47,51 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		else:
 			self.__stream = ClassLogger(logclass)
 		self.__tel = exptel.XUnitTelnet(host,port,user,password,self.__stream,timeout,loginnote,passwordnote,cmdnote)		
-		return 
+		return
 
-
-	def XUnittearDown(self):
+	def __Logout(self):
 		if self.__tel:
 			del self.__tel
 			self.__tel = None
 		self.__stream = None
 		return
+
+
 	def test_telnethostok(self):
+		try:
+			self.__Login()
+		finally:
+			self.__Logout()
 		return
 
 	def test_matchecho(self):
-		cmd = 'echo "hello world"'
-		match,rval = self.__tel.Execute(cmd,2)
-		self.assertEqual(match,1)
-		vpat = re.compile('hello')
-		self.assertTrue(vpat.search(rval))
-		vpat = re.compile('world')
-		self.assertTrue(vpat.search(rval))
-		vpat = re.compile('echo')
-		self.assertFalse(vpat.search(rval))
+		try:
+			self.__Login()
+			cmd = 'echo "hello world"'
+			match,rval = self.__tel.Execute(cmd,2)
+			self.assertEqual(match,1)
+			vpat = re.compile('hello')
+			self.assertTrue(vpat.search(rval))
+			vpat = re.compile('world')
+			self.assertTrue(vpat.search(rval))
+			vpat = re.compile('echo')
+			self.assertFalse(vpat.search(rval))
+		finally:
+			self.__Logout()
 		return
 
 	def test_timeouterror(self):
-		cmd = 'sleep 10'
-		ok = 1
 		try:
-			match = self.__tel.Execute(cmd)
-		except exptel.HostCmdTimeoutError:
-			ok = 0
-		self.assertEqual(ok,0)
+			self.__Login()
+			cmd = 'sleep 10'
+			ok = 1
+			try:
+				match = self.__tel.Execute(cmd)
+			except exptel.HostCmdTimeoutError:
+				ok = 0
+			self.assertEqual(ok,0)
+		finally:
+			self.__Logout()
 		return
 	def test_connectrefused(self):
 		lip = socket.gethostbyname(socket.gethostname())
@@ -105,64 +118,68 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 		
 		
 	def test_writelog(self):
-		# first to close the code file
-		if self.__tel:
-			del self.__tel
-		self.__tel = None
-		self.__stream = None
-		# now to test for the job
-		random.seed(time.time())
-		fname = ''
-		flen = random.randint(10,20)
-		clen = len(CharacterUse)
-		clen -= 1
-		for i in xrange(flen):
-			fname += CharacterUse[random.randint(0,clen)]
-		fname += '.log'
-		self.__stream = open(fname,'w+b')
-		utcfg = xunit.config.XUnitConfig()
-		host = utcfg.GetValue('.telnet','host','')
-		port = utcfg.GetValue('.telnet','port','23')
-		user = utcfg.GetValue('.telnet','username',None)
-		password = utcfg.GetValue('.telnet','password',None)
-		timeout = utcfg.GetValue('.telnet','timeout','5')
-		loginnote = utcfg.GetValue('.telnet','loginnote','login:')
-		passwordnote = utcfg.GetValue('.telnet','passwordnote','assword:')
-		cmdnote = utcfg.GetValue('.telnet','cmdnote','# ')
-		port =int(port)
-		timeout=int(timeout)
-		self.__tel = exptel.XUnitTelnet(host,port,user,password,self.__stream,timeout,loginnote,passwordnote,cmdnote)
-		# now we should 
-		slen = random.randint(20,50)
-		clen = len(CharacterUse)
-		clen -= 1
-		s = ''
-		for i in xrange(slen):
-			s += CharacterUse[random.randint(0,clen)]
+		try:
+			self.__Login()
+			# first to close the code file
+			if self.__tel:
+				del self.__tel
+			self.__tel = None
+			self.__stream = None
+			# now to test for the job
+			random.seed(time.time())
+			fname = ''
+			flen = random.randint(10,20)
+			clen = len(CharacterUse)
+			clen -= 1
+			for i in xrange(flen):
+				fname += CharacterUse[random.randint(0,clen)]
+			fname += '.log'
+			self.__stream = open(fname,'w+b')
+			utcfg = xunit.config.XUnitConfig()
+			host = utcfg.GetValue('.telnet','host','')
+			port = utcfg.GetValue('.telnet','port','23')
+			user = utcfg.GetValue('.telnet','username',None)
+			password = utcfg.GetValue('.telnet','password',None)
+			timeout = utcfg.GetValue('.telnet','timeout','5')
+			loginnote = utcfg.GetValue('.telnet','loginnote','login:')
+			passwordnote = utcfg.GetValue('.telnet','passwordnote','assword:')
+			cmdnote = utcfg.GetValue('.telnet','cmdnote','# ')
+			port =int(port)
+			timeout=int(timeout)
+			self.__tel = exptel.XUnitTelnet(host,port,user,password,self.__stream,timeout,loginnote,passwordnote,cmdnote)
+			# now we should 
+			slen = random.randint(20,50)
+			clen = len(CharacterUse)
+			clen -= 1
+			s = ''
+			for i in xrange(slen):
+				s += CharacterUse[random.randint(0,clen)]
 
-		cmd = 'echo "%s"'%(s)
-		ret ,sret = self.__tel.Execute(cmd)
-		self.assertEqual(ret,1)
-		vpat = re.compile(s)
-		self.assertTrue(vpat.search(sret))
-		self.__stream.flush()
-		# now to open the file
-		fh = open(fname,'r+b')
-		matched = 0
-		for l in fh:
-			if vpat.search(l):
-				matched = 1
-				break
-		self.assertEqual(matched,1)
-		del self.__tel
-		self.__tel = None		
-		self.__stream.close()
-		self.__stream = None
-		del fh
-		fh = None
-		# now to remove the file
-		os.remove(fname)
-		# now to make the 
+			cmd = 'echo "%s"'%(s)
+			ret ,sret = self.__tel.Execute(cmd)
+			self.assertEqual(ret,1)
+			vpat = re.compile(s)
+			self.assertTrue(vpat.search(sret))
+			self.__stream.flush()
+			# now to open the file
+			fh = open(fname,'r+b')
+			matched = 0
+			for l in fh:
+				if vpat.search(l):
+					matched = 1
+					break
+			self.assertEqual(matched,1)
+			del self.__tel
+			self.__tel = None		
+			self.__stream.close()
+			self.__stream = None
+			del fh
+			fh = None
+			# now to remove the file
+			os.remove(fname)
+			# now to make the 
+		finally:
+			self.__Logout()
 		return
 
 		

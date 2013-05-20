@@ -186,7 +186,7 @@ class XUnitTestResult(xunit.case.XUnitCase):
 		return
 
 	def __CallProcessReturn(self,cmd):
-		sp = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		sp = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		ep = sp.stderr
 		op = sp.stdout
 		ls = []

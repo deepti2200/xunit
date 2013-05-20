@@ -101,7 +101,7 @@ class  LdrUnitTest(XUnitCase):
 		return
 
 	def __CallProcessReturn(self,cmd):
-		sp = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		sp = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		op = sp.stdout
 		ls = op.readlines()
 		ol = []
