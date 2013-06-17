@@ -191,6 +191,3 @@ class XUnitTelnet:
 	def Close(self):
 		self.__CloseTel()
 		return
-
-	def GetPS1(self):
-		return self.__ps1
