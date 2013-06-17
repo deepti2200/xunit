@@ -179,7 +179,7 @@ class XUnitTelnet:
 			vpat = re.compile(expref)
 			if  not vpat.search(totr):
 				matched = 0
-		
+		totr = totr.replace(self.__ps1,'')
 		return matched,totr
 
 	def Writeln(self,cmd):
@@ -191,3 +191,6 @@ class XUnitTelnet:
 	def Close(self):
 		self.__CloseTel()
 		return
+
+	def GetPS1(self):
+		return self.__ps1
