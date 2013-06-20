@@ -86,7 +86,7 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 			cmd = 'sleep 10'
 			ok = 1
 			try:
-				match = self.__tel.Execute(cmd)
+				match = self.__tel.Execute(cmd,3)
 			except exptel.HostCmdTimeoutError:
 				ok = 0
 			self.assertEqual(ok,0)
@@ -187,17 +187,17 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 			self.__Login()
 			cmd = 'sleep 1; echo -n "helloworld"'
 			self.__tel.Writeln(cmd)
-			time.sleep(0.1)
-			rbuf = self.__tel.ReadImmediate()
+			time.sleep(0.5)
+			rbuf ,ps1= self.__tel.ReadImmediate()
 			vpat = re.compile('sleep 1;')
 			vpat2 = re.compile('helloworld')
 			self.assertTrue( vpat.search(rbuf))
 			self.assertTrue( vpat2.search(rbuf))
-			rbuf = self.__tel.ReadImmediate()
+			rbuf ,ps1= self.__tel.ReadImmediate()
 			self.assertFalse( vpat.search(rbuf))
 			self.assertFalse( vpat2.search(rbuf))
 			time.sleep(1.5)
-			rbuf = self.__tel.ReadImmediate()
+			rbuf,ps1 = self.__tel.ReadImmediate()
 			self.assertFalse( vpat.search(rbuf))
 			self.assertTrue( vpat2.search(rbuf))			
 

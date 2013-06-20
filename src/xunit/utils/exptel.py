@@ -136,7 +136,7 @@ class XUnitTelnet:
 						self.__writefh.write(r)
 					if ps1pat.search(totr):
 						return totr
-			ct = time.time()			
+			ct = time.time()	
 		raise HostCmdTimeoutError('export ps1(%s) timeout on cmd (%s) totr (%s)'%(self.__ps1,cmd,totr))
 		return totr
 
@@ -207,4 +207,4 @@ class XUnitTelnet:
 				totr += r
 				if self.__writefh:
 					self.__writefh.write(r)
-		return totr
+		return totr,self.__ps1
