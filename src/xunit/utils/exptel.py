@@ -191,3 +191,20 @@ class XUnitTelnet:
 	def Close(self):
 		self.__CloseTel()
 		return
+
+	def ReadImmediate(self):
+		totr = ''
+		while True:
+			# now to get the export
+			rlist = [self.__tel.fileno()]
+			wlist = []
+			xlist = []
+			ret = select.select(rlist,wlist,xlist,0)
+			if len(ret) == 0 or len(ret[0]) == 0:
+				break
+			r = self.__tel.read_very_eager()
+			if r is not None and len(r) > 0:
+				totr += r
+				if self.__writefh:
+					self.__writefh.write(r)
+		return totr

@@ -182,7 +182,28 @@ class ExpTelUnitCase(xunit.case.XUnitCase):
 			self.__Logout()
 		return
 
-		
+	def test_sleep_echo(self):
+		try:
+			self.__Login()
+			cmd = 'sleep 1; echo -n "helloworld"'
+			self.__tel.Writeln(cmd)
+			time.sleep(0.1)
+			rbuf = self.__tel.ReadImmediate()
+			vpat = re.compile('sleep 1;')
+			vpat2 = re.compile('helloworld')
+			self.assertTrue( vpat.search(rbuf))
+			self.assertTrue( vpat2.search(rbuf))
+			rbuf = self.__tel.ReadImmediate()
+			self.assertFalse( vpat.search(rbuf))
+			self.assertFalse( vpat2.search(rbuf))
+			time.sleep(1.5)
+			rbuf = self.__tel.ReadImmediate()
+			self.assertFalse( vpat.search(rbuf))
+			self.assertTrue( vpat2.search(rbuf))			
+
+		finally:
+			self.__Logout()
+		return
 		
 
 
