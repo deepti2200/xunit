@@ -25,12 +25,27 @@ class SdkProtoBufferLengthError(xunit.utils.exception.XUnitException):
 
 
 class SdkProtoPack:
-	def __init__(self):
+	def __InitParam(self):
 		self.__buf = ''
+		self.__seqid = 0
+		self.__sesid = 0
+		self.__typeid = 0
+		self.__body = ''
+		self.__bodylen = 0
+		self.__fraglen = 0
+		return
+	def __init__(self):
+		self.__InitParam()
 		return
 
 	def Pack(self,sesid,seqnum,typeid,buf):
-		self.__buf = ''
+		self.__InitParam()
+		self.__seqid = seqnum
+		self.__sesid = sesid
+		self.__typeid = typeid
+		self.__body = buf
+		self.__bodylen = len(buf)
+		self.__fraglen = 0
 		# magic header
 		self.__buf += 'GSSP'
 		# for no dataid 
@@ -58,16 +73,26 @@ class SdkProtoPack:
 		if buf[2] != 'S' or buf[3] != 'P':
 			raise SdkProtoHeaderNotGssp('%s not GSSP header'%(repr(buf[:4])))
 
-		flag = ord(buf[4])
-		frag = 0
-		fraglen = 0
-		if flag and 1:
-			frag = 1
-			fraglen = 12
+
+		self.__sesid = struct.unpack('>H',buf[8:10])
+		self.__seqid = struct.unpack('>H',buf[6:8])
+		headerlen  = ord(buf[10])
+		self.__fraglen = headerlen - 20
+		self.__bodylen = struct.unpack('>I',buf[12:16])
+		self.__typeid = ord(buf[11])
 
 		bodylen = struct.unpack('>I',buf[12:16])
-		return frag , fraglen ,bodylen
-	
+		return  fraglen ,bodylen
+
+	def TypeId(self):
+		return self.__typeid
+
+	def SeqId(self):
+		return self.__seqid
+
+	def SesId(self):
+		return self.__sesid
+		
 
 		
 
