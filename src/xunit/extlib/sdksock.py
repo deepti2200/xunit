@@ -94,16 +94,28 @@ class SdkSock:
 		# now we should handle for the connect user and password
 		sdklogin = sdkproto.login.LoginPack()
 		packproto = sdkproto.pack.SdkProtoPack()
-		reqbuf = sdklogin.PackLoginRequest(0,'inc','inc',900,10)
-		sbuf = packproto.Pack(0,self.__IncSeqId(),0x81,reqbuf)
+		reqbuf = sdklogin.PackLoginRequest(0,user,password,900,10)
+		sbuf = packproto.Pack(0,self.__IncSeqId(),0x80,reqbuf)
 		self.__SendBuf(sbuf,'login init')
 		rbuf = self.__RcvBuf(20,'received login init')
 
-		frag,fraglen,bodylen = packproto.ParseHeader(rbuf)
+		fraglen,bodylen = packproto.ParseHeader(rbuf)
+		if packproto.SeqId() != self.__seqid :
+			raise SdkSockRecvError('recv seqid (%d) != seqid (%d)'%(packproto.SeqId(),self.__seqid))
+
+		if packproto.SesId() != 0x80:
+			raise SdkSockRecvError('recv sesid (0x%x) != seqid (0x80)'%(packproto.SesId()))
 		rbuf = self.__RcvBuf(fraglen + bodylen,'response init login')
 		# now we should parse the rbuf for the 
 		authcode,md5check = sdklogin.UnPackUnAuthorized(rbuf[fraglen:])
-		assert(authcode == 0x3)
+		assert(authcode == 0x2)
+
+		# now we should give the handle
+		reqbuf = sdklogin.PackLoginSaltRequest(self.__IncSeqId(),authcode,user,password,md5check,900,10)
+		sbuf = packproto.Pack(0,self.__seqid,0x80,reqbuf)
+		self.__SendBuf(sbuf,'login check request')
+		
+		
 		
 			
 		
