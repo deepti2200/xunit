@@ -123,16 +123,12 @@ class SdkSock:
 		if packproto.SesId() != 0x80:
 			raise SdkSockRecvError('recv sesid (0x%x) != seqid (0x80)'%(packproto.SesId()))
 		rbuf = self.__RcvBuf(fraglen + bodylen,'response init login')
-		
-		
-		
-		
-			
+
+		return sdklogin.UnPackSession(rbuf[fraglen:])			
 		
 		
 
 	def LoginSessionId(self,sesid):
-		if self.__sock is None:
-			raise SdkSockInvalidParam('Not connect %s:%d'%(self.__host,self.__port))
+		pass
 
 		
