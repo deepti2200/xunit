@@ -114,6 +114,16 @@ class SdkSock:
 		reqbuf = sdklogin.PackLoginSaltRequest(self.__IncSeqId(),authcode,user,password,md5check,900,10)
 		sbuf = packproto.Pack(0,self.__seqid,0x80,reqbuf)
 		self.__SendBuf(sbuf,'login check request')
+
+		rbuf = self.__RcvBuf(20,'login chech response')
+		fraglen,bodylen = packproto.ParseHeader(rbuf)
+		if packproto.SeqId() != self.__seqid :
+			raise SdkSockRecvError('recv seqid (%d) != seqid (%d)'%(packproto.SeqId(),self.__seqid))
+
+		if packproto.SesId() != 0x80:
+			raise SdkSockRecvError('recv sesid (0x%x) != seqid (0x80)'%(packproto.SesId()))
+		rbuf = self.__RcvBuf(fraglen + bodylen,'response init login')
+		
 		
 		
 		

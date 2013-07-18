@@ -104,6 +104,22 @@ class LoginPack:
 
 		return authcode,md5salt
 
+	def UnPackSession(self,buf):
+		if len(buf) < 76:
+			raise LoginRespHeaderTooShort('%s login header too short'%(repr(buf)))
+
+		respcode = struct.unpack('>I',buf[:4])
+		if respcode != 2:
+			raise LoginRespErrorCode('(%s)response code (%d) != (2)'%(repr(buf[:4]),respcode))
+
+		result = struct.unpack('>I',buf[4:8])
+		if result != 0:
+			raise LoginRespErrorCode('(%s)response result (%d) != 0'%(repr(buf[:9]),result))
+
+		sesid = struct.unpack('>H',buf[8:10])
+		return sesid
+		
+
 	def __GetMd5(self,password,salt):
 		m = hashlib.md5()
 		pmd5 =  m.update(password).hexdigest()
