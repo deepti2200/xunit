@@ -8,6 +8,7 @@ import struct
 
 import sys
 import os
+import logging
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
@@ -74,14 +75,16 @@ class SdkProtoPack:
 			raise SdkProtoHeaderNotGssp('%s not GSSP header'%(repr(buf[:4])))
 
 
-		self.__sesid = struct.unpack('>H',buf[8:10])
-		self.__seqid = struct.unpack('>H',buf[6:8])
+		self.__sesid = struct.unpack('>H',buf[8:10])[0]
+		self.__seqid = struct.unpack('>H',buf[6:8])[0]
+		logging.info('seqid %s'%(repr(self.__seqid)))
 		headerlen  = ord(buf[10])
+		fraglen = headerlen - 20
 		self.__fraglen = headerlen - 20
-		self.__bodylen = struct.unpack('>I',buf[12:16])
+		self.__bodylen = struct.unpack('>I',buf[12:16])[0]
 		self.__typeid = ord(buf[11])
 
-		bodylen = struct.unpack('>I',buf[12:16])
+		bodylen = self.__bodylen
 		return  fraglen ,bodylen
 
 	def TypeId(self):

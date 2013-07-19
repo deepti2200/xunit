@@ -7,7 +7,7 @@ import random
 import time
 import os
 import sys
-
+import logging
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 import xunit.utils.exception
@@ -31,7 +31,7 @@ class SdkSockRecvError(xunit.utils.exception.XUnitException):
 class SdkSock:
 	def __SeqIdInit(self):
 		random.seed(time.time())
-		self.__seqid = random.randint(((1<<16)-1))
+		self.__seqid = random.randint(0,((1<<16)-1))
 		return
 
 	def __IncSeqId(self):
@@ -70,7 +70,7 @@ class SdkSock:
 		self.__SeqIdInit()
 		try:
 			self.__sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-			self.__sock.connect(self.__host,self.__port)
+			self.__sock.connect((self.__host,self.__port))
 		except:
 			self.__sock.close()
 			self.__sock = None
@@ -105,8 +105,10 @@ class SdkSock:
 		if packproto.SeqId() != self.__seqid :
 			raise SdkSockRecvError('recv seqid (%d) != seqid (%d)'%(packproto.SeqId(),self.__seqid))
 
-		if packproto.SesId() != 0x80:
-			raise SdkSockRecvError('recv sesid (0x%x) != seqid (0x80)'%(packproto.SesId()))
+		if packproto.SesId() != 0:
+			raise SdkSockRecvError('recv sesid (0x%x) != seqid (0)'%(packproto.SesId()))
+		if packproto.TypeId() != 0x80:
+			raise SdkSockRecvError('recv typeid (0x%x) != typeid (0x80)'%(packproto.TypeId()))
 		rbuf = self.__RcvBuf(fraglen + bodylen,'response init login')
 		# now we should parse the rbuf for the 
 		authcode,md5check = sdklogin.UnPackUnAuthorized(rbuf[fraglen:])
@@ -114,19 +116,24 @@ class SdkSock:
 
 		# now we should give the handle
 		reqbuf = sdklogin.PackLoginSaltRequest(self.__IncSeqId(),authcode,user,password,md5check,900,10)
-		sbuf = packproto.Pack(0,self.__seqid,0x80,reqbuf)
+		sbuf = packproto.Pack(0,self.__seqid,0x80,reqbuf)		
+		logging.info('sending req (%d) %s seqid %d'%(len(reqbuf),repr(reqbuf),self.__seqid))
 		self.__SendBuf(sbuf,'login check request')
 
-		rbuf = self.__RcvBuf(20,'login chech response')
+		rbuf = self.__RcvBuf(20,'login check response')
 		fraglen,bodylen = packproto.ParseHeader(rbuf)
 		if packproto.SeqId() != self.__seqid :
 			raise SdkSockRecvError('recv seqid (%d) != seqid (%d)'%(packproto.SeqId(),self.__seqid))
 
-		if packproto.SesId() != 0x80:
-			raise SdkSockRecvError('recv sesid (0x%x) != seqid (0x80)'%(packproto.SesId()))
+		if packproto.SesId() == 0 :
+			raise SdkSockRecvError('recv sesid (0x%x) == sesid (0)'%(packproto.SesId()))
 		rbuf = self.__RcvBuf(fraglen + bodylen,'response init login')
+		logging.info('rbuf [%d] (%s)'%(bodylen,repr(rbuf[fraglen:])))
+		getsesid = sdklogin.UnPackSession(rbuf[fraglen:])
+		if getsesid != packproto.SesId():
+			raise SdkSockRecvError('from packet response sesid(%d) != packet sessionid (%d)'%(getsesid,packproto.SesId()))
 
-		return sdklogin.UnPackSession(rbuf[fraglen:])			
+		return getsesid
 		
 		
 
