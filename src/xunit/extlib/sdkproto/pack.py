@@ -51,7 +51,7 @@ class SdkProtoPack:
 		# for no dataid 
 		self.__buf += '\0'
 		# for major 1 minor 0
-		self.__buf += '\x1'
+		self.__buf += chr(0x1)
 		# this is for sequence number
 		self.__buf += struct.pack('>H',seqnum)
 		# this is for session id
@@ -59,7 +59,7 @@ class SdkProtoPack:
 		# length of the header 20
 		self.__buf += chr(20)
 		self.__buf += chr(typeid)
-		self.__buf += str uct.pack('>I',len(buf))
+		self.__buf += struct.pack('>I',len(buf))
 		self.__buf += struct.pack('>I',0)
 		self.__buf += buf
 		return self.__buf

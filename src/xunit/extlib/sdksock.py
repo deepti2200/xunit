@@ -5,6 +5,8 @@ import socket
 import select
 import random
 import time
+import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
@@ -13,17 +15,17 @@ import sdkproto.login
 import sdkproto.pack
 
 
-class SdkSockInvalidParam(xunit.utils.exception):
+class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
 	pass
 
-class SdkSockConnectError(xunit.utils.exception):
+class SdkSockConnectError(xunit.utils.exception.XUnitException):
 	pass
 
 
-class SdkSockSendError(xunit.utils.exception):
+class SdkSockSendError(xunit.utils.exception.XUnitException):
 	pass
 
-class SdkSockRecvError(xunit.utils.exception):
+class SdkSockRecvError(xunit.utils.exception.XUnitException):
 	pass
 
 class SdkSock:
