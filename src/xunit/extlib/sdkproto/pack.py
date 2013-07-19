@@ -13,6 +13,18 @@ import logging
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 
+
+GMIS_PROTOCOL_TYPE_CONF=0x01
+GMIS_PROTOCOL_TYPE_LOG=0x11
+GMIS_PROTOCOL_TYPE_WARNING=0x12
+GMIS_PROTOCOL_TYPE_MEDIA_CTRL=0x21
+GMIS_PROTOCOL_TYPE_MEDIA_DATA=0x22
+GMIS_PROTOCOL_TYPE_UPGRADE=0x31
+GMIS_PROTOCOL_TYPE_LOGGIN=0x80
+
+GMIS_BASE_LEN=20
+GMIS_MAX_LEN=32
+
 class SdkProtoHeaderTooShort(xunit.utils.exception.XUnitException):
 	pass
 
@@ -77,7 +89,6 @@ class SdkProtoPack:
 
 		self.__sesid = struct.unpack('>H',buf[8:10])[0]
 		self.__seqid = struct.unpack('>H',buf[6:8])[0]
-		logging.info('seqid %s'%(repr(self.__seqid)))
 		headerlen  = ord(buf[10])
 		fraglen = headerlen - 20
 		self.__fraglen = headerlen - 20

@@ -14,6 +14,8 @@ import logging
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 
+
+
 class LoginRespHeaderTooShort(xunit.utils.exception.XUnitException):
 	pass
 
@@ -135,5 +137,7 @@ class LoginPack:
 		logging.info('password %s hash %s salt %s return %s'%(password,md5pwd,salt,m2.hexdigest()))
 		return m2.hexdigest()
 
-	
+	def LoginPackSession(self,sesid):
+		# nothing to pack for the session id handle
+		return ''
 

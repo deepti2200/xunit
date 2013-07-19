@@ -138,6 +138,30 @@ class SdkSock:
 		
 
 	def LoginSessionId(self,sesid):
-		pass
+		if self.__sock is None:
+			raise SdkSockInvalidParam('Not connect %s:%d'%(self.__host,self.__port))
+
+		# now we should handle for the connect user and password
+		sdklogin = sdkproto.login.LoginPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+		reqbuf = sdklogin.LoginPackSession(sesid)
+		sbuf = packproto.Pack(sesid,self.__IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
+		self.__SendBuf(sbuf,'session login request')
+		rbuf = self.__RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'session login response')
+		fraglen,bodylen = packproto.ParseHeader(rbuf)
+		rbody = self.__RcvBuf(fraglen+bodylen,'receive packet')
+		if fraglen != 0:
+			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+		if bodylen != 76:
+			raise SdkSockRecvError('bodylen %d != 76'%(bodylen))
+
+		if packproto.SeqId() != self.__seqid:
+			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.__seqid))
+		logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
+
+		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
+		if getsesid != sesid:
+			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
+		return sesid
 
 		
