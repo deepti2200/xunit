@@ -13,6 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 import xunit.utils.exception
 import sdkproto.login
 import sdkproto.pack
+import sdkproto.stream
 
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -178,6 +179,7 @@ class SdkStreamSock(SdkSock):
 		# now first to pack for the sending
 		streamflags = 0
 		for i in streamids:
+			logging.info('i %s'%(repr(i)))
 			ivalue = (1 << i)
 			streamflags |= ivalue
 		reqbuf = self.__streampack.PackOpenVideo(streamflags)
