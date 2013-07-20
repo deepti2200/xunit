@@ -67,6 +67,7 @@ class SdkSock:
 			raise SdkSockInvalidParam('port can not be 0')
 		self.__host = host
 		self.__port = port
+		self.__sesid = None
 		self.__SeqIdInit()
 		try:
 			self.__sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -132,7 +133,7 @@ class SdkSock:
 		getsesid = sdklogin.UnPackSession(rbuf[fraglen:])
 		if getsesid != packproto.SesId():
 			raise SdkSockRecvError('from packet response sesid(%d) != packet sessionid (%d)'%(getsesid,packproto.SesId()))
-
+		self.__sesid = getsesid
 		return getsesid
 		
 		
@@ -162,6 +163,70 @@ class SdkSock:
 		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
 		if getsesid != sesid:
 			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
+		self.__sesid = sesid
 		return sesid
 
+
+class SdkStreamSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__streampack = sdkproto.stream.StreamPack()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+	def StartStream(self,*streamids):
+		# now first to pack for the sending
+		streamflags = 0
+		for i in streamids:
+			ivalue = (1 << i)
+			streamflags |= ivalue
+		reqbuf = self.__streampack.PackOpenVideo(streamflags)
+		sbuf = self.__basepack(self.__sesid,self.__IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL,reqbuf)
+		self.__SendBuf(sbuf,'send media ctrl for %s'%(repr(streamids)))
+		rbuf = self.__RcvBuf(20,'receive open video response')
+		fragle,bodylen = self.__basepack.ParseHeader(rbuf)
+		if self.__basepack.SeqId() != 0:
+			raise SdkSockRecvError('get seqid (%d) != 0'%(self.__basepack.SeqId()))
+		rbuf = self.__RcvBuf(fraglen+bodylen,'Receive video response')
+		count = self.__streampack.UnPackCtrl(rbuf[fraglen:])
+
+		if count == 0 :
+			raise SdkSockRecvError('parse response with 0 count')
 		
+		return
+
+	def StopStream(self):
+		return
+
+	def GetStreamPacket(self):
+		rbuf = self.__RcvBuf(20,'')
+		sdkpack = sdkproto.stream.StreamPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+
+		# now to give the socket packet
+		fraglen,bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen != 0 :
+			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+		rbuf = self.__RcvBuf(fraglen+bodylen,'read stream packet')
+		if self.__basepack.TypeId() == sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL:
+			self.__streampack.UnPackCtrl(rbuf[fraglen:])
+			return sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL
+		elif self.__basepack.TypeId() == sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_DATA:
+			self.__streampack.UnPackStream(rbuf[fraglen:])
+			return sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_DATA
+		else:
+			raise SdkSockRecvError('typeid (0x%x) not valid'%(self.__basepack.TypeId()))
+		return None
+
+	def GetVInfo(self):
+		return self.__streampack.GetVInfo();
+	def GetStreamData(self):
+		return self.__streampack.GetFrameData()
+
+	def GetStreamIdx(self):
+		return self.__streampack.GetFrameIdx()
+
+	def GetStreamPts(self):
+		return self.__streampack.GetFramePts()
+	def GetStreamId(self):
+		return self.__streampack.GetFrameId()
