@@ -35,20 +35,20 @@ class SdkSock:
 		self.__seqid = random.randint(0,((1<<16)-1))
 		return
 
-	def __IncSeqId(self):
+	def IncSeqId(self):
 		self.__seqid += 1
 		if self.__seqid >= (1<< 16):
 			self.__seqid = 0
 		return self.__seqid
 
-	def __SendBuf(self,buf,msg=None):
+	def SendBuf(self,buf,msg=None):
 		try:
 			self.__sock.send(buf)
 		except:
 			raise SdkSockSendError('could not send %d (%s)'%(len(buf),msg))
 		return
 
-	def __RcvBuf(self,size,msg=None):
+	def RcvBuf(self,size,msg=None):
 		leftsize = size
 		rcved = 0
 		rbuf = ''
@@ -99,9 +99,9 @@ class SdkSock:
 		sdklogin = sdkproto.login.LoginPack()
 		packproto = sdkproto.pack.SdkProtoPack()
 		reqbuf = sdklogin.PackLoginRequest(0,user,password,900,10)
-		sbuf = packproto.Pack(0,self.__IncSeqId(),0x80,reqbuf)
-		self.__SendBuf(sbuf,'login init')
-		rbuf = self.__RcvBuf(20,'received login init')
+		sbuf = packproto.Pack(0,self.IncSeqId(),0x80,reqbuf)
+		self.SendBuf(sbuf,'login init')
+		rbuf = self.RcvBuf(20,'received login init')
 
 		fraglen,bodylen = packproto.ParseHeader(rbuf)
 		if packproto.SeqId() != self.__seqid :
@@ -111,26 +111,26 @@ class SdkSock:
 			raise SdkSockRecvError('recv sesid (0x%x) != seqid (0)'%(packproto.SesId()))
 		if packproto.TypeId() != 0x80:
 			raise SdkSockRecvError('recv typeid (0x%x) != typeid (0x80)'%(packproto.TypeId()))
-		rbuf = self.__RcvBuf(fraglen + bodylen,'response init login')
+		rbuf = self.RcvBuf(fraglen + bodylen,'response init login')
 		# now we should parse the rbuf for the 
 		authcode,md5check = sdklogin.UnPackUnAuthorized(rbuf[fraglen:])
 		assert(authcode == 0x2)
 
 		# now we should give the handle
-		reqbuf = sdklogin.PackLoginSaltRequest(self.__IncSeqId(),authcode,user,password,md5check,900,10)
+		reqbuf = sdklogin.PackLoginSaltRequest(self.IncSeqId(),authcode,user,password,md5check,900,10)
 		sbuf = packproto.Pack(0,self.__seqid,0x80,reqbuf)		
-		logging.info('sending req (%d) %s seqid %d'%(len(reqbuf),repr(reqbuf),self.__seqid))
-		self.__SendBuf(sbuf,'login check request')
+		#logging.info('sending req (%d) %s seqid %d'%(len(reqbuf),repr(reqbuf),self.__seqid))
+		self.SendBuf(sbuf,'login check request')
 
-		rbuf = self.__RcvBuf(20,'login check response')
+		rbuf = self.RcvBuf(20,'login check response')
 		fraglen,bodylen = packproto.ParseHeader(rbuf)
 		if packproto.SeqId() != self.__seqid :
 			raise SdkSockRecvError('recv seqid (%d) != seqid (%d)'%(packproto.SeqId(),self.__seqid))
 
 		if packproto.SesId() == 0 :
 			raise SdkSockRecvError('recv sesid (0x%x) == sesid (0)'%(packproto.SesId()))
-		rbuf = self.__RcvBuf(fraglen + bodylen,'response init login')
-		logging.info('rbuf [%d] (%s)'%(bodylen,repr(rbuf[fraglen:])))
+		rbuf = self.RcvBuf(fraglen + bodylen,'response init login')
+		#logging.info('rbuf [%d] (%s)'%(bodylen,repr(rbuf[fraglen:])))
 		getsesid = sdklogin.UnPackSession(rbuf[fraglen:])
 		if getsesid != packproto.SesId():
 			raise SdkSockRecvError('from packet response sesid(%d) != packet sessionid (%d)'%(getsesid,packproto.SesId()))
@@ -147,11 +147,11 @@ class SdkSock:
 		sdklogin = sdkproto.login.LoginPack()
 		packproto = sdkproto.pack.SdkProtoPack()
 		reqbuf = sdklogin.LoginPackSession(sesid)
-		sbuf = packproto.Pack(sesid,self.__IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
-		self.__SendBuf(sbuf,'session login request')
-		rbuf = self.__RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'session login response')
+		sbuf = packproto.Pack(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
+		self.SendBuf(sbuf,'session login request')
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'session login response')
 		fraglen,bodylen = packproto.ParseHeader(rbuf)
-		rbody = self.__RcvBuf(fraglen+bodylen,'receive packet')
+		rbody = self.RcvBuf(fraglen+bodylen,'receive packet')
 		if fraglen != 0:
 			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
 		if bodylen != 76:
@@ -167,6 +167,9 @@ class SdkSock:
 		self.__sesid = sesid
 		return sesid
 
+	def SessionId(self):
+		return self.__sesid
+
 
 class SdkStreamSock(SdkSock):
 	def	__init__(self,host,port):
@@ -175,21 +178,22 @@ class SdkStreamSock(SdkSock):
 		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
-	def StartStream(self,*streamids):
+	def StartStream(self,streamids):
 		# now first to pack for the sending
 		streamflags = 0
+		logging.info('streamids %s'%(repr(streamids)))
 		for i in streamids:
 			logging.info('i %s'%(repr(i)))
-			ivalue = (1 << i)
+			ivalue = (1 << int(i))
 			streamflags |= ivalue
 		reqbuf = self.__streampack.PackOpenVideo(streamflags)
-		sbuf = self.__basepack(self.__sesid,self.__IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL,reqbuf)
-		self.__SendBuf(sbuf,'send media ctrl for %s'%(repr(streamids)))
-		rbuf = self.__RcvBuf(20,'receive open video response')
+		sbuf = self.__basepack.Pack(self.SessionId(),self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL,reqbuf)
+		self.SendBuf(sbuf,'send media ctrl for %s'%(repr(streamids)))
+		rbuf = self.RcvBuf(20,'receive open video response')
 		fragle,bodylen = self.__basepack.ParseHeader(rbuf)
 		if self.__basepack.SeqId() != 0:
 			raise SdkSockRecvError('get seqid (%d) != 0'%(self.__basepack.SeqId()))
-		rbuf = self.__RcvBuf(fraglen+bodylen,'Receive video response')
+		rbuf = self.RcvBuf(fraglen+bodylen,'Receive video response')
 		count = self.__streampack.UnPackCtrl(rbuf[fraglen:])
 
 		if count == 0 :
@@ -201,7 +205,7 @@ class SdkStreamSock(SdkSock):
 		return
 
 	def GetStreamPacket(self):
-		rbuf = self.__RcvBuf(20,'')
+		rbuf = self.RcvBuf(20,'')
 		sdkpack = sdkproto.stream.StreamPack()
 		packproto = sdkproto.pack.SdkProtoPack()
 
@@ -209,7 +213,7 @@ class SdkStreamSock(SdkSock):
 		fraglen,bodylen = self.__basepack.ParseHeader(rbuf)
 		if fraglen != 0 :
 			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
-		rbuf = self.__RcvBuf(fraglen+bodylen,'read stream packet')
+		rbuf = self.RcvBuf(fraglen+bodylen,'read stream packet')
 		if self.__basepack.TypeId() == sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL:
 			self.__streampack.UnPackCtrl(rbuf[fraglen:])
 			return sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL

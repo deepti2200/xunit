@@ -88,7 +88,7 @@ class LoginPack:
 		if len(buf) < 76:
 			raise LoginRespHeaderTooShort('%s login header too short'%(repr(buf)))
 		respcode = struct.unpack('>I',buf[:4])[0]
-		logging.info('respcode %s'%(respcode))
+		#logging.info('respcode %s'%(respcode))
 		if respcode != 2:
 			raise LoginRespErrorCode('%s login header error %s'%(repr(buf[:4]),repr(respcode)))
 
@@ -97,7 +97,7 @@ class LoginPack:
 			raise LoginRespAuthNotMd5('%s not unauth %d'%(repr(buf[:8]),authcode))
 		
 		sesid = struct.unpack('>H',buf[8:10])[0]
-		logging.info('sesid %s'%(sesid))
+		#logging.info('sesid %s'%(sesid))
 		if sesid != 0 :
 			raise LoginRespErrorCode('%s not sesid 0 (%d)'%(repr(buf[9:10]),sesid))
 		
@@ -106,7 +106,7 @@ class LoginPack:
 			raise LoginRespAuthNotMd5('%s not authmd5 %d'%(repr(buf[:8]),authcode))
 
 		md5salt = self.__UnPackStringSize(buf[12:],64)
-		logging.info('md5 %s'%(md5salt))
+		#logging.info('md5 %s'%(md5salt))
 
 		return authcode,md5salt
 
@@ -134,7 +134,7 @@ class LoginPack:
 		md5pwd = pmd5
 		pmd5 += salt
 		m2.update(pmd5)
-		logging.info('password %s hash %s salt %s return %s'%(password,md5pwd,salt,m2.hexdigest()))
+		#logging.info('password %s hash %s salt %s return %s'%(password,md5pwd,salt,m2.hexdigest()))
 		return m2.hexdigest()
 
 	def LoginPackSession(self,sesid):
