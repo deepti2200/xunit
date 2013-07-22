@@ -14,6 +14,7 @@ import xunit.utils.exception
 import sdkproto.login
 import sdkproto.pack
 import sdkproto.stream
+import sdkproto.ipinfo
 
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -33,12 +34,15 @@ class SdkSock:
 	def __SeqIdInit(self):
 		random.seed(time.time())
 		self.__seqid = random.randint(0,((1<<16)-1))
+		self.__sesid = None
 		return
 
 	def IncSeqId(self):
 		self.__seqid += 1
 		if self.__seqid >= (1<< 16):
 			self.__seqid = 0
+		return self.__seqid
+	def SeqId(self):
 		return self.__seqid
 
 	def SendBuf(self,buf,msg=None):
@@ -236,3 +240,33 @@ class SdkStreamSock(SdkSock):
 		return self.__streampack.GetFramePts()
 	def GetStreamId(self):
 		return self.__streampack.GetFrameId()
+
+class SdkIpInfoSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__ipinfopack = sdkproto.ipinfo.SdkIpInfo()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+	
+	def GetIpInfo(self):
+		# now first to pack for the info
+		reqbuf = self.__ipinfopack.FormatQueryInfo(self.IncSeqId(),self.SessionId())
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'send request ipinfo')
+		rbuf = self.RcvBuf(20,'receive ipresponse header')
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		rbuf = self.RcvBuf(bodylen,'receive ipinfo')
+		# now to pass the body
+		ipcount = self.__ipinfopack.ParseQueryInfo(rbuf)
+		if self.SessionId() != self.__ipinfopack.GetSessionId():
+			raise SdkSockInvalidParam('base session (%d) != ipinfo session(%d)'%(self.SessionId(),self.__ipinfopack.GetSessionId()))
+
+		if self.SeqId() != self.__ipinfopack.GetSeqId():
+			raise SdkSockInvalidParam('base seqid (%d) != ipinfo seqid(%d)'%(self.SeqId(),self.__ipinfopack.GetSeqId()))
+		return ipcount
+
+	def GetInfoAddr(self,idx):
+		return self.__ipinfopack.GetIpInfo(idx).GetIpAddr()

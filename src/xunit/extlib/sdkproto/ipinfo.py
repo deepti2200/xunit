@@ -23,6 +23,8 @@ MESSAGE_CODE_LENGTH=8
 class SdkIpInfoInvalidError(xunit.utils.exception.XUnitException):
 	pass
 
+class SdkIpInfoOutRangeError(xunit.utils.exception.XUnitException):
+	pass
 
 class NetInfoInvalidError(xunit.utils.exception.XUnitException):
 	pass
@@ -239,4 +241,14 @@ class SdkIpInfo:
 
 		
 		return len(self.__netinfos)
-		
+
+	def GetSessionId(self):
+		return self.__sesid
+
+	def GetSeqId(self):
+		return self._seqid
+
+	def GetIpInfo(self,idx):
+		if idx >= len(self.__netinfos):
+			raise SdkIpInfoOutRangeError('(%d) >= (%d)'%(idx,len(self.__netinfos)))
+		return self.__netinfos[idx]
