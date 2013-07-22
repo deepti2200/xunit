@@ -39,7 +39,7 @@ class LoginPack:
 			lsize = size - len(s)
 			rbuf += '\0' * lsize
 		else:
-			rbuf += s[size-1]
+			rbuf += s[:(size-1)]
 			rbuf += '\0'
 		return rbuf
 	def __UnPackStringSize(self,s,size):
