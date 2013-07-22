@@ -12,11 +12,11 @@ import logging
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
+import syscp
 
 SYSCODE_GET_IPINFO_REQ=1013
 SYSCODE_GET_IPINFO_RSP=1014
 
-SYS_HDR_LENGTH=16
 NET_INFO_STRUCT_LENGTH=296
 MESSAGE_CODE_LENGTH=8
 
@@ -173,7 +173,7 @@ class NetInfo:
 
 		return rbuf
 
-class SdkIpInfo:
+class SdkIpInfo(syscp.SycCP):
 	def __init__(self):
 		self.__seqid = -1
 		self.__sesid = -1
@@ -189,48 +189,21 @@ class SdkIpInfo:
 		return
 
 	def FormatQueryInfo(self,seqid,sesid):
-		rbuf = ''
-		rbuf += 'GSMT'
-		# give the version 1 
-		rbuf += chr(1)
-		# header length 16
-		rbuf += chr(SYS_HDR_LENGTH)
-		#code is SYSCODE_GET_IPINFO_REQ
-		rbuf += struct.pack('>H',SYSCODE_GET_IPINFO_REQ)
-		# attribute is 0
-		# seqid sesid and totallength is body length 0
-		rbuf += struct.pack('>HHHH',0,seqid,sesid,SYS_HDR_LENGTH)
-		return rbuf
+		return self.FormatSysCp(SYSCODE_GET_IPINFO_REQ,'',sesid,seqid)
 
 	def ParseQueryInfo(self,buf):
-		if len(buf) < SYS_HDR_LENGTH:
-			raise SdkIpInfoInvalidError('len (%d) < (%d)'%(len(buf),SYS_HDR_LENGTH))
-		if buf[:4] != 'GSMT':
-			raise SdkIpInfoInvalidError('tag (%s) != (GSMT)'%(repr(buf[:4])))
+		respbuf = self.UnPackSysCp(buf)
 
-		if buf[4] != chr(1):
-			raise SdkIpInfoInvalidError('version (%d) != 1'%(ord(buf[4])))
+		if self.Code() != SYSCODE_GET_IPINFO_RSP:
+			raise SdkIpInfoInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_IPINFO_RSP))
 
-		if buf[5] != chr(SYS_HDR_LENGTH):
-			raise SdkIpInfoInvalidError('hdrlen (%d) != (%d)'%(ord(buf[5]),SYS_HDR_LENGTH))
+		if self.AttrCount() < 2:
+			raise SdkIpInfoInvalidError('attrcount (%d) < 2'%(self.AttrCount()))
 
-		code = struct.unpack('>H',buf[6:8])[0]
-		if code != SYSCODE_GET_IPINFO_RSP:
-			raise SdkIpInfoInvalidError('code (%d) != (%d)'%(code,SYSCODE_GET_IPINFO_RSP))
 
-		attrcount =struct.unpack('>H',buf[8:10])[0]
-		if attrcount < 2:
-			raise SdkIpInfoInvalidError('attrcount (%d) < 2'%(attrcount))
-
-		self.__seqid,self.__sesid = struct.unpack('>HH',buf[10:14])
-		tlen = struct.unpack('>H',buf[14:16])[0]
-		if tlen > len(buf):
-			raise SdkIpInfoInvalidError('total length (%d) > (%d)'%(tlen,len(buf)))
-		tlen -= SYS_HDR_LENGTH
-
-		attrbuf = buf[SYS_HDR_LENGTH:]
+		attrbuf = self.PackedBuf()
 		self.__netinfos = []
-		for i in xrange(attrcount):
+		for i in xrange(self.AttrCount()):
 			mesgbuf = attrbuf[:MESSAGE_CODE_LENGTH]
 			res,mlen = struct.unpack('>II',mesgbuf)
 			pbuf = attrbuf[MESSAGE_CODE_LENGTH:(mlen+MESSAGE_CODE_LENGTH)]
@@ -241,12 +214,6 @@ class SdkIpInfo:
 
 		
 		return len(self.__netinfos)
-
-	def GetSessionId(self):
-		return self.__sesid
-
-	def GetSeqId(self):
-		return self._seqid
 
 	def GetIpInfo(self,idx):
 		if idx >= len(self.__netinfos):
