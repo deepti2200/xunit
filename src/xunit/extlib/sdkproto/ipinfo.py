@@ -195,24 +195,27 @@ class SdkIpInfo(syscp.SysCP):
 		if self.Code() != SYSCODE_GET_IPINFO_RSP:
 			raise SdkIpInfoInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_IPINFO_RSP))
 
-		if self.AttrCount() < 2:
-			raise SdkIpInfoInvalidError('attrcount (%d) < 2'%(self.AttrCount()))
+		if self.AttrCount() < 1:
+			raise SdkIpInfoInvalidError('attrcount (%d) < 1'%(self.AttrCount()))
 
 
 		attrbuf = self.PackedBuf()
 		self.__netinfos = []
 		for i in xrange(self.AttrCount()):
 			typebuf = attrbuf[:syscp.TYPE_INFO_LENGTH]
-			typecode,typelen = struct.unpack('>HH',typebuf)
+			typecode = ord(typebuf[0])
+			typelen = struct.unpack('>H',typebuf[2:syscp.TYPE_INFO_LENGTH])[0]
 			if typecode != syscp.TYPE_IPINFOR:
 				raise SdkIpInfoInvalidError('typecode (%d) != (%d)'%(typecode,syscp.TYPE_IPINFOR))
-			if (typelen + syscp.TYPE_INFO_LENGTH) > len(attrbuf):
+			if (typelen ) > len(attrbuf):
 				raise SdkIpInfoInvalidError('left len (%d) < (%d + %d)'%(len(attrbuf),typelen , syscp.TYPE_INFO_LENGTH))
-			pbuf = attrbuf[syscp.TYPE_INFO_LENGTH:(syscp.TYPE_INFO_LENGTH+typelen)]
-			attrbuf = attrbuf[(syscp.TYPE_INFO_LENGTH+typelen):]
+			pbuf = attrbuf[syscp.TYPE_INFO_LENGTH:(typelen)]
+			attrbuf = attrbuf[(typelen):]
 			netinfo = NetInfo()
 			netinfo.ParseBuffer(pbuf)
 			logging.info('ip %s hwaddr %s dns %s'%(netinfo.GetIpAddr(),netinfo.GetHwAddr(),netinfo.GetDns()))
+			logging.info('ifname %s submask %s'%(netinfo.GetIfName(),netinfo.GetSubMask()))
+			logging.info('netid %d'%(netinfo.GetNetId()))
 			self.__netinfos.append(netinfo)
 
 		
