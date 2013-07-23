@@ -158,7 +158,7 @@ class SdkSock:
 		rbody = self.RcvBuf(fraglen+bodylen,'receive packet')
 		if fraglen != 0:
 			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
-		if bodylen != 76:
+		if bodylen != 80:
 			raise SdkSockRecvError('bodylen %d != 76'%(bodylen))
 
 		if packproto.SeqId() != self.__seqid:
