@@ -151,7 +151,7 @@ class SdkSock:
 		sdklogin = sdkproto.login.LoginPack()
 		packproto = sdkproto.pack.SdkProtoPack()
 		reqbuf = sdklogin.LoginPackSession(sesid)
-		sbuf = packproto.Pack(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
+		sbuf = packproto.PackHeartBeat(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
 		self.SendBuf(sbuf,'session login request')
 		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'session login response')
 		fraglen,bodylen = packproto.ParseHeader(rbuf)
@@ -160,6 +160,9 @@ class SdkSock:
 			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
 		if bodylen != 80:
 			raise SdkSockRecvError('bodylen %d != 76'%(bodylen))
+
+		if (packproto.Flag() & sdkproto.pack.GSSP_HEADER_FLAG_FHB ) == 0:
+			raise SdkSockRecvError('not set heart beat flag')
 
 		if packproto.SeqId() != self.__seqid:
 			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.__seqid))
