@@ -173,17 +173,15 @@ class NetInfo:
 
 		return rbuf
 
-class SdkIpInfo(syscp.SycCP):
+class SdkIpInfo(syscp.SysCP):
 	def __init__(self):
-		self.__seqid = -1
-		self.__sesid = -1
+		syscp.SysCP.__init__(self)
 		self.__res = -1
 		self.__netinfos = []
 		return
 
 	def __del__(self):
-		self.__seqid = -1
-		self.__sesid = -1
+		syscp.SysCP.__del__(self)
 		self.__res = -1
 		self.__netinfos = []
 		return
@@ -204,12 +202,15 @@ class SdkIpInfo(syscp.SycCP):
 		attrbuf = self.PackedBuf()
 		self.__netinfos = []
 		for i in xrange(self.AttrCount()):
-			mesgbuf = attrbuf[:MESSAGE_CODE_LENGTH]
-			res,mlen = struct.unpack('>II',mesgbuf)
-			pbuf = attrbuf[MESSAGE_CODE_LENGTH:(mlen+MESSAGE_CODE_LENGTH)]
-			attrbuf = attrbuf[(mlen+MESSAGE_CODE_LENGTH):]
+			typebuf = attrbuf[:syscp.TYPE_INFO_LENGTH]
+			typecode,typelen = struct.unpack('>HH',typebuf)
+			if (typelen + syscp.TYPE_INFO_LENGTH) > len(attrbuf):
+				raise SdkIpInfoInvalidError('left len (%d) < (%d + %d)'%(len(attrbuf),typelen , syscp.TYPE_INFO_LENGTH))
+			pbuf = attrbuf[syscp.TYPE_INFO_LENGTH:(syscp.TYPE_INFO_LENGTH+typelen)]
+			attrbuf = attrbuf[(syscp.TYPE_INFO_LENGTH+typelen):]
 			netinfo = NetInfo()
 			netinfo.ParseBuffer(pbuf)
+			logging.info('ip %s hwaddr %s dns %s'%(netinfo.GetIpAddr(),netinfo.GetHwAddr(),netinfo.GetDns()))
 			self.__netinfos.append(netinfo)
 
 		

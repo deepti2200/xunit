@@ -263,12 +263,14 @@ class SdkIpInfoSock(SdkSock):
 			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
 		rbuf = self.RcvBuf(bodylen,'receive ipinfo')
 		# now to pass the body
+		logging.info('bodylen %d'%(bodylen))
 		ipcount = self.__ipinfopack.ParseQueryInfo(rbuf)
 		if self.SessionId() != self.__ipinfopack.SesId():
 			raise SdkSockInvalidParam('base session (%d) != ipinfo session(%d)'%(self.SessionId(),self.__ipinfopack.GetSessionId()))
 
 		#if self.SeqId() != self.__ipinfopack.SeqId():
 		#	raise SdkSockInvalidParam('base seqid (%d) != ipinfo seqid(%d)'%(self.SeqId(),self.__ipinfopack.GetSeqId()))
+		
 		return ipcount
 
 	def GetInfoAddr(self,idx):

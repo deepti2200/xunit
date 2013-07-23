@@ -15,6 +15,7 @@ import xunit.utils.exception
 
 
 SYS_HDR_LENGTH=16
+TYPE_INFO_LENGTH=4
 
 class SdkSysCpInvalidError(xunit.utils.exception.XUnitException):
 	pass
@@ -24,7 +25,7 @@ class SdkSysCpInvalidError(xunit.utils.exception.XUnitException):
 class SysCP:
 	def __init__(self,sesid=0):
 		self.__code = 0
-		self.__sesid = 0
+		self.__sesid = sesid
 		self.__seqid = 0
 		self.__attrcount = 0
 		self.__buf = None
