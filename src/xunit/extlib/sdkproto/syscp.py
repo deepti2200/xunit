@@ -21,7 +21,7 @@ class SdkSysCpInvalidError(xunit.utils.exception.XUnitException):
 
 
 
-class SycCP:
+class SysCP:
 	def __init__(self,sesid=0):
 		self.__code = 0
 		self.__sesid = 0
