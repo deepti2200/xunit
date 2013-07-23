@@ -16,6 +16,7 @@ import xunit.utils.exception
 
 SYS_HDR_LENGTH=16
 TYPE_INFO_LENGTH=4
+TYPE_IPINFOR=10
 
 class SdkSysCpInvalidError(xunit.utils.exception.XUnitException):
 	pass
