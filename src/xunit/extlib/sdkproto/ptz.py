@@ -80,4 +80,21 @@ class SdkPtz(syscp.SysCP):
 	def LeftPtz(self,ptzid,speed):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_LEFT,speed)
 		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+
+	def LeftUpPtz(self,ptzid,speed):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_LEFTUP,speed)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		
+	def RightUpPtz(self,ptzid,speed):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_RIGHTUP,speed)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+
+	def LeftDownPtz(self,ptzid,speed):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_LEFTDOWN,speed)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		
+	def RightDownPtz(self,ptzid,speed):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_RIGHTDOWN,speed)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+
 	
