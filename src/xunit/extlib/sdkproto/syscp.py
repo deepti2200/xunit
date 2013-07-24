@@ -17,6 +17,9 @@ import xunit.utils.exception
 SYS_HDR_LENGTH=16
 TYPE_INFO_LENGTH=4
 TYPE_IPINFOR=10
+TYPE_MESSAGECODE=54
+TYPE_MESSAGE_CODE_LENGTH=8
+
 
 class SdkSysCpInvalidError(xunit.utils.exception.XUnitException):
 	pass
@@ -52,7 +55,7 @@ class SysCP:
 			self.__sesid = sesid
 		return ov
 
-	def FormatSysCp(self,code,buf,sesid=None,seqid=None):
+	def FormatSysCp(self,code,attrcount,buf,sesid=None,seqid=None):
 		rbuf = ''
 		rbuf += 'GSMT'
 		# give the version 1 
@@ -68,7 +71,7 @@ class SysCP:
 		codelen = 0
 		if buf:
 			codelen = len(buf)
-		rbuf += struct.pack('>HHHH',0,self.__sesid,self.__seqid,SYS_HDR_LENGTH+codelen)
+		rbuf += struct.pack('>HHHH',attrcount,self.__sesid,self.__seqid,SYS_HDR_LENGTH+codelen)
 		rbuf += buf
 		return rbuf
 

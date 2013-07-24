@@ -14,11 +14,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'
 import xunit.utils.exception
 import syscp
 
+SYSCODE_SET_IPINFO_REQ=1011
+SYSCODE_SET_IPINFO_RESP=1012
 SYSCODE_GET_IPINFO_REQ=1013
 SYSCODE_GET_IPINFO_RSP=1014
 
+
 NET_INFO_STRUCT_LENGTH=296
-MESSAGE_CODE_LENGTH=8
 
 class SdkIpInfoInvalidError(xunit.utils.exception.XUnitException):
 	pass
@@ -167,9 +169,9 @@ class NetInfo:
 		rbuf += self.__FormatString(self.__dns,128)
 		rbuf += self.__FormatString(self.__hwaddr,32)
 		rbuf += chr(self.__dhcp)
-		rubf += chr(0)
-		rubf += chr(0)
-		rubf += chr(0)
+		rbuf += chr(0)
+		rbuf += chr(0)
+		rbuf += chr(0)
 
 		return rbuf
 
@@ -187,7 +189,7 @@ class SdkIpInfo(syscp.SysCP):
 		return
 
 	def FormatQueryInfo(self,seqid,sesid):
-		return self.FormatSysCp(SYSCODE_GET_IPINFO_REQ,'',sesid,seqid)
+		return self.FormatSysCp(SYSCODE_GET_IPINFO_REQ,0,'',sesid,seqid)
 
 	def ParseQueryInfo(self,buf):
 		respbuf = self.UnPackSysCp(buf)
@@ -224,3 +226,59 @@ class SdkIpInfo(syscp.SysCP):
 		if idx >= len(self.__netinfos):
 			raise SdkIpInfoOutRangeError('(%d) >= (%d)'%(idx,len(self.__netinfos)))
 		return self.__netinfos[idx]
+
+	def __FormatSetIpInfo(self,netinfo):
+		rbuf = ''
+		# first we should format type info
+		rbuf += struct.pack('>HH',syscp.TYPE_IPINFOR,NET_INFO_STRUCT_LENGTH+syscp.TYPE_INFO_LENGTH)
+		rbuf += netinfo.FormatBuffer()
+		return rbuf
+
+	def FormatSetIpInfo(self,netinfo,sesid=None,seqid=None):
+		passok = 0
+		if isinstance(netinfo,NetInfo) :
+			passok = 1
+		if isinstance(netinfo,list) :
+			passok = 1
+			for ni in netinfo:
+				if not isinstance(ni,NetInfo):
+					passok = 0
+					break
+		if passok == 0:
+			raise SdkIpInfoInvalidError('netinfo must be NetInfo instance')
+
+		# now to form the set info
+		reqbuf = ''
+		if isinstance(netinfo,list):
+			attrcount = len(netinfo)
+			for ni in netinfo:
+				reqbuf += self.__FormatSetIpInfo(ni)
+		else:
+			attrcount =1
+			reqbuf += self.__FormatSetIpInfo(netinfo)
+		return self.FormatSysCp(SYSCODE_SET_IPINFO_REQ,attrcount,reqbuf,sesid,seqid)
+
+	def ParseSetIpInfoResp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+		if len(attrbuf) < (syscp.TYPE_MESSAGE_CODE_LENGTH + syscp.TYPE_INFO_LENGTH ):
+			raise SdkIpInfoInvalidError('len(%d) < (%d + %d )'%(len(buf),syscp.MESSAGE_CODE_LENGTH,syscp.TYPE_INFO_LENGTH))
+		if self.AttrCount() != 1:
+			raise SdkIpInfoInvalidError('attrcount (%d) != 1'%(self.AttrCount()))
+
+		if self.Code() != SYSCODE_SET_IPINFO_RESP:
+			raise SdkIpInfoInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_IPINFO_RESP))
+
+		typecode,typelen = struct.unpack('>HH',attrbuf[:syscp.TYPE_INFO_LENGTH])
+		if typecode != syscp.TYPE_MESSAGECODE:
+			raise SdkIpInfoInvalidError('typecode (%d) != (%d)'%(typecode,syscp.TYPE_MESSAGECODE))
+
+		if typelen < (syscp.TYPE_INFO_LENGTH + syscp.TYPE_MESSAGE_CODE_LENGTH):
+			raise SdkIpInfoInvalidError('typelen (%d) < (%d + %d)'%(typelen,syscp.TYPE_INFO_LENGTH,syscp.TYPE_MESSAGE_CODE_LENGTH))
+		
+		mesgcodebuf = attrbuf[syscp.TYPE_INFO_LENGTH:]
+		res,reslen = struct.unpack('>II',mesgcodebuf[:8])
+		if res != 0:
+			raise SdkIpInfoInvalidError('set ipinfo res (%d)'%(res))
+		if typelen != (syscp.TYPE_INFO_LENGTH + syscp.TYPE_MESSAGE_CODE_LENGTH + reslen):
+			raise SdkIpInfoInvalidError('typelen (%d) != (%d + %d + %d)'(typelen,syscp.TYPE_INFO_LENGTH,syscp.TYPE_MESSAGE_CODE_LENGTH,reslen))
+		return res
