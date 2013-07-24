@@ -303,4 +303,27 @@ class SdkIpInfoSock(SdkSock):
 		if netinfo.GetIpAddr() != ipaddr:
 			raise SdkSockInvalidParam('could not set %s ipaddr succ (%s)'%(ipaddr,netinfo.GetIpAddr()))
 		return
+
+class SdkSysCtlSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__sysctlpack = sdkproto.sysctl.SdkSysCtl()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+
+	def Reboot(self):
+		reqbuf = self.__sysctlpack.RebootReq(self.SessionId(),self.IncSeqId())
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'send reboot request')
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get reboot response')
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
+		self.__sysctlpack.RebootResp(rbuf)
+		return
+		
 		

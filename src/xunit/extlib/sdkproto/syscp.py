@@ -19,6 +19,8 @@ TYPE_INFO_LENGTH=4
 TYPE_IPINFOR=10
 TYPE_MESSAGECODE=54
 TYPE_MESSAGE_CODE_LENGTH=8
+TYPE_INTVALUE=1
+TYPE_INTVALUE_LENGTH=4
 
 
 class SdkSysCpInvalidError(xunit.utils.exception.XUnitException):
@@ -110,5 +112,23 @@ class SysCP:
 
 	def Code(self):
 		return self.__code
-	
 
+	def MessageCodeParse(self,buf,msg=None):
+		if len(buf) < (TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH):
+			raise SdkSysCpInvalidError('(%s)len (%d) < (%d + %d)'%(msg and msg or 'Basic',len(buf),TYPE_INFO_LENGTH , TYPE_MESSAGE_CODE_LENGTH))
+		typecode,typelen = struct.unpack('>HH',buf[:TYPE_INFO_LENGTH])
+		if typecode != TYPE_MESSAGECODE:
+			raise SdkSysCpInvalidError('(%s)typecode (%d) != (%d)'%(msg and msg or 'Basic',typecode,TYPE_MESSAGECODE))
+
+		if typelen < (TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH):
+			raise SdkSysCpInvalidError('(%s)typelen (%d) < (%d + %d)'%(msg and msg or 'Basic',typelen,TYPE_INFO_LENGTH , TYPE_MESSAGE_CODE_LENGTH))	
+		res,reslen = struct.unpack('>II',buf[TYPE_INFO_LENGTH:(TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH)])
+		if res != 0:
+			raise SdkSysCpInvalidError('(%s) not succ (%d)'%(msg and msg or 'Basic',res))
+		if len(buf) < (TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH + reslen):
+			raise SdkSysCpInvalidError('(%s)typelen (%d) < (%d + %d + %d)'%(msg and msg or 'Basic',typelen,TYPE_INFO_LENGTH , TYPE_MESSAGE_CODE_LENGTH,reslen))	
+
+		return buf[(TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH):]
+
+	
+			
