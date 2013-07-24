@@ -202,9 +202,8 @@ class SdkIpInfo(syscp.SysCP):
 		attrbuf = self.PackedBuf()
 		self.__netinfos = []
 		for i in xrange(self.AttrCount()):
-			typebuf = attrbuf[:syscp.TYPE_INFO_LENGTH]
-			typecode = ord(typebuf[0])
-			typelen = struct.unpack('>H',typebuf[2:syscp.TYPE_INFO_LENGTH])[0]
+			typebuf = attrbuf[:syscp.TYPE_INFO_LENGTH]			
+			typecode,typelen = struct.unpack('>HH',typebuf[:syscp.TYPE_INFO_LENGTH])
 			if typecode != syscp.TYPE_IPINFOR:
 				raise SdkIpInfoInvalidError('typecode (%d) != (%d)'%(typecode,syscp.TYPE_IPINFOR))
 			if (typelen ) > len(attrbuf):
