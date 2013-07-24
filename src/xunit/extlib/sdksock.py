@@ -261,6 +261,8 @@ class SdkIpInfoSock(SdkSock):
 		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
 		if fraglen > 0 :
 			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
 		rbuf = self.RcvBuf(bodylen,'receive ipinfo')
 		# now to pass the body
 		logging.info('bodylen %d'%(bodylen))
