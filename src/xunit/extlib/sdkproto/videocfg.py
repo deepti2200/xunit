@@ -154,6 +154,29 @@ class EncodeCfg:
 	def ParseVideoEncode(self,buf):
 		return self.__ParseEncodeCfg(buf)
 
+	def __FormatStr(self):
+		buf = ''
+		buf += 'videoid %d;\n'%(self.__videoid)
+		buf += 'compression %d;\n'%(self.__compression)
+		buf += 'picwidth %d;\n'%(self.__picwidth)
+		buf += 'picheight %d;\n'%(self.__picheight)
+		buf += 'bitratectrl %d;\n'%(self.__bitratectrl)
+		buf += 'quality %d;\n'%(self.__quality)
+		buf += 'fps %d;\n'%(self.__fps)
+		buf += 'bitrateaverage %d;\n'%(self.__bitrateaverage)
+		buf += 'bitrateup %d;\n'%(self.__bitrateup)
+		buf += 'bitratedown %d;\n'%(self.__bitratedown)
+		buf += 'gop %d;\n'%(self.__gop)
+		buf += 'rotate %d;\n'%(self.__rotate)
+		buf += 'flag %d;\n'%(self.__flag)
+		return buf
+
+	def __str__(self):
+		return self.__FormatStr()
+
+	def __repr__(self):
+		return self.__FormatStr()
+
 class SdkVideoCfg(syscp.SysCP):
 	def __init__(self):
 		syscp.SysCP.__init__(self)
