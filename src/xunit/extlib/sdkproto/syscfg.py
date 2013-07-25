@@ -155,4 +155,30 @@ class IPCName:
 			self.__devicehwver = val
 		return ov
 
+
+class SdkSysCfgInvalidError(xunit.utils.exception.XUnitException):
+	pass
+
+
+class SdkSysCfg(syscp.SysCP):
+	def __init__(self):
+		syscp.SysCP.__init__(self)
+		self.__syscfg = None
+		return
+
+	def __del__(self):
+		syscp.SysCP.__del__(self)
+		self.__syscfg = None
+		return
+
+
+	def FormatQuery(self,sesid=None,seqid=None):
+		return self.FormatSysCp(SYSCODE_GET_SYSCFG_REQ,0,'',sesid,seqid)
+
+	def ParseQuerySysCfgResp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+
+		if self.Code() != SYSCODE_GET_SYSCFG_RESP:
+			raise SdkSysCfgInvalidError('code (%d) != (%d)'%(self.Code() , SYSCODE_GET_SYSCFG_RESP))
 		
+
