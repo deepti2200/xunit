@@ -325,5 +325,51 @@ class SdkSysCtlSock(SdkSock):
 		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
 		self.__sysctlpack.RebootResp(rbuf)
 		return
+
+
+class SdkVideoCfgSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__sysvcpack = sdkproto.videocfg.SdkVideoCfg()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+
+	def GetVideoCfg(self):
+		reqbuf = self.__sysvcpack.FormatQuery(self.SessionId(),self.IncSeqId())
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'send query video cfg request')
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+
+		if self.__basepack.SeqId() != self.SessionId():
+			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
 		
-		
+		self.__sysvcpack.ParseQuery(rbuf)
+		return self.__sysvcpack.VideoCfg()
+
+	def SetVideoCfg(self,vcfg):
+		reqbuf = self.__sysvcpack.FormatSetVideoCfg(vcfg,self.SessionId(),self.IncSeqId())
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'send query video cfg request')
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+
+		if self.__basepack.SeqId() != self.SessionId():
+			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
+		self.__sysvcpack.ParseSetVideoCfg(rbuf)
+		return 

@@ -35,6 +35,8 @@ class SysCP:
 		self.__seqid = 0
 		self.__attrcount = 0
 		self.__buf = None
+		self.__typecode = 0
+		self.__typelen = 0
 		return
 
 	def __del__(self):
@@ -43,6 +45,8 @@ class SysCP:
 		self.__seqid = 0
 		self.__attrcount = 0
 		self.__buf = None
+		self.__typecode = 0
+		self.__typelen = 0
 		return
 
 	def SeqId(self,seqid=None):
@@ -128,7 +132,28 @@ class SysCP:
 		if len(buf) < (TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH + reslen):
 			raise SdkSysCpInvalidError('(%s)typelen (%d) < (%d + %d + %d)'%(msg and msg or 'Basic',typelen,TYPE_INFO_LENGTH , TYPE_MESSAGE_CODE_LENGTH,reslen))	
 
+		self.__typecode = typecode
+		self.__typelen = typelen
 		return buf[(TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH):]
 
-	
+	def ParseTypeCode(self,buf,msg=None):
+		if len(buf) < TYPE_INFO_LENGTH:
+			raise SdkSysCpInvalidError('(%s)len (%d) < (%d )'%(msg and msg or 'Basic',len(buf),TYPE_INFO_LENGTH ))
+		typecode,typelen = struct.unpack('>HH',buf[:TYPE_INFO_LENGTH])
+		self.__typecode = typecode
+		self.__typelen = typelen
+		return buf[TYPE_INFO_LENGTH:]
+		
+
+	def TypeCodeForm(self,code,buf):
+		rbuf = ''
+		rbuf += struct.pack('>HH',code,len(buf)+TYPE_INFO_LENGTH)
+		rbuf += buf
+		return buf
+
+	def TypeCode(self):
+		return self.__typecode
+
+	def TypeLen(self):
+		return self.__typelen
 			
