@@ -383,7 +383,7 @@ class SdkSysCfgSock(SdkSock):
 		return
 
 
-	def GetVideoCfg(self):
+	def GetSysCfg(self):
 		reqbuf = self.__sysscpack.FormatQuery(self.SessionId(),self.IncSeqId())
 		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
 		self.SendBuf(sbuf,'send query video cfg request')
@@ -403,8 +403,8 @@ class SdkSysCfgSock(SdkSock):
 		return 	self.__sysvcpack.ParseQuerySysCfgResp(rbuf)
 
 
-	def SetVideoCfg(self,scfg):
-		reqbuf = self.__sysscpack.FormatSet(scfg,self.SessionId(),self.IncSeqId())
+	def SetSysCfg(self,scfg):
+		reqbuf = self.__sysscpack.FormatSet(scfg,self.SessionId(),self.IsncSeqId())
 		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
 		self.SendBuf(sbuf,'send query video cfg request')
 		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
