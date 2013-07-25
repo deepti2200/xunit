@@ -56,7 +56,7 @@ class NetInfo:
 		self.__dhcp = -1
 		return
 
-	def __GetString(self,s,size):
+	def GetString(self,s,size):
 		rbuf = ''
 		lasti  = -1
 		for i in xrange(size):
@@ -69,7 +69,7 @@ class NetInfo:
 		else:
 			rbuf = s[:-2]
 		return rbuf
-	def __FormatString(self,s,size):
+	def FormatString(self,s,size):
 		rbuf = ''
 		if len(s) < size:
 			rbuf += s
@@ -150,24 +150,24 @@ class NetInfo:
 		if len(buf) < NET_INFO_STRUCT_LENGTH:
 			raise NetInfoInvalidError('len(%d) < (%d)'%(len(buf),NET_INFO_STRUCT_LENGTH))
 		self.__netid = struct.unpack('>I',buf[:4])[0]
-		self.__ifname = self.__GetString(buf[4:36],32)
-		self.__ipaddr = self.__GetString(buf[36:68],32)
-		self.__submask = self.__GetString(buf[68:100],32)
-		self.__gateway = self.__GetString(buf[100:132],32)
-		self.__dns = self.__GetString(buf[132:260],128)
-		self.__hwaddr = self.__GetString(buf[260:292],32)
+		self.__ifname = self.GetString(buf[4:36],32)
+		self.__ipaddr = self.GetString(buf[36:68],32)
+		self.__submask = self.GetString(buf[68:100],32)
+		self.__gateway = self.GetString(buf[100:132],32)
+		self.__dns = self.GetString(buf[132:260],128)
+		self.__hwaddr = self.GetString(buf[260:292],32)
 		self.__dhcp = ord(buf[292])
 		return
 
 	def FormatBuffer(self):
 		rbuf = ''
 		rbuf += struct.pack('>I',self.__netid)
-		rbuf += self.__FormatString(self.__ifname,32)
-		rbuf += self.__FormatString(self.__ipaddr,32)
-		rbuf += self.__FormatString(self.__submask,32)
-		rbuf += self.__FormatString(self.__gateway,32)
-		rbuf += self.__FormatString(self.__dns,128)
-		rbuf += self.__FormatString(self.__hwaddr,32)
+		rbuf += self.FormatString(self.__ifname,32)
+		rbuf += self.FormatString(self.__ipaddr,32)
+		rbuf += self.FormatString(self.__submask,32)
+		rbuf += self.FormatString(self.__gateway,32)
+		rbuf += self.FormatString(self.__dns,128)
+		rbuf += self.FormatString(self.__hwaddr,32)
 		rbuf += chr(self.__dhcp)
 		rbuf += chr(0)
 		rbuf += chr(0)
