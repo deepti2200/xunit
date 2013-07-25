@@ -180,5 +180,32 @@ class SdkSysCfg(syscp.SysCP):
 
 		if self.Code() != SYSCODE_GET_SYSCFG_RESP:
 			raise SdkSysCfgInvalidError('code (%d) != (%d)'%(self.Code() , SYSCODE_GET_SYSCFG_RESP))
+		if self.AttrCount() != 2:
+			raise SdkSysCfgInvalidError('attrcount (%ds) != 2'%(self.AttrCount()))
+		cfgbuf = self.MessageCodeParse(attrbuf)
+
+		ipcname = IPCName()
+		ipcname.ParseSysCfg(cfgbuf)
+		self.__syscfg = ipcname
+		return self.__syscfg
+
+	def FormatSet(self,syscfg,sesid=None,seqid=None):
+		if not instance(syscfg,IPCName):
+			raise SdkSysCfgInvalidError('not IPCName class')
+
+		reqbuf = syscfg.FormatSysCfg()
+		return self.FormatSysCp(SYSCODE_SET_SYSCFG_REQ,1,reqbuf,sesid,seqid)
+
+	def ParseSetSysCfgResp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+
+		if self.Code() != SYSCODE_SET_SYSCFG_RESP:
+			raise SdkSysCfgInvalidError('code (%d) != (%d)'%(self.Code() , SYSCODE_GET_SYSCFG_RESP))
+		if self.AttrCount() != 1:
+			raise SdkSysCfgInvalidError('attrcount (%ds) != 1'%(self.AttrCount()))
+		self.MessageCodeParse(attrbuf)
+		return 
 		
 
+
+			

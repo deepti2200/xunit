@@ -23,6 +23,7 @@ TYPE_INTVALUE=1
 TYPE_INTVALUE_LENGTH=4
 
 
+
 class SdkSysCpInvalidError(xunit.utils.exception.XUnitException):
 	pass
 
