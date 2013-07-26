@@ -8,6 +8,7 @@ import time
 import os
 import sys
 import logging
+import re
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 import xunit.utils.exception
@@ -23,6 +24,8 @@ class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
 class SdkSockConnectError(xunit.utils.exception.XUnitException):
 	pass
 
+class SdkSockSetoptError(xunit.utils.exception.XUnitException):
+	pass
 
 class SdkSockSendError(xunit.utils.exception.XUnitException):
 	pass
@@ -82,6 +85,54 @@ class SdkSock:
 			self.__sock = None
 			raise SdkSockConnectError('can not connect to(%s:%d)'%(self.__host,self.__port))
 		return 
+
+		
+
+
+	def __IsLinuxSystem(self):
+		vpat = re.compile('linux',re.I)
+		if vpat.search(sys.platform):
+			return 1
+		else:
+			return 0
+
+	def __ReadRMemMax(self):
+		cmd = 'cat /proc/sys/net/core/rmem_max'
+		sp = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		op = sp.stdout
+		ls = op.readlines()
+		l = ls[0]
+		l = l.rstrip('\r\n')
+		return int(l)
+
+	def __SetRMemMax(self,bufdsize):
+		cmd = 'sudo su -c \'echo %d >/proc/sys/net/core/rmem_max\''%(bufdsize)
+		ret = os.system(cmd)
+		if ret != 0:
+			raise SdkSockSetoptError('can not run cmd(%s) succ please to set sudo no password running'%(cmd))
+		return
+	def __SetRcvBuf(self,bufsize):
+		# now to set the socket buffer size
+		osize = self.__sock.getsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF)
+		if (bufsize << 1) > osize:
+			# now we set the buffer
+			self.__sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,bufsize)
+			nsize = self.__sock.getsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF)
+			if nsize < (bufsize * 2):
+				if not self.__IsLinuxSystem():
+					raise SdkSockSetoptError('can not reset the rmem_max in platform %s'%(sys.platform))
+				self.__SetRMemMax((bufsize << 1))
+				self.__sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,bufsize)
+				nsize = self.__sock.getsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF)
+				if nsize < (bufsize << 1):
+					raise SdkSockSetoptError('can not expand buffer size   %d'%(bufsize))
+		return
+	def SetRcvBuffer(self,bufsize):
+		if self.__sock is None:
+			raise SdkSockConnectError('not connected to(%s:%d)'%(self.__host,self.__port))
+
+		self.__SetRcvBuf(bufsize)
+		return
 
 	def CloseSocket(self):
  		if hasattr(self,'__sock') and self.__sock:
@@ -197,9 +248,10 @@ class SdkStreamSock(SdkSock):
 		sbuf = self.__basepack.Pack(self.SessionId(),self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL,reqbuf)
 		self.SendBuf(sbuf,'send media ctrl for %s'%(repr(streamids)))
 		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'receive open video response')
-		fragle,bodylen = self.__basepack.ParseHeader(rbuf)
-		if self.__basepack.SeqId() != 0:
-			raise SdkSockRecvError('get seqid (%d) != 0'%(self.__basepack.SeqId()))
+		fraglen,bodylen = self.__basepack.ParseHeader(rbuf)
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('get seqid (%d) != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+		logging.info('seqid (%d)'%(self.SeqId()))
 		rbuf = self.RcvBuf(fraglen+bodylen,'Receive video response')
 		count = self.__streampack.UnPackCtrl(rbuf[fraglen:])
 
@@ -243,6 +295,9 @@ class SdkStreamSock(SdkSock):
 		return self.__streampack.GetFramePts()
 	def GetStreamId(self):
 		return self.__streampack.GetFrameId()
+
+	def GetStreamType(self):
+		return self.__streampack.GetFrameType()
 
 class SdkIpInfoSock(SdkSock):
 	def	__init__(self,host,port):

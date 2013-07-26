@@ -19,6 +19,7 @@ class SdkStreamInvalidHeader(xunit.utils.exception.XUnitException):
 SDK_STREAM_OV_REQUEST=0x1
 SDK_STREAM_OV_RESPONSE=0x2
 
+SDK_STREAM_VD_SEND=5
 class StreamPack:
 	def __init__(self):
 		self.__vcount = 0
@@ -51,6 +52,18 @@ class StreamPack:
 		self.__framewidth = struct.unpack('>H',buf[20:22])[0]
 		self.__frameheight = struct.unpack('>H',buf[22:24])[0]
 		self.__framedata = buf[24:]
+		# now check for the framedata
+		checkdata = self.__framedata[:10]
+		if checkdata[0] != chr(0x0) or checkdata[1] != chr(0x0) :
+			raise SdkStreamInvalidHeader('not valid i-frame data(%s)'%(repr(checkdata)))			
+		if checkdata[2] != chr(0x0) or checkdata[3] != chr(0x1) :
+			raise SdkStreamInvalidHeader('not valid i-frame data(%s)'%(repr(checkdata)))
+		if checkdata[4] != chr(0x9) or checkdata[5] != chr(0x10):
+			raise SdkStreamInvalidHeader('not valid i-frame data(%s)'%(repr(checkdata)))
+		if checkdata[6] != chr(0x0) or checkdata[7] != chr(0x0):
+			raise SdkStreamInvalidHeader('not valid i-frame data(%s)'%(repr(checkdata)))
+		if checkdata[8] != chr(0x0) or checkdata[9] != chr(0x1):
+			raise SdkStreamInvalidHeader('not valid i-frame data(%s)'%(repr(checkdata)))
 		return 
 
 	def __UnPackPFrame(self,buf):
@@ -60,19 +73,29 @@ class StreamPack:
 		ptsh,ptsl = struct.unpack('>II',buf[8:16])
 		self.__framepts = (ptsh << 32) + ptsl
 		self.__framedata = buf[16:]
+		checkdata = self.__framedata[:10]
+		if checkdata[0] != chr(0x0) or checkdata[1] != chr(0x0) or\
+			checkdata[2] != chr(0x0) or checkdata[3] != chr(0x1) or \
+			checkdata[4] != chr(0x9) or checkdata[5] != chr(0x30) or \
+			checkdata[6] != chr(0x0) or checkdata[7] != chr(0x0) or\
+			checkdata[8] != chr(0x0) or checkdata[9] != chr(0x1):
+			raise SdkStreamInvalidHeader('not valid p-frame data(%s)'%(repr(checkdata)))
 		return 
 
 	def UnPackStream(self,buf):
 		# now unpack for the streams first to test for the type of frame
-		frametype = buf[0]
+		vcode = struct.unpack('>I',buf[:4])[0]
+		if vcode != SDK_STREAM_VD_SEND:
+			raise SdkStreamInvalidHeader('vcode (%d) != (%d)'%(vcode,SDK_STREAM_VD_SEND))
+		frametype = buf[4]
 
 		if frametype != 'I' and frametype != 'P':
 			raise SdkStreamInvalidHeader('not recognize type %s'%(repr(frametype)))
-
+		
 		if frametype == 'I':
-			self.__UnPackIFrame(buf)
+			self.__UnPackIFrame(buf[4:])
 		else:
-			self.__UnPackPFrame(buf)
+			self.__UnPackPFrame(buf[4:])
 
 		return frametype == 'I' and 1 or 0
 
