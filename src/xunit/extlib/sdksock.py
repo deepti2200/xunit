@@ -19,6 +19,7 @@ import sdkproto.ipinfo
 import sdkproto.videocfg
 import sdkproto.syscfg
 import sdkproto.sysctl
+import sdkproto.ptz
 
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -480,4 +481,79 @@ class SdkSysCfgSock(SdkSock):
 		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
 		self.__sysscpack.ParseSetSysCfgResp(rbuf)
 		return 
+
+class SdkPtzSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__sysptzpack = sdkproto.ptz.SdkPtz()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+	def __HandleCmd(self,reqbuf,msg='PtzCmd'):
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'request %s'%(msg and msg or 'PtzCmd'))
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'response %s'%(msg and msg or 'PtzCmd'))
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+
+		if self.__basepack.SesId() != self.SessionId():
+			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'PtzCmd'))
+		self.__sysptzpack.PtzCtrlResp(rbuf)
+		return
+		
+
+
+	def StopCmd(self):
+		reqbuf = self.__sysptzpack.StopPtz(1,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'StopCmd')
+		return
+
+	def UpCmd(self,speed):
+		reqbuf = self.__sysptzpack.UpPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'UpCmd')
+		return
+
+	def DownCmd(self,speed):
+		reqbuf = self.__sysptzpack.DownPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'DownCmd')
+		return
+		
+	def RightCmd(self,speed):
+		reqbuf = self.__sysptzpack.RightPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'RightCmd')
+		return
+
+	def LeftCmd(self,speed):
+		reqbuf = self.__sysptzpack.LeftPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'LeftCmd')
+		return
+
+
+	def UpRightCmd(self,speed):
+		reqbuf = self.__sysptzpack.UpRightPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'UpRightCmd')
+		return
+
+	def UpLeftCmd(self,speed):
+		reqbuf = self.__sysptzpack.UpLeftPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'UpLeftCmd')
+		return
+
+	def DownLeftCmd(self,speed):
+		reqbuf = self.__sysptzpack.DownLeftPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'DownLeftCmd')
+		return
+		
+	def DownRightCmd(self,speed):
+		reqbuf = self.__sysptzpack.DownRightPtz(1,speed,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'DownRightCmd')
+		return
+
+
 

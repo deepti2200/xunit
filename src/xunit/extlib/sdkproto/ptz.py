@@ -21,7 +21,7 @@ class SdkPtzOutRangeError(xunit.utils.exception.XUnitException):
 	pass
 
 SYSCODE_CTL_PTZ_REQ=1077
-SYSCODE_CTL_PTZ_RESP=1078
+SYSCODE_CTL_PTZ_RSP=1078
 
 SYS_PTZCMD_STOP=0
 SYS_PTZCMD_ZOOM_TELE=1
@@ -51,6 +51,13 @@ SYS_PTZCMD_STOPTOUR=24
 SYS_PTZCMD_3DCONTROL=200
 SYS_PTZCMD_NR=255
 
+TYPE_CTLPTZ=17
+TYPE_CTLPTZ_LENGTH=24
+
+class SdkPtzInvalidError(xunit.utils.exception.XUnitException):
+	pass
+
+
 class SdkPtz(syscp.SysCP):
 	def __init__(self):
 		syscp.SysCP.__init__(self)
@@ -60,43 +67,55 @@ class SdkPtz(syscp.SysCP):
 		return
 
 	def __FormatPtzCommand(self,ptzid,cmd,param1=0,param2=0,param3=0,param4=0):
-		rbuf = ''
-		rbuf += struct.pack('>II',ptzid,cmd)
-		rbuf += struct.pack('>IIII',param1,param2,param3,param4)
+		bbuf = ''
+		bbuf += struct.pack('>II',ptzid,cmd)
+		bbuf += struct.pack('>IIII',param1,param2,param3,param4)
+		rbuf = self.TypeCodeForm(TYPE_CTLPTZ,bbuf)
 		return rbuf
 
-	def UpPtz(self,ptzid,speed):
+	def UpPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_UP,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 
-	def DownPtz(self,ptzid,speed):
+	def DownPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_DOWN,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 
-	def RightPtz(self,ptzid,speed):
+	def RightPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_RIGHT,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 		
-	def LeftPtz(self,ptzid,speed):
+	def LeftPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_LEFT,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 
-	def LeftUpPtz(self,ptzid,speed):
+	def UpLeftPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_LEFTUP,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 		
-	def RightUpPtz(self,ptzid,speed):
+	def UpRightPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_RIGHTUP,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 
-	def LeftDownPtz(self,ptzid,speed):
+	def DownLeftPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_LEFTDOWN,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 		
-	def RightDownPtz(self,ptzid,speed):
+	def DownRightPtz(self,ptzid,speed,sesid=None,seqid=None):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_RIGHTDOWN,speed)
-		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 
-	def
+	def StopPtz(self,ptzid,sesid=None,seqid=None):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_STOP)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 
-	
+
+	def PtzCtrlResp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+		if self.Code() != SYSCODE_CTL_PTZ_RSP:
+			raise SdkPtzInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_CTL_PTZ_RSP))
+		if self.AttrCount() != 1:
+			raise SdkPtzInvalidError('attrcount (%d) != (1)'%(self.AttrCount()))
+
+		self.MessageCodeParse(attrbuf,'Ptz cmd')
+		return
