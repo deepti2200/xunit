@@ -16,6 +16,8 @@ import sdkproto.login
 import sdkproto.pack
 import sdkproto.stream
 import sdkproto.ipinfo
+import sdkproto.videocfg
+import sdkproto.syscfg
 
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -433,7 +435,7 @@ class SdkVideoCfgSock(SdkSock):
 class SdkSysCfgSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
-		self.__sysscpack = sdkproto.videocfg.SdkSysCfg()
+		self.__sysscpack = sdkproto.syscfg.SdkSysCfg()
 		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
