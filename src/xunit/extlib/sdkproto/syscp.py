@@ -78,7 +78,7 @@ class SysCP:
 		codelen = 0
 		if buf:
 			codelen = len(buf)
-		rbuf += struct.pack('>HHHH',attrcount,self.__sesid,self.__seqid,SYS_HDR_LENGTH+codelen)
+		rbuf += struct.pack('>HHHH',attrcount,self.__seqid,self.__sesid,SYS_HDR_LENGTH+codelen)
 		rbuf += buf
 		return rbuf
 
@@ -96,7 +96,7 @@ class SysCP:
 		code = struct.unpack('>H',buf[6:8])[0]
 		attrcount =struct.unpack('>H',buf[8:10])[0]
 
-		sesid,seqid = struct.unpack('>HH',buf[10:14])
+		seqid,sesid = struct.unpack('>HH',buf[10:14])
 		tlen = struct.unpack('>H',buf[14:16])[0]
 		if tlen > len(buf):
 			raise SdkSysCpInvalidError('total length (%d) > (%d)'%(tlen,len(buf)))
@@ -150,7 +150,7 @@ class SysCP:
 		rbuf = ''
 		rbuf += struct.pack('>HH',code,len(buf)+TYPE_INFO_LENGTH)
 		rbuf += buf
-		return buf
+		return rbuf
 
 	def TypeCode(self):
 		return self.__typecode

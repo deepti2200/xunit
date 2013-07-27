@@ -74,8 +74,8 @@ class IPCName:
 		return rbuf
 
 	def ParseSysCfg(self,buf):
-		if len(buf) < TYPE_IPCNAME_LENGTH:
-			raise SysCfgInvalidError('len(%d) < (%d)'%(len(buf),TYPE_IPCNAME_LENGTH))
+		if len(buf) < (TYPE_IPCNAME_LENGTH):
+			raise SysCfgInvalidError('len(%d) < (%d)'%(len(attrbuf),TYPE_IPCNAME_LENGTH))
 
 		self.__devicename = self.GetString(buf,128)
 		self.__deviceid = struct.unpack('>I',buf[128:132])[0]
@@ -100,7 +100,7 @@ class IPCName:
 		rbuf = ''
 		rbuf += 'Device Name : %s;\n'%(self.__devicename)
 		rbuf += 'Device Id   : %d;\n'%(self.__deviceid)
-		rbuf += 'Device model: %s;\n'%(self.__devicemod)
+		rbuf += 'Device model: %s;\n'%(self.__devicemodel)
 		rbuf += 'Device Manu : %s;\n'%(self.__devicemanufactor)
 		rbuf += 'Device SN   : %s;\n'%(self.__devicesn)
 		rbuf += 'Device FWVer: %s;\n'%(self.__devicefwver)
@@ -178,11 +178,18 @@ class SdkSysCfg(syscp.SysCP):
 	def ParseQuerySysCfgResp(self,buf):
 		attrbuf = self.UnPackSysCp(buf)
 
-		if self.Code() != SYSCODE_GET_SYSCFG_RESP:
+		if self.Code() != SYSCODE_GET_SYSCFG_RSP:
 			raise SdkSysCfgInvalidError('code (%d) != (%d)'%(self.Code() , SYSCODE_GET_SYSCFG_RESP))
-		if self.AttrCount() != 2:
-			raise SdkSysCfgInvalidError('attrcount (%ds) != 2'%(self.AttrCount()))
-		cfgbuf = self.MessageCodeParse(attrbuf)
+		if self.AttrCount() != 1:
+			logging.error('attrbuf %s'%(repr(attrbuf)))
+			raise SdkSysCfgInvalidError('attrcount (%d) != 2'%(self.AttrCount()))
+		#cfgbuf = self.MessageCodeParse(attrbuf)
+		cfgbuf = self.ParseTypeCode(attrbuf)
+		if self.TypeCode() != TYPE_IPCNAME:
+			raise SdkSysCfgInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),TYPE_IPCNAME))
+
+		if self.TypeLen() < TYPE_IPCNAME_LENGTH:
+			raise SdkSysCfgInvalidError('typelength (%d) < (%d)'%(self.TypeLen(),TYPE_IPCNAME_LENGTH))
 
 		ipcname = IPCName()
 		ipcname.ParseSysCfg(cfgbuf)
@@ -190,20 +197,22 @@ class SdkSysCfg(syscp.SysCP):
 		return self.__syscfg
 
 	def FormatSet(self,syscfg,sesid=None,seqid=None):
-		if not instance(syscfg,IPCName):
+		if not isinstance(syscfg,IPCName):
 			raise SdkSysCfgInvalidError('not IPCName class')
 
-		reqbuf = syscfg.FormatSysCfg()
-		return self.FormatSysCp(SYSCODE_SET_SYSCFG_REQ,1,reqbuf,sesid,seqid)
+		rbuf = syscfg.FormatSysCfg()
+		reqbuf = self.TypeCodeForm(TYPE_IPCNAME,rbuf)
+		return  self.FormatSysCp(SYSCODE_SET_SYSCFG_REQ,1,reqbuf,sesid,seqid)
 
 	def ParseSetSysCfgResp(self,buf):
+		logging.error('resp buf(%s)'%(repr(buf)))
 		attrbuf = self.UnPackSysCp(buf)
 
-		if self.Code() != SYSCODE_SET_SYSCFG_RESP:
+		if self.Code() != SYSCODE_SET_SYSCFG_RSP:
 			raise SdkSysCfgInvalidError('code (%d) != (%d)'%(self.Code() , SYSCODE_GET_SYSCFG_RESP))
 		if self.AttrCount() != 1:
 			raise SdkSysCfgInvalidError('attrcount (%ds) != 1'%(self.AttrCount()))
-		self.MessageCodeParse(attrbuf)
+		self.MessageCodeParse(attrbuf,'Set Sys Cfg Resp')
 		return 
 		
 

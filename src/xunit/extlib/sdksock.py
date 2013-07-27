@@ -18,6 +18,7 @@ import sdkproto.stream
 import sdkproto.ipinfo
 import sdkproto.videocfg
 import sdkproto.syscfg
+import sdkproto.sysctl
 
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -175,7 +176,7 @@ class SdkSock:
 
 		# now we should give the handle
 		reqbuf = sdklogin.PackLoginSaltRequest(self.IncSeqId(),authcode,user,password,md5check,900,10)
-		sbuf = packproto.Pack(0,self.__seqid,0x80,reqbuf)		
+		sbuf = packproto.Pack(0,self.__seqid,sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)		
 		#logging.info('sending req (%d) %s seqid %d'%(len(reqbuf),repr(reqbuf),self.__seqid))
 		self.SendBuf(sbuf,'login check request')
 
@@ -403,7 +404,7 @@ class SdkVideoCfgSock(SdkSock):
 		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
 			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
 
-		if self.__basepack.SeqId() != self.SessionId():
+		if self.__basepack.SesId() != self.SessionId():
 			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
 		if self.__basepack.SeqId() != self.SeqId():
 			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
@@ -423,7 +424,7 @@ class SdkVideoCfgSock(SdkSock):
 		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
 			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
 
-		if self.__basepack.SeqId() != self.SessionId():
+		if self.__basepack.SesId() != self.SessionId():
 			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
 		if self.__basepack.SeqId() != self.SeqId():
 			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
@@ -451,17 +452,18 @@ class SdkSysCfgSock(SdkSock):
 		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
 			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
 
-		if self.__basepack.SeqId() != self.SessionId():
+		if self.__basepack.SesId() != self.SessionId():
 			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
 		if self.__basepack.SeqId() != self.SeqId():
 			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
 		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
 		
-		return 	self.__sysvcpack.ParseQuerySysCfgResp(rbuf)
+		return 	self.__sysscpack.ParseQuerySysCfgResp(rbuf)
 
 
 	def SetSysCfg(self,scfg):
-		reqbuf = self.__sysscpack.FormatSet(scfg,self.SessionId(),self.IsncSeqId())
+		reqbuf = self.__sysscpack.FormatSet(scfg,self.SessionId(),self.IncSeqId())
+		logging.error('%s'%(repr(reqbuf)))
 		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
 		self.SendBuf(sbuf,'send query video cfg request')
 		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
@@ -471,11 +473,11 @@ class SdkSysCfgSock(SdkSock):
 		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
 			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
 
-		if self.__basepack.SeqId() != self.SessionId():
+		if self.__basepack.SesId() != self.SessionId():
 			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
 		if self.__basepack.SeqId() != self.SeqId():
 			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
 		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
-		self.__sysvcpack.ParseSetSysCfgResp(rbuf)
+		self.__sysscpack.ParseSetSysCfgResp(rbuf)
 		return 
 

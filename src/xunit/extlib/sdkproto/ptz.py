@@ -97,4 +97,6 @@ class SdkPtz(syscp.SysCP):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_RIGHTDOWN,speed)
 		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,seqbuf)
 
+	def
+
 	

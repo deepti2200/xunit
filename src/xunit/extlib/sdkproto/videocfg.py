@@ -27,7 +27,7 @@ class EncodeCfgInvalidError(xunit.utils.exception.XUnitException):
 	pass
 
 ENCODE_CFG_LENGTH=52
-TYPE_ENCODECFG=12
+TYPE_ENCODECFG=24
 
 class EncodeCfg:
 
@@ -210,17 +210,15 @@ class SdkVideoCfg(syscp.SysCP):
 		# now first to parse
 		self.__videocount = 0
 		self.__videocfgs = []
+		logging.info('attrcount %d'%(self.AttrCount()))
 		for i in xrange(self.AttrCount()):
-			if i == 0:
-				attrbuf = self.MessageCodeParse(attrbuf)
-			else:
-				attrbuf = self.ParseTypeCode(attrbuf,'video encode')
-				if self.TypeCode() != TYPE_ENCODECFG:
-					raise SdkVideoCfgInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),TYPE_ENCODECFG))
-				vcfg = EncodeCfg()
-				attrbuf = vcfg.ParseVideoEncode(attrbuf)
-				self.__videocount += 1
-				self.__videocfgs.append(vcfg)
+			attrbuf = self.ParseTypeCode(attrbuf,'video encode')
+			if self.TypeCode() != TYPE_ENCODECFG:
+				raise SdkVideoCfgInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),TYPE_ENCODECFG))
+			vcfg = EncodeCfg()
+			attrbuf = vcfg.ParseVideoEncode(attrbuf)
+			self.__videocount += 1
+			self.__videocfgs.append(vcfg)
 		return self.__videocount
 
 	def FormatSetVideoCfg(self,vcfg,sesid=None,seqid=None):
@@ -231,7 +229,7 @@ class SdkVideoCfg(syscp.SysCP):
 		return self.FormatSysCp(SYSCODE_SET_ENCODECFG_REQ,1,rbuf,sesid,seqid)
 
 	def ParseSetVideoCfg(self,buf):
-		rbuf = self.UnPackSysCp()
+		rbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_SET_ENCODECFG_RSP:
 			raise SdkVideoCfgInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_ENCODECFG_RSP))
 		rbuf = self.MessageCodeParse(rbuf)
