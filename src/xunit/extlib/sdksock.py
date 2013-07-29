@@ -489,7 +489,7 @@ class SdkPtzSock(SdkSock):
 		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
-	def __HandleCmd(self,reqbuf,msg='PtzCmd'):
+	def __SendAndRecv(self,reqbuf,msg='PtzCmd'):
 		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
 		self.SendBuf(sbuf,'request %s'%(msg and msg or 'PtzCmd'))
 		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'response %s'%(msg and msg or 'PtzCmd'))
@@ -504,6 +504,10 @@ class SdkPtzSock(SdkSock):
 		if self.__basepack.SeqId() != self.SeqId():
 			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
 		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'PtzCmd'))
+		return rbuf
+
+	def __HandleCmd(self,reqbuf,msg='PtzCmd'):
+		rbuf = self.__SendAndRecv(reqbuf,msg)
 		self.__sysptzpack.PtzCtrlResp(rbuf)
 		return
 		
@@ -555,5 +559,27 @@ class SdkPtzSock(SdkSock):
 		self.__HandleCmd(reqbuf,'DownRightCmd')
 		return
 
+	def SetPresetCmd(self,presetidx):
+		reqbuf = self.__sysptzpack.SetPresetPtz(1,presetidx,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'SetPresetCmd')
+		
+	def GotoPresetCmd(self,presetidx):
+		reqbuf = self.__sysptzpack.GotoPresetPtz(1,presetidx,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'GotoPresetCmd')
+
+	def ClearPresetCmd(self,presetidx):
+		reqbuf = self.__sysptzpack.ClearPresetPtz(1,presetidx,self.SessionId(),self.IncSeqId())
+		self.__HandleCmd(reqbuf,'ClearPresetCmd')
+
+
+	def GetPresetInfoCmd(self):
+		reqbuf = self.__sysptzpack.PtzPresetGetReq(1,self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'GetPreset Info')
+		return self.__sysptzpack.PtzPresetGetResp(rbuf)
+
+	def SetPresetInfoCmd(self,ptzpreset):
+		reqbuf = self.__sysptzpack.PtzPresetSetReq(ptzpreset,self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'SetPreset Info')
+		return self.__sysptzpack.PtzPresetSetResp(rbuf)
 
 

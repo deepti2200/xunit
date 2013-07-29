@@ -23,6 +23,11 @@ class SdkPtzOutRangeError(xunit.utils.exception.XUnitException):
 SYSCODE_CTL_PTZ_REQ=1077
 SYSCODE_CTL_PTZ_RSP=1078
 
+SYSCODE_SET_PTZPRESET_REQ=1081
+SYSCODE_SET_PTZPRESET_RSP=1082
+SYSCODE_GET_PTZPRESET_REQ=1083
+SYSCODE_GET_PTZPRESET_RSP=1084
+
 SYS_PTZCMD_STOP=0
 SYS_PTZCMD_ZOOM_TELE=1
 SYS_PTZCMD_ZOOM_WIDE=2
@@ -58,12 +63,102 @@ class SdkPtzInvalidError(xunit.utils.exception.XUnitException):
 	pass
 
 
+TYPE_PTZPRESET=18
+PRESET_NAME_LENGTH=128
+TYPE_PTZPRESET_LENGTH=(PRESET_NAME_LENGTH+4)
+PRESET_PTZ_STRUCT_LENGTH=(PRESET_NAME_LENGTH+8)
+
+class PtzPresetInvalidError(xunit.utils.exception.XUnitException):
+	pass
+class PtzPreset:
+	def __init__(self):
+		self.__ptzid = 1
+		self.__presetidx = 0
+		self.__presetname = ''
+		return
+
+	def __del__(self):
+		self.__ptzid = 1
+		self.__presetidx = 0
+		self.__presetname = ''
+		return
+
+	def GetString(self,s,size):
+		rbuf = ''
+		lasti  = -1
+		for i in xrange(size):
+			if s[i] == '\0':
+				lasti = i
+				break
+
+		if lasti >= 0:
+			rbuf = s[:lasti]
+		else:
+			rbuf = s[:-2]
+		return rbuf
+	def FormatString(self,s,size):
+		rbuf = ''
+		if len(s) < size:
+			rbuf += s
+			lsize = size - len(s)
+			rbuf += '\0' * lsize
+		else:
+			rbuf += s[:(size-1)]
+			rbuf += '\0'
+		return rbuf
+
+	def ParseBuf(self,buf):
+		if len(buf) < PRESET_PTZ_STRUCT_LENGTH:
+			raise PtzPresetInvalidError('len (%d) < (%d)'%(len(buf),PRESET_PTZ_STRUCT_LENGTH))
+
+		self.__ptzid,self.__presetidx = struct.unpack('>II',buf[:8])
+		self.__presetname = self.GetString(buf[8:],PRESET_NAME_LENGTH)			
+		return buf[PRESET_PTZ_STRUCT_LENGTH:]
+
+	def FormatBuf(self):
+		rbuf = struct.pack('>II',self,__ptzid,self.__presetidx)
+		rbuf += self.FormatString(self.__presetname,PRESET_NAME_LENGTH)
+		return rbuf
+
+	def __Format(self):
+		rbuf = ''
+		rbuf += 'ptzid     : %d\n'%(self.__ptzid)
+		rbuf += 'presetidx : %d\n'%(self.__preseetidx)
+		rbuf += 'presetname: %s\n'%(self.__presetname)
+		return rbuf
+	
+	def __str__(self):
+		return self.__Format()
+
+	def __repr__(self):
+		return self.__Format()
+
+	def PtzId(self,val=None):
+		ov = self.__ptzid
+		if val:
+			self.__ptzid = val
+		return ov
+
+	def PresetIdx(self,val=None):
+		ov = self.__presetidx
+		if val:
+			self.__presetidx = val
+		return ov
+
+	def PresetName(self,val=None):
+		ov = self.__presetname
+		if val:
+			self.__presetname = val
+		return ov
+
 class SdkPtz(syscp.SysCP):
 	def __init__(self):
 		syscp.SysCP.__init__(self)
+		self.__presets = []
 		return
 	def __del__(self):
 		syscp.SysCP.__del__(self)
+		self.__presets = []
 		return
 
 	def __FormatPtzCommand(self,ptzid,cmd,param1=0,param2=0,param3=0,param4=0):
@@ -109,6 +204,19 @@ class SdkPtz(syscp.SysCP):
 		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_STOP)
 		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
 
+	def SetPresetPtz(self,ptzid,presetidx,sesid=None,seqid=None):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_SETPRESET,presetidx)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
+
+
+	def GotoPresetPtz(self,ptzid,presetidx,sesid=None,seqid=None):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_GOTOPRESET,presetidx)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
+
+	def ClearPresetPtz(self,ptzid,presetidx,sesid=None,seqid=None):
+		seqbuf = self.__FormatPtzCommand(ptzid,SYS_PTZCMD_CLEARPRESET,presetidx)
+		return self.FormatSysCp(SYSCODE_CTL_PTZ_REQ,1,seqbuf,sesid,seqid)
+
 
 	def PtzCtrlResp(self,buf):
 		attrbuf = self.UnPackSysCp(buf)
@@ -119,3 +227,45 @@ class SdkPtz(syscp.SysCP):
 
 		self.MessageCodeParse(attrbuf,'Ptz cmd')
 		return
+
+
+	def PtzPresetSetReq(self,ptzpreset,sesid=None,seqid=None):
+		if not isinstance(ptzpreset,PtzPreset):
+			raise SdkPtzInvalidError('param not sdkproto.ptz.PtzPreset class')
+		rbuf = ptzpreset.FormatBuf()
+		reqbuf = self.TypeCodeForm(TYPE_PTZPRESET,rbuf)
+		return self.FormatSysCp(SYSCODE_SET_PTZPRESET_REQ,1,reqbuf,sesid,seqid)
+
+	def PtzPresetSetResp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+		if self.Code() != SYSCODE_SET_PTZPRESET_RSP:
+			raise SdkPtzInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_PTZPRESET_RE))
+
+		if self.AttrCount() != 1:
+			raise SdkPtzInvalidError('attrcount (%d) != (1)'%(self.AttrCount()))
+
+		self.MessageCodeParse(attrbuf,'PtzPreset Set Resp')
+		return
+
+	def PtzPresetGetReq(self,ptzid,sesid=None,seqid=None):
+		rbuf = struct.pack('>I',ptzid)
+		reqbuf = self.TypeCodeForm(syscp.TYPE_INTVALUE,rbuf)
+		return self.FormatSysCp(SYSCODE_GET_PTZPRESET_REQ,1,reqbuf,sesid,seqid)
+
+	def PtzPresetGetResp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+		if self.Code() != SYSCODE_GET_PTZPRESET_RSP:
+			raise SdkPtzInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_PTZPRESET_RE))
+
+		self.__presets = []
+		for i in xrange(self.AttrCount()):
+			attrbuf = self.ParseTypeCode(attrbuf)
+			if self.TypeCode() != TYPE_PTZPRESET:
+				raise SdkPtzInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),TYPE_PTZPRESET))
+			if self.TypeLen() != TYPE_PTZPRESET_LENGTH:
+				raise SdkPtzInvalidError('typelen (%d) != (%d)'%(self.TypeLen(),TYPE_PTZPRESET_LENGTH))
+			ptzpreset = PtzPreset()
+			attrbuf = ptzpreset.ParseBuf(attrbuf)
+			self.__presets.append(ptzpreset)
+
+		return self.__presets
