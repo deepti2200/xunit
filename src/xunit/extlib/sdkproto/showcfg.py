@@ -176,19 +176,201 @@ class ShowCfg:
 	def __repr__(self):
 		return self.__Format()
 
+	def TmEnable(self,val=None):
+		ov= self.__tm_enable
+		if val:
+			self.__tm_enable = val
+		return ov
+
+	def Flag(self,val=None):
+		ov = self.__flag
+		if val:
+			self.__flag = val
+		return ov
+
+	def TmLanguage(self,val=None):
+		ov= self.__tm_language
+		if val:
+			self.__tm_language = val
+		return ov
+		
+
+	def TmDisplayX(self,val=None):
+		ov= self.__tm_displayx
+		if val:
+			self.__tm_displayx = val
+		return ov
+
+	def TmDisplayY(self,val=None):
+		ov= self.__tm_displayy
+		if val:
+			self.__tm_displayy = val
+		return ov
+
+	def TmDateStyle(self,val=None):
+		ov= self.__tm_datestyle
+		if val:
+			self.__tm_datestyle = val
+		return ov
+
+	def TmTimeStyle(self,val=None):
+		ov= self.__tm_timestyle
+		if val:
+			self.__tm_timestyle = val
+		return ov
+
+
+	def TmFontColor(self,val=None):
+		ov= self.__tm_fontcolor
+		if val:
+			self.__tm_fontcolor = val
+		return ov
+
+	def TmFontSize(self,val=None):
+		ov= self.__tm_fontsize
+		if val:
+			self.__tm_fontsize = val
+		return ov
+	
+	def TmFontBold(self,val=None):
+		ov= self.__tm_fontbold
+		if val:
+			self.__tm_fontbold = val
+		return ov
+
+	def TmFontRotate(self,val=None):
+		ov= self.__tm_fontrotate
+		if val:
+			self.__tm_fontrotate = val
+		return ov
+
+	def TmFontItalic(self,val=None):
+		ov= self.__tm_fontitalic
+		if val:
+			self.__tm_fontitalic = val
+		return ov
+
+	def TmFontOutline(self,val=None):
+		ov= self.__tm_fontoutline
+		if val:
+			self.__tm_fontoutline = val
+		return ov
+
+	def ChEnable(self,val=None):
+		ov= self.__ch_enable
+		if val:
+			self.__ch_enable = val
+		return ov
+
+	def ChDisplayX(self,val=None):
+		ov= self.__ch_displayx
+		if val:
+			self.__ch_displayx = val
+		return ov
+
+	def ChDisplayY(self,val=None):
+		ov= self.__ch_displayy
+		if val:
+			self.__ch_displayy = val
+		return ov
+
+	def ChFontColor(self,val=None):
+		ov= self.__ch_fontcolor
+		if val:
+			self.__ch_fontcolor = val
+		return ov
+
+
+
+	def ChFontSize(self,val=None):
+		ov= self.__ch_fontsize
+		if val:
+			self.__ch_fontsize = val
+		return ov
+
+	def ChFontBold(self,val=None):
+		ov= self.__ch_fontbold
+		if val:
+			self.__ch_fontbold = val
+		return ov
+
+	def ChFontRotate(self,val=None):
+		ov= self.__ch_fontrotate
+		if val:
+			self.__ch_fontrotate = val
+		return ov
+
+	def ChFontItalic(self,val=None):
+		ov= self.__ch_fontitalic
+		if val:
+			self.__ch_fontitalic = val
+		return ov
+
+	def ChFontOutline(self,val=None):
+		ov= self.__ch_fontoutline
+		if val:
+			self.__ch_fontoutline = val
+		return ov
+
+	def ChChannelName(self,val=None):
+		ov= self.__ch_channelname
+		if val:
+			self.__ch_channelname = val
+		return ov
+
+
+class SdkShowCfgInvalidError(xunit.utils.exception.XUnitException):
+	pass
+
+
 class SdkShowCfg(syscp.SysCP):
 	def __init__(self):
 		syscp.SysCP.__init__(self)
-		self.__showcfg = None
+		self.__showcfgs = []
 		return
 	def __del__(self):
 		syscp.SysCP.__del__(self)
-		self.__showcfg = None
+		self.__showcfgs = []
 		return
 
 	def FormGetReq(self,sesid=None,seqid=None):
-		pass
+		rbuf = struct.pack('>I',1)
+		reqbuf = self.TypeCodeForm(sdkproto.syscp.TYPE_INTVALUE,rbuf)
+		return self.FormatSysCp(SYSCODE_GET_SHOWCFG_REQ,1,seqbuf,sesid,seqid)
 
 	def ParseGetRsp(self,buf):
-		pass
+		attrbuf = self.UnPackSysCp(buf)
+		if self.Code() != SYSCODE_GET_SHOWCFG_RSP:
+			raise SdkShowCfgInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_SHOWCFG_RSP))
+		if self.AttrCount() < 1:
+			raise SdkShowCfgInvalidError('attrcount (%d) < (1)'%(self.AttrCount()))
+
+		self.__showcfgs = []
+		for i in xrange(self.AttrCount()):
+			attrbuf = self.ParseTypeCode(attrbuf)
+			if self.TypeCode() != TYPE_SHOWCFG:
+				raise SdkShowCfgInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),TYPE_SHOWCFG))
+			showcfg = ShowCfg()
+			attrbuf = showcfg.ParseBuf(attrbuf)
+			self.__showcfgs.append(showcfg)
+		return self.__showcfgs
+		
+		
+	def FormSetReq(self,showcfg,sesid=None,seqid=None):
+		if not isinstance(showcfg,ShowCfg):
+			raise SdkShowCfgInvalidError('showcfg param not type of ShowCfg')
+
+		rbuf = showcfg.FormatBuf()
+		reqbuf = self.TypeCodeForm(TYPE_SHOWCFG,rbuf)
+		return self.FormatSysCp(SYSCODE_SET_SHOWCFG_REQ,1,seqbuf,sesid,seqid)
+
+	def ParseSetRsp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+		if self.Code() != SYSCODE_SET_SHOWCFG_RSP:
+			raise SdkShowCfgInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_SHOWCFG_RSP))
+		if self.AttrCount() != 1:
+			raise SdkShowCfgInvalidError('attrcount (%d) != (1)'%(self.AttrCount()))
+
+		self.MessageCodeParse(attrbuf)
+		return
 
