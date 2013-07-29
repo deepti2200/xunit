@@ -363,7 +363,7 @@ class SdkShowCfg(syscp.SysCP):
 
 		rbuf = showcfg.FormatBuf()
 		reqbuf = self.TypeCodeForm(TYPE_SHOWCFG,rbuf)
-		return self.FormatSysCp(SYSCODE_SET_SHOWCFG_REQ,1,seqbuf,sesid,seqid)
+		return self.FormatSysCp(SYSCODE_SET_SHOWCFG_REQ,1,reqbuf,sesid,seqid)
 
 	def ParseSetRsp(self,buf):
 		attrbuf = self.UnPackSysCp(buf)
