@@ -176,16 +176,17 @@ class ShowCfg:
 	def __repr__(self):
 		return self.__Format()
 
-	def TmEnable(self,val=None):
-		ov= self.__tm_enable
-		if val:
-			self.__tm_enable = val
-		return ov
 
 	def Flag(self,val=None):
 		ov = self.__flag
 		if val:
 			self.__flag = val
+		return ov
+
+	def TmEnable(self,val=None):
+		ov= self.__tm_enable
+		if val:
+			self.__tm_enable = val
 		return ov
 
 	def TmLanguage(self,val=None):

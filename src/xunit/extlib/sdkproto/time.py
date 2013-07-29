@@ -399,7 +399,7 @@ class SdkTime(syscp.SysCP):
 
 		return self.__timetype,self.__systime,self.__ntpserver,self.__timezone
 
-	def FormTimeSetReq(self,timetype,systime,ntpserver,timezone,sesid=None,seqid=None):
+	def FormSetTimeReq(self,timetype,systime,ntpserver,timezone,sesid=None,seqid=None):
 		count =0
 		attrbuf = ''
 		if timetype is not None and not isinstance(timetype,TimeType):
@@ -436,7 +436,7 @@ class SdkTime(syscp.SysCP):
 		return self.FormatSysCp(SYSCODE_SET_TIME_REQ,count,attrbuf,sesid,seqid)
 
 
-	def ParseTimeSetRsp(self,buf):
+	def ParseSetTimeResp(self,buf):
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_SET_TIME_RSP:
 			raise SdkTimeInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_TIME_RSP))
