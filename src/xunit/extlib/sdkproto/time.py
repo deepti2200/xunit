@@ -129,14 +129,13 @@ class SysTime:
 	def ParseBuf(self,buf):
 		if len(buf) < TYPE_SYSTIME_STRUCT_LENGTH:
 			raise TimeInvalidError('len(%d) < (%d)'%(len(buf),TYPE_SYSTIME_STRUCT_LENGTH))
-		self.__year , self.__month ,self.__day \
-		self.__hour , self.__minute,self.__second = \
-		struct.unpack('>IIIIII',buf[:TYPE_SYSTIME_STRUCT_LENGTH])
+		self.__year , self.__month ,self.__day ,\
+		self.__hour , self.__minute,self.__second = struct.unpack('>IIIIII',buf[:TYPE_SYSTIME_STRUCT_LENGTH])
 		return buf[TYPE_SYSTIME_STRUCT_LENGTH:]
 
-	def FormBuf(self):
+	def FormatBuf(self):
 		rbuf = ''
-		rbuf += struct.pack('>IIIIII',self.__year , self.__month ,self.__day \
+		rbuf += struct.pack('>IIIIII',self.__year , self.__month ,self.__day ,\
 		self.__hour , self.__minute,self.__second)
 		return rbuf
 

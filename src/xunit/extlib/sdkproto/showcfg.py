@@ -22,7 +22,7 @@ SYSCODE_GET_SHOWCFG_RSP=1044
 
 
 TYPE_SHOWCFG=13
-TYPE_SHOWCFG_STRUCT_LENGTH=210
+TYPE_SHOWCFG_STRUCT_LENGTH=220
 TYPE_SHOWCFG_LENGTH=(TYPE_SHOWCFG_STRUCT_LENGTH+4)
 
 
@@ -154,7 +154,7 @@ class ShowCfg:
 		rbuf += 'tm_fontcolor    : %d\n'%(self.__tm_fontcolor)
 		rbuf += 'tm_fontsize     : %d\n'%(self.__tm_fontsize)
 		rbuf += 'tm_fontbold     : %d\n'%(self.__tm_fontbold)
-		rbuf += 'tm_fontrotate   : %d\n'%(self.__tm_fontroate)
+		rbuf += 'tm_fontrotate   : %d\n'%(self.__tm_fontrotate)
 		rbuf += 'tm_fontitalic   : %d\n'%(self.__tm_fontitalic)
 		rbuf += 'tm_fontoutline  : %d\n'%(self.__tm_fontoutline)
 		rbuf += 'ch_enable       : %d\n'%(self.__ch_enable)
@@ -167,7 +167,7 @@ class ShowCfg:
 		rbuf += 'ch_fontitalic   : %d\n'%(self.__ch_fontitalic)
 		rbuf += 'ch_fontoutline  : %d\n'%(self.__ch_fontoutline)
 
-		rbuf += 'ch_channelname  : %s\n'%(self.__ch_channelname,128)
+		rbuf += 'ch_channelname  : %s\n'%(self.__ch_channelname)
 		return rbuf
 
 	def __str__(self):
@@ -336,8 +336,8 @@ class SdkShowCfg(syscp.SysCP):
 
 	def FormGetReq(self,sesid=None,seqid=None):
 		rbuf = struct.pack('>I',1)
-		reqbuf = self.TypeCodeForm(sdkproto.syscp.TYPE_INTVALUE,rbuf)
-		return self.FormatSysCp(SYSCODE_GET_SHOWCFG_REQ,1,seqbuf,sesid,seqid)
+		reqbuf = self.TypeCodeForm(syscp.TYPE_INTVALUE,rbuf)
+		return self.FormatSysCp(SYSCODE_GET_SHOWCFG_REQ,1,reqbuf,sesid,seqid)
 
 	def ParseGetRsp(self,buf):
 		attrbuf = self.UnPackSysCp(buf)

@@ -22,6 +22,7 @@ import sdkproto.sysctl
 import sdkproto.ptz
 import sdkproto.showcfg
 import sdkproto.time
+import sdkproto.imagine
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
 	pass
@@ -610,7 +611,7 @@ class SdkShowCfgSock(SdkSock):
 		return rbuf
 
 	def GetShowCfg(self):
-		reqbuf = self.__sysshowcfgpack.FormSetReq(self.SessionId(),self.IncSeqId())
+		reqbuf = self.__sysshowcfgpack.FormGetReq(self.SessionId(),self.IncSeqId())
 		rbuf = self.__SendAndRecv(reqbuf,'GetShowCfgCmd')
 		return self.__sysshowcfgpack.ParseGetRsp(rbuf)
 
@@ -648,24 +649,66 @@ class SdkTimeSock(SdkSock):
 		rbuf = self.__SendAndRecv(reqbuf,'GetTimeCmd')
 		return self.__systimepack.ParseGetTimeResp(rbuf)
 
+	def SetTimeCfg(self,timetype,systime,ntpserver,timezone):
+		reqbuf = self.__systimepack.FormSetTimeReq(timetype,systime,ntpserver,timezone,self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'SetTimeZoneCmd')
+		return self.__systimepack.ParseSetTimeResp(rbuf)
+		
+
 	def SetTimeZoneCfg(self,timezone):
 		reqbuf = self.__systimepack.FormSetTimeReq(None,None,None,timezone,self.SessionId(),self.IncSeqId())
 		rbuf = self.__SendAndRecv(reqbuf,'SetTimeZoneCmd')
 		return self.__systimepack.ParseSetTimeResp(rbuf)
 
-	def SetTimeTypeCfg(self,timetype)
+	def SetTimeTypeCfg(self,timetype):
 		reqbuf = self.__systimepack.FormSetTimeReq(timetype,None,None,None,self.SessionId(),self.IncSeqId())
 		rbuf = self.__SendAndRecv(reqbuf,'SetTimeTypeCmd')
 		return self.__systimepack.ParseSetTimeResp(rbuf)
 
-	def SetNtpServerCfg(self,ntpserver)
+	def SetNtpServerCfg(self,ntpserver):
 		reqbuf = self.__systimepack.FormSetTimeReq(None,None,ntpserver,None,self.SessionId(),self.IncSeqId())
 		rbuf = self.__SendAndRecv(reqbuf,'NtpServerCmd')
 		return self.__systimepack.ParseSetTimeResp(rbuf)
 
 
-	def SetSysTimeCfg(self,systime)
+	def SetSysTimeCfg(self,systime):
 		reqbuf = self.__systimepack.FormSetTimeReq(None,systime,None,None,self.SessionId(),self.IncSeqId())
 		rbuf = self.__SendAndRecv(reqbuf,'SysTimeCmd')
 		return self.__systimepack.ParseSetTimeResp(rbuf)
-	
+
+
+class SdkImagineSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__sysimgpack = sdkproto.imagine.SdkImagine()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+	def __SendAndRecv(self,reqbuf,msg='PtzCmd'):
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'request %s'%(msg and msg or 'PtzCmd'))
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'response %s'%(msg and msg or 'PtzCmd'))
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+
+		if self.__basepack.SesId() != self.SessionId():
+			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'PtzCmd'))
+		return rbuf
+
+	def GetImagine(self):
+		reqbuf = self.__sysimgpack.FormGetReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'GetImagineCmd')
+		return self.__sysimgpack.ParseGetRsp(rbuf)
+
+	def SetImagine(self,imagine):
+		reqbuf = self.__sysimgpack.FormSetReq(imagine,self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'SetImagineCmd')
+		return self.__sysimgpack.ParseSetRsp(rbuf)
+		
+
