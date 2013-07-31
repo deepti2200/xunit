@@ -312,57 +312,35 @@ class SdkIpInfoSock(SdkSock):
 		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
+	def __SendAndRecv(self,reqbuf,msg='PtzCmd'):
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'request %s'%(msg and msg or 'PtzCmd'))
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'response %s'%(msg and msg or 'PtzCmd'))
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+
+		if self.__basepack.SesId() != self.SessionId():
+			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'PtzCmd'))
+		return rbuf
 	
 	def GetIpInfo(self):
 		# now first to pack for the info
 		reqbuf = self.__ipinfopack.FormatQueryInfo(self.IncSeqId(),self.SessionId())
-		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
-		self.SendBuf(sbuf,'send request ipinfo')
-		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'receive ipresponse header')
-		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
-		if fraglen > 0 :
-			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
-		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
-			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
-		rbuf = self.RcvBuf(bodylen,'receive ipinfo')
-		# now to pass the body
-		logging.info('bodylen %d'%(bodylen))
-		ipcount = self.__ipinfopack.ParseQueryInfo(rbuf)
-		if self.SessionId() != self.__ipinfopack.SesId():
-			raise SdkSockInvalidParam('base session (%d) != ipinfo session(%d)'%(self.SessionId(),self.__ipinfopack.GetSessionId()))
+		rbuf = self.__SendAndRecv(reqbuf,'GetIpInfo')
+		return self.__ipinfopack.ParseQueryInfo(rbuf)
 
-		#if self.SeqId() != self.__ipinfopack.SeqId():
-		#	raise SdkSockInvalidParam('base seqid (%d) != ipinfo seqid(%d)'%(self.SeqId(),self.__ipinfopack.GetSeqId()))
-		
-		return ipcount
 
-	def GetInfoAddr(self,idx):
-		return self.__ipinfopack.GetIpInfo(idx).GetIpAddr()
 
-	def GetInfo(self,idx):
-		return self.__ipinfopack.GetIpInfo(idx)
-
-	def SetInfoAddr(self,idx,ipaddr):
-		self.GetIpInfo()
-		netinfo = self.GetInfo(idx)
-		netinfo.SetIpAddr(ipaddr)
+	def SetInfo(self,netinfo):
 		reqbuf = self.__ipinfopack.FormatSetIpInfo(netinfo,self.SessionId(),self.IncSeqId())
-		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
-		self.SendBuf(sbuf,'send setipinfo')
-		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get setipinfo')
-		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
-		if fraglen > 0 :
-			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
-		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
-			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
-		rbuf = self.RcvBuf(bodylen,'receive ipinfo')
-		res = self.__ipinfopack.ParseSetIpInfoResp(rbuf)
-
-		# now to compare the parse 
-		self.GetIpInfo()
-		netinfo = self.GetInfo(idx)
-		if netinfo.GetIpAddr() != ipaddr:
-			raise SdkSockInvalidParam('could not set %s ipaddr succ (%s)'%(ipaddr,netinfo.GetIpAddr()))
+		rbuf = self.__SendAndRecv(reqbuf,'SetIpInfo')
+		self.__ipinfopack.ParseSetIpInfoResp(rbuf)
 		return
 
 class SdkSysCtlSock(SdkSock):

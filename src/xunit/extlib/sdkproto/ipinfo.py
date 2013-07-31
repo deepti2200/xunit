@@ -82,69 +82,51 @@ class NetInfo:
 		
 	
 
-	def GetNetId(self):
-		return self.__netid
-
-	def GetIfName(self):
-		return self.__ifname
-
-	def GetIpAddr(self):
-		return self.__ipaddr
-
-	def GetSubMask(self):
-		return self.__submask
-
-	def GetGateway(self):
-		return self.__gateway
-
-	def GetDns(self):
-		return self.__dns
-
-	def GetHwAddr(self):
-		return self.__hwaddr
-
-	def GetDhcp(self):
-		return self.__dhcp
-
-	def SetNetId(self,val):
+	def NetId(self,val=None):
 		ov = self.__netid
-		self.__netid = val
+		if val is not None:
+			self.__netid = val
 		return ov
 
-	def SetIfName(self,val):
+	def IfName(self,val=None):
 		ov = self.__ifname
-		self.__ifname = val
+		if val is not None:
+			self.__ifname = val
 		return ov
-
-	def SetIpAddr(self,val):
+	def IpAddr(self,val=None):
 		ov = self.__ipaddr
-		self.__ipaddr = val
+		if val is not None:
+			self.__ipaddr = val
 		return ov
-
-	def SetSubMask(self,val):
+	def SubMask(self,val=None):
 		ov = self.__submask
-		self.__submask = ov
+		if val is not None:
+			self.__submask = val
 		return ov
-
-	def SetGateway(self,val):
+	def Gateway(self,val=None):
 		ov = self.__gateway
-		self.__gateway = val
+		if val is not None:
+			self.__gateway = val
 		return ov
-
-	def SetDns(self,val):
+	def Dns(self,val=None):
 		ov = self.__dns
-		self.__dns = val
+		if val is not None:
+			self.__dns = val
 		return ov
-
-	def SetHwAddr(self,val):
+	def HwAddr(self,val=None):
 		ov = self.__hwaddr
-		self.__hwaddr =val
+		if val is not None:
+			self.__hwaddr = val
 		return ov
 
-	def SetDhcp(self,val):
+	def Dhcp(self,val=None):
 		ov = self.__dhcp
-		self.__dhcp = val
+		if val is not None:
+			self.__dhcp = val
 		return ov
+
+
+
 
 	def ParseBuffer(self,buf):
 		if len(buf) < NET_INFO_STRUCT_LENGTH:
@@ -174,6 +156,23 @@ class NetInfo:
 		rbuf += chr(0)
 
 		return rbuf
+
+	def __Format(self):
+		rbuf = ''
+		rbuf += 'netid        : %d\n'%(self.__netid)
+		rbuf += 'ifname       : %s\n'%(self.__ifname)
+		rbuf += 'submask      : %s\n'%(self.__submask)
+		rbuf += 'gateway      : %s\n'%(self.__gateway)
+		rbuf += 'dns          : %s\n'%(self.__dns)
+		rbuf += 'hwaddr       : %s\n'%(self.__hwaddr)
+		rbuf += 'dhcp         : %d\n'%(self.__dhcp)
+		return rbuf
+
+	def __str__(self):
+		return self.__Format()
+
+	def __repr__(self):
+		return self.__Format()
 
 class SdkIpInfo(syscp.SysCP):
 	def __init__(self):
@@ -214,13 +213,8 @@ class SdkIpInfo(syscp.SysCP):
 			attrbuf = attrbuf[(typelen):]
 			netinfo = NetInfo()
 			netinfo.ParseBuffer(pbuf)
-			logging.info('ip %s hwaddr %s dns %s'%(netinfo.GetIpAddr(),netinfo.GetHwAddr(),netinfo.GetDns()))
-			logging.info('ifname %s submask %s'%(netinfo.GetIfName(),netinfo.GetSubMask()))
-			logging.info('netid %d'%(netinfo.GetNetId()))
 			self.__netinfos.append(netinfo)
-
-		
-		return len(self.__netinfos)
+		return self.__netinfos
 
 	def GetIpInfo(self,idx):
 		if idx >= len(self.__netinfos):
