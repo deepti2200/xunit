@@ -124,7 +124,7 @@ class LoginPack:
 
 		sesid = struct.unpack('>H',buf[8:10])[0]
 		keeptimems = struct.unpack('>I',buf[12:16])[0]
-		logging.info('keeptimems %d'%(keeptimems))
+		#logging.info('keeptimems %d'%(keeptimems))
 		return sesid
 		
 
@@ -136,7 +136,7 @@ class LoginPack:
 		md5pwd = pmd5
 		pmd5 += salt
 		m2.update(pmd5)
-		logging.info('password %s hash %s salt %s return %s'%(password,md5pwd,salt,m2.hexdigest()))
+		#logging.info('password %s hash %s salt %s return %s'%(password,md5pwd,salt,m2.hexdigest()))
 		return m2.hexdigest()
 
 	def LoginPackSession(self,sesid):

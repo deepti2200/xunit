@@ -223,7 +223,7 @@ class SdkSock:
 
 		if packproto.SeqId() != self.__seqid:
 			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.__seqid))
-		logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
+		#logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
 
 		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
 		if getsesid != sesid:
@@ -245,9 +245,9 @@ class SdkStreamSock(SdkSock):
 	def StartStream(self,streamids):
 		# now first to pack for the sending
 		streamflags = 0
-		logging.info('streamids %s'%(repr(streamids)))
+		#logging.info('streamids %s'%(repr(streamids)))
 		for i in streamids:
-			logging.info('i %s'%(repr(i)))
+			#logging.info('i %s'%(repr(i)))
 			ivalue = (1 << int(i))
 			streamflags |= ivalue
 		reqbuf = self.__streampack.PackOpenVideo(streamflags)
@@ -257,7 +257,7 @@ class SdkStreamSock(SdkSock):
 		fraglen,bodylen = self.__basepack.ParseHeader(rbuf)
 		if self.__basepack.SeqId() != self.SeqId():
 			raise SdkSockRecvError('get seqid (%d) != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
-		logging.info('seqid (%d)'%(self.SeqId()))
+		#logging.info('seqid (%d)'%(self.SeqId()))
 		rbuf = self.RcvBuf(fraglen+bodylen,'Receive video response')
 		count = self.__streampack.UnPackCtrl(rbuf[fraglen:])
 
