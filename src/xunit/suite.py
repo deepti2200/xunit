@@ -5,6 +5,8 @@ import logging
 
 from xunit.utils import exception
 from xunit.case import XUnitCase
+import types
+
 
 class LoadModuleError(exception.XUnitException):
 	pass
@@ -17,17 +19,28 @@ class XUnitSuiteBase(unittest.TestSuite):
 		rst = unittest.TestSuite()
 		try:
 			m = __import__(mn)
-			cls = getattr(m,cn)
-			if fn:
-				rst.addTest(cls(fn))
+			if cn:
+				cls = getattr(m,cn)
+				if not issubclass(cls,XUnitCase):
+					raise ClassNotSupportError('[%s].%s:%s not XUnitCase (%s)'%(mn,cn,fn and fn or '',cls))
+				if fn:
+					rst.addTest(cls(fn))
+				else:
+					tests = unittest.loader.TestLoader().loadTestsFromTestCase(cls)
+					rst.addTest(tests)
 			else:
-				tests = unittest.loader.TestLoader().loadTestsFromTestCase(cls)
-				rst.addTest(tests)
-
-			# we should here ,because this is not the class over
-			if not issubclass(cls,XUnitCase):
-				raise ClassNotSupportError('[%s].%s:%s not XUnitCase (%s)'%(mn,cn,fn and fn or '',cls))
-		except:			
+				# now to get all the 
+				cns = dir(m)
+				for c in cns:
+					cls = getattr(m,c)
+					if hasattr(cls,'__class__') :
+						try:
+							if issubclass(cls,XUnitCase):
+								tests = unittest.loader.TestLoader().loadTestsFromTestCase(cls)
+								rst.addTest(tests)
+						except:
+							pass
+		except:
 			raise LoadModuleError('can not load [%s].%s:%s module'%(mn,cn,fn))
 		return rst
 
@@ -46,6 +59,16 @@ class XUnitSuiteBase(unittest.TestSuite):
 
 		kpart = mcname
 		rst = None
+
+		if fn is None:
+			try:
+				# first we test whether it is the whole module to import
+				rst = self.__LoadCase(kpart,None,None)
+				if rst is not None:
+					self.addTests(rst)
+					return
+			except:
+				pass
 		while len(kpart) > 0:
 			r = kpart.rfind('.')
 			if r < 0 :

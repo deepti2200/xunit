@@ -7,6 +7,7 @@ from optparse import OptionParser
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','src')))
 sys.path.append((os.path.dirname(os.path.abspath(__file__))))
 import xunit.suite
+import logging
 
 def suite(args):
 	ldr = xunit.suite.XUnitSuiteBase()
@@ -30,9 +31,12 @@ def Usage(opt,ec,msg=None):
 if __name__== '__main__':
 	parser = OptionParser(usage="usage:%s [OPTIONS] testcases..."%(os.path.basename(__file__)))
 	parser.add_option('-p','--path',action="append",dest="paths",help="to add the path to search")
+	parser.add_option('-v','--verbose',action='store_true',dest='verbose',default=False,help='verbose mode')
 	(options,nargs) = parser.parse_args()
 	if nargs is None or len(nargs) < 1:
  		Usage(parser,3,"Need at least one testcase")
+ 	if options.verbose:
+ 		logging.basicConfig(level=logging.INFO,format="%(levelname)-8s [%(filename)-10s:%(funcName)-20s:%(lineno)-5s] %(message)s")
  	if options.paths and len(options.paths) > 0:
 		for p in options.paths:
 			if p not in sys.path:

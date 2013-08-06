@@ -141,7 +141,6 @@ class  LdrUnitTest(XUnitCase):
 		cmd += ' BUnit.BUnit:test_BB '
 		cmd += '  AUnit.AUnit:test_A '
 		ol = self.__CallProcessReturn(cmd)
-		ol = self.__CallProcessReturn(cmd)
 		self.assertTrue(len(ol) > 0)
 		aidx = self.__FindLineIdx(ol,'AUnit.AUnit:test_A')
 		self.assertTrue(aidx >= 0)
@@ -164,7 +163,6 @@ class  LdrUnitTest(XUnitCase):
 		cmd += '  CUnit.CUnit:test_CC '
 		cmd += ' BUnit.BUnit:test_BC '
 		ol = self.__CallProcessReturn(cmd)
-		ol = self.__CallProcessReturn(cmd)
 		self.assertTrue(len(ol) > 0)
 		cidx = self.__FindLineIdx(ol,'CUnit.CUnit:test_CC')
 		self.assertTrue(cidx >= 0)
@@ -175,6 +173,31 @@ class  LdrUnitTest(XUnitCase):
 		bcidx = self.__FindLineIdx(ol,'BUnit.BUnit:test_BC')
 		self.assertTrue(bcidx >= 0 )
 		self.assertTrue(cidx < bcidx)
+		return
+
+	def test_RunTestCaseDUnit(self):
+		absd = os.path.dirname(os.path.abspath(__file__))
+		cmd = 'python %s'%(absd)
+		cmd += os.sep
+		cmd += 'rtest.py'
+		cmd += ' -p %s'%(absd)
+		cmd += ' DUnit '
+
+		ol = self.__CallProcessReturn(cmd)
+		self.assertTrue(len(ol) > 0)
+		cidx = self.__FindLineIdx(ol,'DUnit.DUnit1:test_A')
+		self.assertTrue(cidx >= 0)
+		cidx = self.__FindLineIdx(ol,'DUnit.DUnit1:test_B')
+		self.assertTrue(cidx >= 0)
+		cidx = self.__FindLineIdx(ol,'DUnit.DUnit2:test_A')
+		self.assertTrue(cidx >= 0)
+		cidx = self.__FindLineIdx(ol,'DUnit.DUnit2:test_B')
+		self.assertTrue(cidx >= 0)
+		cidx = self.__FindLineIdx(ol,'DUnit.DUnit3:test_A')
+		self.assertTrue(cidx >= 0)
+		cidx = self.__FindLineIdx(ol,'DUnit.DUnit3:test_B')
+		self.assertTrue(cidx >= 0)
+
 		return
 
 
