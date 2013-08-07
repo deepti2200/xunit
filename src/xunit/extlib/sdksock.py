@@ -51,8 +51,11 @@ class SdkSock:
 		if self.__seqid >= (1<< 16):
 			self.__seqid = 0
 		return self.__seqid
-	def SeqId(self):
-		return self.__seqid
+	def SeqId(self,val=None):
+		ov = self.__seqid
+		if val is not None:
+			self.__seqid = val
+		return ov
 
 	def SendBuf(self,buf,msg=None):
 		try:
@@ -231,8 +234,11 @@ class SdkSock:
 		self.__sesid = sesid
 		return sesid
 
-	def SessionId(self):
-		return self.__sesid
+	def SessionId(self,val=None):
+		ov = self.__sesid
+		if val is not None:
+			self.__sesid = val
+		return ov
 
 
 class SdkStreamSock(SdkSock):
