@@ -22,6 +22,8 @@ SYSCODE_SET_USERINFO_REQ=1021
 SYSCODE_SET_USERINFO_RSP=1022
 SYSCODE_GET_USERINFO_REQ=1023
 SYSCODE_GET_USERINFO_RSP=1024
+SYSCODE_DEL_USERINFO_REQ=1025
+SYSCODE_DEL_USERINFO_RSP=1026
 
 class UserInfoInvalidError(xunit.utils.exception.XUnitException):
 	pass
@@ -141,6 +143,14 @@ class SdkUserInfo(syscp.SysCP):
 	def FormatUserInfoGetReq(self,sesid=None,seqid=None):
 		return self.FormatSysCp(SYSCODE_SET_USERINFO_REQ,0,'',sesid,seqid)
 
+	def FormatUserInfoDelReq(self,userinfo,sesid=None,seqid=None):
+		if not isinstance(userinfo,UserInfo):
+			raise UserInfoInvalidError('typeof(userinfo) not UserInfo')
+
+		seqbuf = userinfo.FormatBuf()
+		return self.FormatSysCp(SYSCODE_DEL_USERINFO_REQ,1,seqbuf,sesid,seqid)	
+		
+
 	def ParseUserInfoSetRsp(self,buf):
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_SET_USERINFO_RSP:
@@ -167,6 +177,15 @@ class SdkUserInfo(syscp.SysCP):
 			userinfo = UserInfo()
 			attrbuf = userinfo.ParseBuf(attrbuf)
 			self.__userinfos.append(userinfo)
-
 		return self.__userinfos
+
+	def ParseUserInfoDelRsp(self,buf):
+		attrbuf = self.UnPackSysCp(buf)
+		if self.Code() != SYSCODE_DEL_USERINFO_RSP:
+			raise UserInfoInvalidError('Code (%d) != (%d)'%(self.Code(),SYSCODE_DEL_USERINFO_RSP))
+		if self.AttrCount() != 1:
+			raise UserInfoInvalidError('attrcount (%d) != 1'%(self.AttrCount()))
+
+		self.MessageCodeParse(attrbuf,'UserInfo Set Resp')
+		return
 

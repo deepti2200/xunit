@@ -729,3 +729,8 @@ class SdkUserInfoSock(SdkSock):
 		rbuf = self.__SendAndRecv(reqbuf,'SetUserInfoReq')
 		return self.__userinfopack.ParseUserInfoSetRsp(rbuf)
 
+	def DelUserInfo(self,userinfo):
+		reqbuf = self.__userinfopack.FormatUserInfoDelReq(userinfo,self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'DelUserInfoReq')
+		return self.__userinfopack.ParseUserInfoDelRsp(rbuf)
+
