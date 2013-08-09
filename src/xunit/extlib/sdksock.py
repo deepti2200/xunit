@@ -695,4 +695,37 @@ class SdkImagineSock(SdkSock):
 		rbuf = self.__SendAndRecv(reqbuf,'SetImagineCmd')
 		return self.__sysimgpack.ParseSetRsp(rbuf)
 		
+class SdkUserInfoSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__userinfopack = sdkproto.userinfo.SdkUserInfo()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+	def __SendAndRecv(self,reqbuf,msg='PtzCmd'):
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBuf(sbuf,'request %s'%(msg and msg or 'PtzCmd'))
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'response %s'%(msg and msg or 'PtzCmd'))
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+
+		if self.__basepack.SesId() != self.SessionId():
+			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'PtzCmd'))
+		return rbuf
+
+	def GetUserInfo(self):
+		reqbuf = self.__userinfopack.FormatUserInfoGetReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'GetUserInfoReq')
+		return self.__userinfopack.ParseUserInfoGetRsp(rbuf)
+
+	def SetUserInfo(self,userinfo):
+		reqbuf = self.__userinfopack.FormatUserInfoSetReq(userinfo,self.SessionId(),self.IncSeqId())
+		rbuf = self.__SendAndRecv(reqbuf,'SetUserInfoReq')
+		return self.__userinfopack.ParseUserInfoSetRsp(rbuf)
 
