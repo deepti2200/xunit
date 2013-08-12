@@ -665,7 +665,7 @@ class SdkUserInfoSock(SdkSock):
 class SdkCapProtoSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
-		self.__capprotopack = sdkproto.userinfo.SdkUserInfo()
+		self.__capprotopack = sdkproto.userinfo.SdkCapProto()
 		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
@@ -679,3 +679,29 @@ class SdkCapProtoSock(SdkSock):
 		reqbuf = self.__capprotopack.FormatCapProtoGetReq(self.SessionId(),self.IncSeqId())
 		rbuf = self.SendAndRecv(reqbuf,'GetCapProto')
 		return self.__capprotopack.ParseCapProtoGetRsp(rbuf)
+
+
+def SdkNetworkPortSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__netportpack = sdkproto.userinfo.SdkNetworkPort()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__netportpack = None
+		self.__basepack = None
+		return
+
+	def GetNetworkPort(self):
+		reqbuf = self.__netportpack.FormatGetNetworkportReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetNetworkPort')
+		return self.__netportpack.ParseGetNetworkPortRsp(rbuf)
+
+	def SetNetworkPort(self,netport):
+		reqbuf = self.__netportpack.FormatSetNetworkPortReq(netport,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'SetNetworkPort')
+		return self.__netportpack.ParseSetNetworkPortRsp(rbuf)
+		
+

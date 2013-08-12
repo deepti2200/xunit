@@ -1,7 +1,7 @@
 #! python
 
 '''
-	this is the file for the ptz get and set
+	this is the file for capabilities get
 '''
 
 import struct
@@ -108,7 +108,7 @@ class SdkCapProto(syscp.SysCP):
 			raise CapProtoInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),TYPE_CAPABILITIES))
 		if self.TypeLen() != (len(attrbuf) + 4):
 			raise CapProtoInvalidError('typelen(%d) != (%d +4)'%(self.TypeLen() , len(attrbuf)))
-		self.__capproto = None
+		self.__capproto = CapProto()
 		self.__capproto.ParseBuf(attrbuf)
 		return self.__capproto
 		
