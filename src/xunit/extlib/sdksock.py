@@ -681,7 +681,7 @@ class SdkCapProtoSock(SdkSock):
 		return self.__capprotopack.ParseCapProtoGetRsp(rbuf)
 
 
-def SdkNetworkPortSock(SdkSock):
+class SdkNetworkPortSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__netportpack = sdkproto.userinfo.SdkNetworkPort()
@@ -704,4 +704,24 @@ def SdkNetworkPortSock(SdkSock):
 		rbuf = self.SendAndRecv(reqbuf,'SetNetworkPort')
 		return self.__netportpack.ParseSetNetworkPortRsp(rbuf)
 		
+
+class SdkWorkStateSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__workstatepack = sdkproto.userinfo.SdkWorkState()
+		self.__basepack = sdkproto.pack.SdkProtoPack()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__workstatepack = None
+		self.__basepack = None
+		return
+
+	def GetWorkState(self):
+		reqbuf = self.__workstatepack.FormGetWorkStateReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetWorkState')
+		return self.__workstatepack.ParseGetWorkStateRsp(rbuf)
+
+
 
