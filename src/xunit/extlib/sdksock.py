@@ -85,6 +85,7 @@ class SdkSock:
 		self.__host = host
 		self.__port = port
 		self.__sesid = None
+		self.__basepack = sdkproto.pack.SdkProtoPack()
 		self.__SeqIdInit()
 		try:
 			self.__sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -151,6 +152,7 @@ class SdkSock:
 
 	def __del__(self):
 		self.CloseSocket()
+		self.__basepack = None
 		return
 
 	
@@ -333,7 +335,6 @@ class SdkIpInfoSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__ipinfopack = sdkproto.ipinfo.SdkIpInfo()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 	
@@ -355,21 +356,12 @@ class SdkSysCtlSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__sysctlpack = sdkproto.sysctl.SdkSysCtl()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 
 	def Reboot(self):
 		reqbuf = self.__sysctlpack.RebootReq(self.SessionId(),self.IncSeqId())
-		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
-		self.SendBuf(sbuf,'send reboot request')
-		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get reboot response')
-		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
-		if fraglen > 0 :
-			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
-		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
-			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
-		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
+		rbuf = self.SendAndRecv(reqbuf,'Reboot')
 		self.__sysctlpack.RebootResp(rbuf)
 		return
 
@@ -378,46 +370,18 @@ class SdkVideoCfgSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__sysvcpack = sdkproto.videocfg.SdkVideoCfg()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 
 	def GetVideoCfg(self):
 		reqbuf = self.__sysvcpack.FormatQuery(self.SessionId(),self.IncSeqId())
-		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
-		self.SendBuf(sbuf,'send query video cfg request')
-		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
-		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
-		if fraglen > 0 :
-			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
-		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
-			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
-
-		if self.__basepack.SesId() != self.SessionId():
-			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
-		if self.__basepack.SeqId() != self.SeqId():
-			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
-		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
-		
+		rbuf = self.SendAndRecv(reqbuf,'GetVideoCfg')		
 		self.__sysvcpack.ParseQuery(rbuf)
 		return self.__sysvcpack.VideoCfg()
 
 	def SetVideoCfg(self,vcfg):
 		reqbuf = self.__sysvcpack.FormatSetVideoCfg(vcfg,self.SessionId(),self.IncSeqId())
-		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
-		self.SendBuf(sbuf,'send query video cfg request')
-		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
-		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
-		if fraglen > 0 :
-			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
-		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
-			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
-
-		if self.__basepack.SesId() != self.SessionId():
-			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
-		if self.__basepack.SeqId() != self.SeqId():
-			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
-		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
+		rbuf = self.SendAndRecv(reqbuf,'SetVideoCfg')
 		self.__sysvcpack.ParseSetVideoCfg(rbuf)
 		return 
 
@@ -426,47 +390,18 @@ class SdkSysCfgSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__sysscpack = sdkproto.syscfg.SdkSysCfg()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 
 	def GetSysCfg(self):
 		reqbuf = self.__sysscpack.FormatQuery(self.SessionId(),self.IncSeqId())
-		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
-		self.SendBuf(sbuf,'send query video cfg request')
-		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
-		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
-		if fraglen > 0 :
-			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
-		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
-			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
-
-		if self.__basepack.SesId() != self.SessionId():
-			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
-		if self.__basepack.SeqId() != self.SeqId():
-			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
-		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
-		
+		rbuf = self.SendAndRecv(reqbuf,'GetSysCfg')		
 		return 	self.__sysscpack.ParseQuerySysCfgResp(rbuf)
 
 
 	def SetSysCfg(self,scfg):
 		reqbuf = self.__sysscpack.FormatSet(scfg,self.SessionId(),self.IncSeqId())
-		logging.error('%s'%(repr(reqbuf)))
-		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
-		self.SendBuf(sbuf,'send query video cfg request')
-		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'get video cfg request')
-		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
-		if fraglen > 0 :
-			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
-		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
-			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
-
-		if self.__basepack.SesId() != self.SessionId():
-			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
-		if self.__basepack.SeqId() != self.SeqId():
-			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
-		rbuf = self.RcvBuf(bodylen,'reboot response buffer')
+		rbuf = self.SendAndRecv(reqbuf,'SetSysCfg')
 		self.__sysscpack.ParseSetSysCfgResp(rbuf)
 		return 
 
@@ -474,7 +409,6 @@ class SdkPtzSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__sysptzpack = sdkproto.ptz.SdkPtz()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 
@@ -560,7 +494,6 @@ class SdkShowCfgSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__sysshowcfgpack = sdkproto.showcfg.SdkShowCfg()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 
@@ -578,7 +511,6 @@ class SdkTimeSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__systimepack = sdkproto.time.SdkTime()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 
@@ -619,7 +551,6 @@ class SdkImagineSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__sysimgpack = sdkproto.imagine.SdkImagine()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 
@@ -637,13 +568,11 @@ class SdkUserInfoSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__userinfopack = sdkproto.userinfo.SdkUserInfo()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 	def __del__(self):
 		SdkSock.__del__(self)
 		self.__userinfopack = None
-		self.__basepack = None
 		return
 
 
@@ -666,13 +595,11 @@ class SdkCapProtoSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__capprotopack = sdkproto.userinfo.SdkCapProto()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 	def __del__(self):
 		SdkSock.__del__(self)
 		self.__capprotopack = None
-		self.__basepack = None
 		return
 
 	def GetCapProto(self):
@@ -685,13 +612,11 @@ class SdkNetworkPortSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__netportpack = sdkproto.userinfo.SdkNetworkPort()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 	def __del__(self):
 		SdkSock.__del__(self)
 		self.__netportpack = None
-		self.__basepack = None
 		return
 
 	def GetNetworkPort(self):
@@ -709,13 +634,11 @@ class SdkWorkStateSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__workstatepack = sdkproto.userinfo.SdkWorkState()
-		self.__basepack = sdkproto.pack.SdkProtoPack()
 		return
 
 	def __del__(self):
 		SdkSock.__del__(self)
 		self.__workstatepack = None
-		self.__basepack = None
 		return
 
 	def GetWorkState(self):
