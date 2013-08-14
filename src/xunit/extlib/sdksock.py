@@ -23,6 +23,7 @@ import sdkproto.ptz
 import sdkproto.showcfg
 import sdkproto.time
 import sdkproto.imagine
+import sdkproto.netport
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
 	pass
@@ -365,6 +366,12 @@ class SdkSysCtlSock(SdkSock):
 		self.__sysctlpack.RebootResp(rbuf)
 		return
 
+	def ResetHard(self):
+		reqbuf = self.__sysctlpack.ResetHardReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'Reboot')
+		self.__sysctlpack.ResetHardResp(rbuf)
+		return
+
 
 class SdkVideoCfgSock(SdkSock):
 	def	__init__(self,host,port):
@@ -611,7 +618,7 @@ class SdkCapProtoSock(SdkSock):
 class SdkNetworkPortSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
-		self.__netportpack = sdkproto.userinfo.SdkNetworkPort()
+		self.__netportpack = sdkproto.netport.SdkNetworkPort()
 		return
 
 	def __del__(self):

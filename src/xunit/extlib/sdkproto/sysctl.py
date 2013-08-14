@@ -49,3 +49,18 @@ class SdkSysCtl(syscp.SysCP):
 
 		resbuf = self.MessageCodeParse(reqbuf,'reboot response')
 		return 
+
+	def ResetHardReq(self,sesid=None,seqid=None):
+		reqbuf = self.__FormatSysCtl(2)
+		return self.FormatSysCp(SYSCODE_CTL_SYSTEM_REQ,1,reqbuf,sesid,seqid)
+
+	def ResetHardResp(self,rbuf):
+		reqbuf = self.UnPackSysCp(rbuf)
+		if self.Code() != SYSCODE_CTL_SYSTEM_RSP:
+			raise SdkSysCtlInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_CTL_SYSTEM_RSP))
+		if self.AttrCount() != 1:
+			raise SdkSysCtlInvalidError('code (%d) != (1)'%(self.AttrCount()))
+
+		resbuf = self.MessageCodeParse(reqbuf,'resethard response')
+		return 
+		

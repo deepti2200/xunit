@@ -114,7 +114,8 @@ class SdkNetworkPort(syscp.SysCP):
 		if not isinstance(netport,NetworkPort):
 			raise NetworkPortInvalidError('netport param not NetworkPort class instance')
 
-		reqbuf = netport.FormatBuf()
+		netbuf = netport.FormatBuf()
+		reqbuf = self.TypeCodeForm(TYPE_NETWORK_PORT,netbuf)
 		return self.FormatSysCp(SYSCODE_SET_NETWORK_PORT_REQ,1,reqbuf,sesid,seqid)
 
 	def ParseSetNetworkPortRsp(self,buf):

@@ -129,7 +129,7 @@ class SysCP:
 			raise SdkSysCpInvalidError('(%s)typelen (%d) < (%d + %d)'%(msg and msg or 'Basic',typelen,TYPE_INFO_LENGTH , TYPE_MESSAGE_CODE_LENGTH))	
 		res,reslen = struct.unpack('>II',buf[TYPE_INFO_LENGTH:(TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH)])
 		if res != 0:
-			raise SdkSysCpInvalidError('(%s) not succ (%d)'%(msg and msg or 'Basic',res))
+			raise SdkSysCpInvalidError('(%s) not succ (%d) (%s)'%(msg and msg or 'Basic',res,repr(buf)))
 		if len(buf) < (TYPE_INFO_LENGTH + TYPE_MESSAGE_CODE_LENGTH + reslen):
 			raise SdkSysCpInvalidError('(%s)typelen (%d) < (%d + %d + %d)'%(msg and msg or 'Basic',typelen,TYPE_INFO_LENGTH , TYPE_MESSAGE_CODE_LENGTH,reslen))	
 
