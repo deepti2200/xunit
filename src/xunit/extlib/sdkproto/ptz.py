@@ -250,12 +250,15 @@ class SdkPtz(syscp.SysCP):
 	def PtzPresetGetReq(self,ptzid,sesid=None,seqid=None):
 		rbuf = struct.pack('>I',ptzid)
 		reqbuf = self.TypeCodeForm(syscp.TYPE_INTVALUE,rbuf)
-		return self.FormatSysCp(SYSCODE_GET_PTZPRESET_REQ,1,reqbuf,sesid,seqid)
+		sbuf =  self.FormatSysCp(SYSCODE_GET_PTZPRESET_REQ,1,reqbuf,sesid,seqid)
+		logging.info('%s'%(repr(sbuf)))
+		return sbuf
 
 	def PtzPresetGetResp(self,buf):
+		logging.info('%s'%(repr(buf)))
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_GET_PTZPRESET_RSP:
-			raise SdkPtzInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_PTZPRESET_RE))
+			raise SdkPtzInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_PTZPRESET_RSP))
 
 		self.__presets = []
 		for i in xrange(self.AttrCount()):
