@@ -24,6 +24,7 @@ import sdkproto.showcfg
 import sdkproto.time
 import sdkproto.imagine
 import sdkproto.netport
+import sdkproto.advimagine
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
 	pass
@@ -654,4 +655,24 @@ class SdkWorkStateSock(SdkSock):
 		return self.__workstatepack.ParseGetWorkStateRsp(rbuf)
 
 
+class SdkAdvImagineSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__advimaginepack = sdkproto.advimagine.SdkAdvImage()
+		return
 
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__advimaginepack = None
+		return
+
+	def GetAdvImagine(self):
+		reqbuf = self.__advimaginepack.FormGetReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetAdvImagine')
+		return self.__advimaginepack.ParseGetRsp(rbuf)
+
+	def SetAdvImagine(self,advimagine):
+		reqbuf = self.__advimaginepack.FormSetReq(advimagine,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'SetNetworkPort')
+		return self.__advimaginepack.ParseSetRsp(rbuf)
+	
