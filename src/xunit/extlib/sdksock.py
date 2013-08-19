@@ -572,7 +572,7 @@ class SdkImagineSock(SdkSock):
 		rbuf = self.SendAndRecv(reqbuf,'SetImagineCmd')
 		return self.__sysimgpack.ParseSetRsp(rbuf)
 		
-class SdkUserInfoSock(SdkSock):
+class SdkUserInfoSock(SdkIpInfoSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__userinfopack = sdkproto.userinfo.SdkUserInfo()
@@ -583,11 +583,28 @@ class SdkUserInfoSock(SdkSock):
 		self.__userinfopack = None
 		return
 
+	def __GetPassKey(self,hwaddr):
+		sa = hwaddr.split(':')
+		passkey = ''
+		for s in sa:
+			n = int(s,16)
+			passkey += chr(n)
+
+		if len(passkey) < 8 :
+			passkey += '\0' * (8-len(passkey))
+		return passkey
+		
+
 
 	def GetUserInfo(self):
+		# now first to get the hw address
+		ipinfos = self.GetIpInfo()
+		hwaddr = ipinfos[0].HwAddr()
+		passkey = self.__GetPassKey(hwaddr)
+		# now we should format passkey
 		reqbuf = self.__userinfopack.FormatUserInfoGetReq(self.SessionId(),self.IncSeqId())
 		rbuf = self.SendAndRecv(reqbuf,'GetUserInfoReq')
-		return self.__userinfopack.ParseUserInfoGetRsp(rbuf)
+		return self.__userinfopack.ParseUserInfoGetRsp(rbuf,passkey)
 
 	def SetUserInfo(self,userinfo):
 		reqbuf = self.__userinfopack.FormatUserInfoSetReq(userinfo,self.SessionId(),self.IncSeqId())

@@ -11,6 +11,7 @@ import sys
 import os
 import hashlib
 import logging
+import pyDes
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 
@@ -74,9 +75,11 @@ class LoginPack:
 		self.__buf += struct.pack('>I',1)
 		self.__buf += struct.pack('>H',0)
 		self.__buf += struct.pack('>H',encrypt)
-		self.__buf += self.__PackStringSize(username,64)
-		m = self.__GetMd5(password,salt)
-		self.__buf += self.__PackStringSize(m,64)
+		self.__buf += self.__PackStringSize(username,64)		
+		m = self.__GetDes(password,salt)
+		if len(m) < 64:
+			m += '\0' * (64 - len(m))
+		self.__buf += m
 		self.__buf += struct.pack('>I',exptime)
 		keeptime *= 1000000
 		self.__buf += struct.pack('>I',keeptime)
@@ -102,13 +105,14 @@ class LoginPack:
 			raise LoginRespErrorCode('%s not sesid 0 (%d)'%(repr(buf[9:10]),sesid))
 		
 		authcode = struct.unpack('>H',buf[10:12])[0]
-		if authcode != 2:
+		if authcode != 4:
 			raise LoginRespAuthNotMd5('%s not authmd5 %d'%(repr(buf[:8]),authcode))
 
-		md5salt = self.__UnPackStringSize(buf[16:],64)
+		# we get the 8 bytes
+		deskey = buf[16:24]
 		#logging.info('md5 %s'%(md5salt))
 
-		return authcode,md5salt
+		return authcode,deskey
 
 	def UnPackSession(self,buf):
 		if len(buf) < 80:
@@ -126,7 +130,15 @@ class LoginPack:
 		keeptimems = struct.unpack('>I',buf[12:16])[0]
 		#logging.info('keeptimems %d'%(keeptimems))
 		return sesid
-		
+
+	def __GetDes(self,password,key):
+		p = password
+		if len(p) < 32:
+			p += '\0' * (32 - len(password))
+		else:
+			p = p[:32]
+		kd = pyDes.des(key,pyDes.ECB,None,pad=None,padmode=pyDes.PAD_PKCS5)
+		return kd.encrypt(p)
 
 	def __GetMd5(self,password,salt):
 		m = hashlib.md5()

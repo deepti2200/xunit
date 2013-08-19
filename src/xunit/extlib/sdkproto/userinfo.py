@@ -9,7 +9,7 @@ import struct
 import sys
 import os
 import logging
-
+import pyDes
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 import xunit.extlib.sdkproto.syscp as syscp
@@ -30,11 +30,14 @@ class UserInfoInvalidError(xunit.utils.exception.XUnitException):
 
 
 class UserInfo:
-	def __init__(self):
+	def __init__(self,passkey=None):
+		if passkey is None or len(passkey) != 8:
+			raise Exception('can not be passkey none')
 		self.__username = ''
 		self.__userpass = ''
 		self.__userflag = 0
 		self.__userlevel = 0
+		self.__passkey = passkey
 		return
 
 	def __del__(self):
@@ -42,6 +45,7 @@ class UserInfo:
 		self.__userpass = ''
 		self.__userflag = 0
 		self.__userlevel = 0
+		self.__passkey = '\0' * 8
 		return
 
 	def GetString(self,s,size):
@@ -68,18 +72,35 @@ class UserInfo:
 			rbuf += '\0'
 		return rbuf
 
+	def GetPass(self,s,size):
+		rbuf = ''
+		kd = pyDes.des(self.__passkey,pyDes.ECB,None,pad=None,padmode=pyDes.PAD_PKCS5)
+		rbuf = kd.decrypt(s,padmode=pyDes.PAD_PKCS5)
+		return self.GetString(rbuf,len(rbuf))
+
+	def FormatPass(self,s,size):
+		rbuf = ''
+		ps = s 
+		if len(ps) < 32:
+			ps += '\0' * (32 - len(ps))
+		else:
+			ps = ps[:32]
+		kd = pyDes.des(self.__passkey,pyDes.ECB,None,pad=None,padmode=pyDes.PAD_PKCS5)
+		rbuf = kd.encrypt(ps)
+		return self.FormatString(rbuf,size)
+
 	def ParseBuf(self,buf):
 		if len(buf) < TYPE_USERINFOR_STRUCT_LENGTH:
 			raise UserInfoInvalidError('len (%d) < (%d)'%(len(buf),TYPE_USERINFOR_STRUCT_LENGTH))
 		self.__username = self.GetString(buf,128)
-		self.__userpass = self.GetString(buf[128:],128)
+		self.__userpass = self.GetPass(buf[128:],32)
 		self.__userflag,self.__userlevel = struct.unpack('>HH',buf[256:260])
 		return buf[TYPE_USERINFOR_STRUCT_LENGTH:]
 
 	def FormatBuf(self):
 		rbuf = ''
 		rbuf += self.FormatString(self.__username,128)
-		rbuf += self.FormatString(self.__userpass,128)
+		rbuf += self.FormatPass(self.__userpass,128)
 		rbuf += struct.pack('>HH',self.__userflag,self.__userlevel)
 		return rbuf
 
@@ -170,7 +191,7 @@ class SdkUserInfo(syscp.SysCP):
 		self.MessageCodeParse(attrbuf,'UserInfo Set Resp')
 		return
 
-	def ParseUserInfoGetRsp(self,buf):
+	def ParseUserInfoGetRsp(self,buf,passkey):
 		logging.info('buf %s'%(repr(buf)))
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_GET_USERINFO_RSP:
@@ -184,7 +205,7 @@ class SdkUserInfo(syscp.SysCP):
 			attrbuf = self.ParseTypeCode(attrbuf)
 			if self.TypeCode() != TYPE_USERINFOR:
 				raise UserInfoInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),TYPE_USERINFOR))
-			userinfo = UserInfo()
+			userinfo = UserInfo(passkey)
 			attrbuf = userinfo.ParseBuf(attrbuf)
 			self.__userinfos.append(userinfo)
 		return self.__userinfos
