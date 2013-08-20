@@ -9,10 +9,10 @@ import struct
 import sys
 import os
 import logging
-import pyDes
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 import xunit.extlib.sdkproto.syscp as syscp
+import xunit.extlib.xDES as xDES
 
 TYPE_USERINFOR=11
 TYPE_USERINFOR_STRUCT_LENGTH=260
@@ -74,8 +74,8 @@ class UserInfo:
 
 	def GetPass(self,s,size):
 		rbuf = ''
-		kd = pyDes.des(self.__passkey,pyDes.ECB,None,pad=None,padmode=pyDes.PAD_PKCS5)
-		rbuf = kd.decrypt(s,padmode=pyDes.PAD_PKCS5)
+		kd = xDES.DES(self.__passkey)
+		rbuf = kd.decrypt(s)
 		return self.GetString(rbuf,len(rbuf))
 
 	def FormatPass(self,s,size):
@@ -85,7 +85,7 @@ class UserInfo:
 			ps += '\0' * (32 - len(ps))
 		else:
 			ps = ps[:32]
-		kd = pyDes.des(self.__passkey,pyDes.ECB,None,pad=None,padmode=pyDes.PAD_PKCS5)
+		kd = xDES.DES(self.__passkey)
 		rbuf = kd.encrypt(ps)
 		return self.FormatString(rbuf,size)
 

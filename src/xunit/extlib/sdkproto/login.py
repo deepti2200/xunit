@@ -14,7 +14,7 @@ import logging
 import pyDes
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
-
+import xunit.extlib.xDES as xDES
 
 
 class LoginRespHeaderTooShort(xunit.utils.exception.XUnitException):
@@ -61,7 +61,7 @@ class LoginPack:
 		# for login request
 		self.__buf += struct.pack('>I',1)
 		self.__buf += struct.pack('>H',sesid)
-		self.__buf += struct.pack('>H',2)
+		self.__buf += struct.pack('>H',3)
 		self.__buf += self.__PackStringSize(username,64)		
 		self.__buf += self.__PackStringSize(password,64)
 		self.__buf += struct.pack('>I',exptime)
@@ -69,14 +69,15 @@ class LoginPack:
 		self.__buf += struct.pack('>I',keeptime)
 		return self.__buf
 
-	def PackLoginSaltRequest(self,seqid,encrypt,username,password,salt,exptime,keeptime):
+	def PackLoginSaltRequest(self,seqid,authcode,username,password,salt,exptime,keeptime):
 		self.__buf = ''
 		# for login request
 		self.__buf += struct.pack('>I',1)
 		self.__buf += struct.pack('>H',0)
-		self.__buf += struct.pack('>H',encrypt)
+		self.__buf += struct.pack('>H',authcode)
 		self.__buf += self.__PackStringSize(username,64)		
 		m = self.__GetDes(password,salt)
+		logging.info('passkey %s(%d) password[%s] %s(%d)'%(repr(salt),len(salt),repr(password),repr(m),len(m)))
 		if len(m) < 64:
 			m += '\0' * (64 - len(m))
 		self.__buf += m
@@ -110,7 +111,7 @@ class LoginPack:
 
 		# we get the 8 bytes
 		deskey = buf[16:24]
-		#logging.info('md5 %s'%(md5salt))
+		logging.info('md5 %s'%(repr(deskey)))
 
 		return authcode,deskey
 
@@ -137,8 +138,9 @@ class LoginPack:
 			p += '\0' * (32 - len(password))
 		else:
 			p = p[:32]
-		kd = pyDes.des(key,pyDes.ECB,None,pad=None,padmode=pyDes.PAD_PKCS5)
-		return kd.encrypt(p)
+		
+		kd = xDES.DES(key)
+		return kd.Encrypt(p)
 
 	def __GetMd5(self,password,salt):
 		m = hashlib.md5()

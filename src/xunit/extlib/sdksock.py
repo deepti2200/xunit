@@ -25,6 +25,7 @@ import sdkproto.time
 import sdkproto.imagine
 import sdkproto.netport
 import sdkproto.advimagine
+import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
 	pass
@@ -181,11 +182,11 @@ class SdkSock:
 			raise SdkSockRecvError('recv typeid (0x%x) != typeid (0x80)'%(packproto.TypeId()))
 		rbuf = self.RcvBuf(fraglen + bodylen,'response init login')
 		# now we should parse the rbuf for the 
-		authcode,md5check = sdklogin.UnPackUnAuthorized(rbuf[fraglen:])
-		assert(authcode == 0x2)
+		authcode,deskey = sdklogin.UnPackUnAuthorized(rbuf[fraglen:])
+		assert(authcode == 0x4)
 
 		# now we should give the handle
-		reqbuf = sdklogin.PackLoginSaltRequest(self.IncSeqId(),authcode,user,password,md5check,900,10)
+		reqbuf = sdklogin.PackLoginSaltRequest(self.IncSeqId(),authcode,user,password,deskey,900,10)
 		sbuf = packproto.Pack(0,self.__seqid,sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)		
 		#logging.info('sending req (%d) %s seqid %d'%(len(reqbuf),repr(reqbuf),self.__seqid))
 		self.SendBuf(sbuf,'login check request')
@@ -592,6 +593,8 @@ class SdkUserInfoSock(SdkIpInfoSock):
 
 		if len(passkey) < 8 :
 			passkey += '\0' * (8-len(passkey))
+		else:
+			passkey = passkey[:8]
 		return passkey
 		
 
