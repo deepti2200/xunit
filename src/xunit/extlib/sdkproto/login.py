@@ -77,7 +77,7 @@ class LoginPack:
 		self.__buf += struct.pack('>H',authcode)
 		self.__buf += self.__PackStringSize(username,64)		
 		m = self.__GetDes(password,salt)
-		logging.info('passkey %s(%d) password[%s] %s(%d)'%(repr(salt),len(salt),repr(password),repr(m),len(m)))
+		#logging.info('passkey %s(%d) password[%s] %s(%d)'%(repr(salt),len(salt),repr(password),repr(m),len(m)))
 		if len(m) < 64:
 			m += '\0' * (64 - len(m))
 		self.__buf += m
@@ -111,7 +111,7 @@ class LoginPack:
 
 		# we get the 8 bytes
 		deskey = buf[16:24]
-		logging.info('md5 %s'%(repr(deskey)))
+		#logging.info('md5 %s'%(repr(deskey)))
 
 		return authcode,deskey
 

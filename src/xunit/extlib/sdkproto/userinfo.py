@@ -30,7 +30,7 @@ class UserInfoInvalidError(xunit.utils.exception.XUnitException):
 
 
 class UserInfo:
-	def __init__(self,passkey=None):
+	def __init__(self,passkey):
 		if passkey is None or len(passkey) != 8:
 			raise Exception('can not be passkey none')
 		self.__username = ''
@@ -38,6 +38,7 @@ class UserInfo:
 		self.__userflag = 0
 		self.__userlevel = 0
 		self.__passkey = passkey
+		#logging.info('passkey (%s) (%d)'%(repr(self.__passkey),len(self.__passkey)))
 		return
 
 	def __del__(self):
@@ -74,8 +75,9 @@ class UserInfo:
 
 	def GetPass(self,s,size):
 		rbuf = ''
+		#logging.info('passkey (%s) (%d) s (%s) (%d)'%(repr(self.__passkey),len(self.__passkey),repr(s),len(s)))
 		kd = xDES.DES(self.__passkey)
-		rbuf = kd.decrypt(s)
+		rbuf = kd.Decrypt(s)
 		return self.GetString(rbuf,len(rbuf))
 
 	def FormatPass(self,s,size):
@@ -85,15 +87,16 @@ class UserInfo:
 			ps += '\0' * (32 - len(ps))
 		else:
 			ps = ps[:32]
+		logging.info('passkey %s (%d) ps %s (%d)'%(repr(self.__passkey),len(self.__passkey),repr(ps),len(ps)))
 		kd = xDES.DES(self.__passkey)
-		rbuf = kd.encrypt(ps)
+		rbuf = kd.Encrypt(ps)
 		return self.FormatString(rbuf,size)
 
 	def ParseBuf(self,buf):
 		if len(buf) < TYPE_USERINFOR_STRUCT_LENGTH:
 			raise UserInfoInvalidError('len (%d) < (%d)'%(len(buf),TYPE_USERINFOR_STRUCT_LENGTH))
 		self.__username = self.GetString(buf,128)
-		self.__userpass = self.GetPass(buf[128:],32)
+		self.__userpass = self.GetPass(buf[128:128+32],32)
 		self.__userflag,self.__userlevel = struct.unpack('>HH',buf[256:260])
 		return buf[TYPE_USERINFOR_STRUCT_LENGTH:]
 
@@ -129,6 +132,7 @@ class UserInfo:
 		ov = self.__userpass
 		if val is not None:
 			self.__userpass = val
+			logging.info('userpass %s'%(self.__userpass))
 		return ov
 
 	def UserFlag(self,val=None):
@@ -161,12 +165,12 @@ class SdkUserInfo(syscp.SysCP):
 		seqbuf = userinfo.FormatBuf()
 		seqbuf = self.TypeCodeForm(TYPE_USERINFOR,seqbuf)
 		sbuf =  self.FormatSysCp(SYSCODE_SET_USERINFO_REQ,1,seqbuf,sesid,seqid)
-		logging.info('sbuf (%s)'%(repr(sbuf)))
+		#logging.info('sbuf (%s)'%(repr(sbuf)))
 		return sbuf
 
 	def FormatUserInfoGetReq(self,sesid=None,seqid=None):
 		sbuf= self.FormatSysCp(SYSCODE_GET_USERINFO_REQ,0,'',sesid,seqid)
-		logging.info('sbuf (%s)'%(repr(sbuf)))
+		#logging.info('sbuf (%s)'%(repr(sbuf)))
 		return sbuf
 
 	def FormatUserInfoDelReq(self,userinfo,sesid=None,seqid=None):
@@ -181,7 +185,7 @@ class SdkUserInfo(syscp.SysCP):
 		
 
 	def ParseUserInfoSetRsp(self,buf):
-		logging.info('buf %s'%(repr(buf)))
+		#logging.info('buf %s'%(repr(buf)))
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_SET_USERINFO_RSP:
 			raise UserInfoInvalidError('Code (%d) != (%d)'%(self.Code(),SYSCODE_SET_USERINFO_RSP))
@@ -192,7 +196,7 @@ class SdkUserInfo(syscp.SysCP):
 		return
 
 	def ParseUserInfoGetRsp(self,buf,passkey):
-		logging.info('buf %s'%(repr(buf)))
+		#logging.info('buf %s'%(repr(buf)))
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_GET_USERINFO_RSP:
 			raise UserInfoInvalidError('Code (%d) != (%d)'%(self.Code(),SYSCODE_GET_USERINFO_RSP))

@@ -51,18 +51,18 @@ class CapProto:
 		return self.__Format()
 
 	def ParseBuf(self,buf):
-		if len(buf) < 4:
+		if len(buf) < 8:
 			raise CapProtoInvalidError('len(%d) < 4'%(len(buf)))
-		self.__enc , self.__len = struct.unpack('>HH',buf[:4])
-		if len(buf) < (4 + self.__len):
-			raise CapProtoInvalidError('len(%d) < (4 + %d)'%(len(buf),self.__len))
+		self.__enc , self.__len = struct.unpack('>II',buf[:8])
+		if len(buf) < (8 + self.__len):
+			raise CapProtoInvalidError('len(%d) < (8 + %d)'%(len(buf),self.__len))
 
-		self.__cap = buf[4:(4+self.__len)]
-		return buf[(4+self.__len):]
+		self.__cap = buf[8:(8+self.__len)]
+		return buf[(8+self.__len):]
 
 	def FormatBuf(self):
 		rbuf = ''
-		rbuf += struct.pack('>HH',self.__enc,self.__len)
+		rbuf += struct.pack('>II',self.__enc,self.__len)
 		rbuf += self.__cap
 		return rbuf
 
@@ -92,8 +92,10 @@ class SdkCapProto(syscp.SysCP):
 		self.__capproto = None
 		return
 
-	def FormatCapProtoGetReq(self,sesid=None,seqid=None):
-		return self.FormatSysCp(SYSCODE_GET_CAPABILITIES_REQ,0,'',sesid,seqid)
+	def FormatCapProtoGetReq(self,val=0,sesid=None,seqid=None):
+		rbuf = struct.pack('>I',val)
+		reqbuf = self.TypeCodeForm(syscp.TYPE_INTVALUE,rbuf)
+		return self.FormatSysCp(SYSCODE_GET_CAPABILITIES_REQ,1,reqbuf,sesid,seqid)
 		
 
 	def ParseCapProtoGetRsp(self,buf):

@@ -575,12 +575,12 @@ class SdkImagineSock(SdkSock):
 		
 class SdkUserInfoSock(SdkIpInfoSock):
 	def	__init__(self,host,port):
-		SdkSock.__init__(self,host,port)
+		SdkIpInfoSock.__init__(self,host,port)
 		self.__userinfopack = sdkproto.userinfo.SdkUserInfo()
 		return
 
 	def __del__(self):
-		SdkSock.__del__(self)
+		SdkIpInfoSock.__del__(self)
 		self.__userinfopack = None
 		return
 
@@ -622,7 +622,7 @@ class SdkUserInfoSock(SdkIpInfoSock):
 class SdkCapProtoSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
-		self.__capprotopack = sdkproto.userinfo.SdkCapProto()
+		self.__capprotopack = sdkproto.capproto.SdkCapProto()
 		return
 
 	def __del__(self):
@@ -630,9 +630,11 @@ class SdkCapProtoSock(SdkSock):
 		self.__capprotopack = None
 		return
 
-	def GetCapProto(self):
-		reqbuf = self.__capprotopack.FormatCapProtoGetReq(self.SessionId(),self.IncSeqId())
+	def GetCapProto(self,val=0):
+		reqbuf = self.__capprotopack.FormatCapProtoGetReq(val,self.SessionId(),self.IncSeqId())
+		logging.info('reqbuf (%s)(%d)'%(repr(reqbuf),len(reqbuf)))
 		rbuf = self.SendAndRecv(reqbuf,'GetCapProto')
+		logging.info('rbuf (%s)(%d)'%(repr(rbuf),len(rbuf)))
 		return self.__capprotopack.ParseCapProtoGetRsp(rbuf)
 
 
