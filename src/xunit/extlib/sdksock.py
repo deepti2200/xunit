@@ -259,7 +259,7 @@ class SdkSock:
 		if self.__basepack.SesId() != self.SessionId():
 			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
 		if self.__basepack.SeqId() != self.SeqId():
-			raise SdkSockRecvError('seq id %d != (%d)'%(self.__basepack.SeqId(),self.SeqId()))
+			raise SdkSockRecvError('seq id %d != (%d) (%s)'%(self.__basepack.SeqId(),self.SeqId(),repr(rbuf)))
 		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'Cmd'))
 		return rbuf
 
