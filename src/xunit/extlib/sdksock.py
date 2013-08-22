@@ -25,6 +25,7 @@ import sdkproto.time
 import sdkproto.imagine
 import sdkproto.netport
 import sdkproto.advimagine
+import sdkproto.workstate
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -632,9 +633,9 @@ class SdkCapProtoSock(SdkSock):
 
 	def GetCapProto(self,val=0):
 		reqbuf = self.__capprotopack.FormatCapProtoGetReq(val,self.SessionId(),self.IncSeqId())
-		logging.info('reqbuf (%s)(%d)'%(repr(reqbuf),len(reqbuf)))
+		#logging.info('reqbuf (%s)(%d)'%(repr(reqbuf),len(reqbuf)))
 		rbuf = self.SendAndRecv(reqbuf,'GetCapProto')
-		logging.info('rbuf (%s)(%d)'%(repr(rbuf),len(rbuf)))
+		#logging.info('rbuf (%s)(%d)'%(repr(rbuf),len(rbuf)))
 		return self.__capprotopack.ParseCapProtoGetRsp(rbuf)
 
 
@@ -663,7 +664,7 @@ class SdkNetworkPortSock(SdkSock):
 class SdkWorkStateSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
-		self.__workstatepack = sdkproto.userinfo.SdkWorkState()
+		self.__workstatepack = sdkproto.workstate.SdkWorkState()
 		return
 
 	def __del__(self):
