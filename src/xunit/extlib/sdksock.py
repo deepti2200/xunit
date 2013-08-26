@@ -26,6 +26,7 @@ import sdkproto.imagine
 import sdkproto.netport
 import sdkproto.advimagine
 import sdkproto.workstate
+import sdkproto.userinfo
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):

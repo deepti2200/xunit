@@ -87,7 +87,7 @@ class UserInfo:
 			ps += '\0' * (32 - len(ps))
 		else:
 			ps = ps[:32]
-		logging.info('passkey %s (%d) ps %s (%d)'%(repr(self.__passkey),len(self.__passkey),repr(ps),len(ps)))
+		#logging.info('passkey %s (%d) ps %s (%d)'%(repr(self.__passkey),len(self.__passkey),repr(ps),len(ps)))
 		kd = xDES.DES(self.__passkey)
 		rbuf = kd.Encrypt(ps)
 		return self.FormatString(rbuf,size)
@@ -132,7 +132,7 @@ class UserInfo:
 		ov = self.__userpass
 		if val is not None:
 			self.__userpass = val
-			logging.info('userpass %s'%(self.__userpass))
+			#logging.info('userpass %s'%(self.__userpass))
 		return ov
 
 	def UserFlag(self,val=None):
