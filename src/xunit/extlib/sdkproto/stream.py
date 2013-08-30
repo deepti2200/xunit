@@ -19,11 +19,16 @@ class SdkStreamInvalidHeader(xunit.utils.exception.XUnitException):
 SDK_STREAM_OV_REQUEST=0x1
 SDK_STREAM_OV_RESPONSE=0x2
 
+SDK_STREAM_OA_RESPONSE=0x4
+
 SDK_STREAM_VD_SEND=5
+SDK_STREAM_AD_SEND=6
 class StreamPack:
 	def __init__(self):
 		self.__vcount = 0
 		self.__vinfo = []
+		self.__ainfo = None
+		self.__ctrlcode = 0
 		self.__frametype = -1
 		self.__frameid = -1
 		self.__framefreq = -1
@@ -82,28 +87,46 @@ class StreamPack:
 			raise SdkStreamInvalidHeader('not valid p-frame data(%s)'%(repr(checkdata)))
 		return 
 
+	def __UnPackVideoFrame(self,buf):
+		frametype = buf[4]
+		if frametype == 'I':
+			self.__UnPackIFrame(buf[4:])
+		elif frametype == 'P':
+			self.__UnPackPFrame(buf[4:])
+		else:
+			raise SdkStreamInvalidHeader('not recognize video type %s'%(repr(frametype)))
+		return frametype == 'I' and 1 or 0
+
+	def __UnPackAudioFrame(self,buf):
+		if len(buf) < 28:
+			raise SdkStreamInvalidHeader('buffer (%d) < 28 length'%(len(buf)))
+		frametype = buf[4]
+		if frametype != 'A':
+			raise SdkStreamInvalidHeader('not recognize audio type %s'%(repr(frametype)))
+
+		self.__framedata = buf[28:]		
+		self.__frametype = frametype
+		self.__frameidx = struct.unpack('>I',buf[12:16])[0]
+		ptsh,ptsl =struct.unpack('>II', buf[16:24])
+		self.__framepts = (ptsh << 32) + ptsl
+		return frametype
+
 	def UnPackStream(self,buf):
 		# now unpack for the streams first to test for the type of frame
 		vcode = struct.unpack('>I',buf[:4])[0]
-		if vcode != SDK_STREAM_VD_SEND:
+		if vcode != SDK_STREAM_VD_SEND and vcode != SDK_STREAM_OD_SEND :
 			raise SdkStreamInvalidHeader('vcode (%d) != (%d)'%(vcode,SDK_STREAM_VD_SEND))
-		frametype = buf[4]
 
-		if frametype != 'I' and frametype != 'P':
-			raise SdkStreamInvalidHeader('not recognize type %s'%(repr(frametype)))
-		
-		if frametype == 'I':
-			self.__UnPackIFrame(buf[4:])
+		if vcode == SDK_STREAM_VD_SEND:
+			return self.__UnPackVideoFrame(buf)
 		else:
-			self.__UnPackPFrame(buf[4:])
+			return self.__UnPackAudioFrame(buf)
 
-		return frametype == 'I' and 1 or 0
-
-	def UnPackCtrl(self,buf):
+	def __UnPackVideoCtrl(self,buf):
 		# now to unpacket the ctrl information
 		opcode=struct.unpack('>I',buf[:4])[0]
 
-		if opcode != SDK_STREAM_OV_RESPONSE:
+		if opcode != SDK_STREAM_OV_RESPONSE :
 			raise SdkStreamInvalidHeader('opcode (%d) != (%d)'%(opcode,SDK_STREAM_OV_RESPONSE))
 
 		result = struct.unpack('>I',buf[4:8])[0]
@@ -131,7 +154,34 @@ class StreamPack:
 					raise SdkStreamInvalidHeader('only support h264 but type (%d)'%(vtype))
 				self.__vinfo.append(vcontrolblock)
 		self.__vcount = len(self.__vinfo)
-		return self.__vcount
+		self.__ctrlcode = SDK_STREAM_OV_RESPONSE
+		return SDK_STREAM_OV_RESPONSE
+
+	def __UnPackAudioCtrl(self,buf):
+		opcode=struct.unpack('>I',buf[:4])[0]
+		assert(opcode == SDK_STREAM_OA_RESPONSE)
+		self.__ainfo = None
+		result = struct.unpack('>I',buf[4:8])[0]
+		if result != 0:
+			logging.error('open audio failed')
+			return 0
+		encodetype,rsvd,channel,bitpersample,samplepersec = struct.unpack('>CCCCI',buf[8:16])
+		self.__ainfo = [encodetype,channel,bitpersample,samplepersec]
+		self.__ctrlcode = SDK_STREAM_OA_RESPONSE
+		return SDK_STREAM_OA_RESPONSE
+		
+
+	def UnPackCtrl(self,buf):
+		opcode=struct.unpack('>I',buf[:4])[0]
+
+		if opcode != SDK_STREAM_OV_RESPONSE and opcode != SDK_STREAM_OA_RESPONSE:
+			raise SdkStreamInvalidHeader('can not recognize ctrl code %d'%(opcode))
+
+		if opcode == SDK_STREAM_OV_RESPONSE:
+			return self.__UnPackVideoCtrl(buf)
+		elif opcode == SDK_STREAM_OA_RESPONSE:
+			return self.__UnPackAudioCtrl(buf)
+			
 
 	def GetFrameData(self):
 		return self.__framedata
@@ -147,6 +197,11 @@ class StreamPack:
 
 	def GetVInfo(self):
 		return self.__vinfo
+
+	def GetAInfo(self):
+		return self.__ainfo
+	def GetCtrlCode(self):
+		return self.__ctrlcode
 
 	def PackOpenVideo(self,streamflags):
 		buf = struct.pack('>I',SDK_STREAM_OV_REQUEST)

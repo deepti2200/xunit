@@ -321,7 +321,11 @@ class SdkStreamSock(SdkSock):
 		return None
 
 	def GetVInfo(self):
-		return self.__streampack.GetVInfo();
+		return self.__streampack.GetVInfo()
+
+	def GetAInfo(self):
+		return self.__streampack.GetAInfo()
+	
 	def GetStreamData(self):
 		return self.__streampack.GetFrameData()
 
@@ -335,6 +339,10 @@ class SdkStreamSock(SdkSock):
 
 	def GetStreamType(self):
 		return self.__streampack.GetFrameType()
+
+	def GetCtrlCode(self):
+		return self.__streampack.GetCtrlCode()
+
 
 class SdkIpInfoSock(SdkSock):
 	def	__init__(self,host,port):
