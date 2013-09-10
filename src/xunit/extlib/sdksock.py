@@ -707,4 +707,18 @@ class SdkAdvImagineSock(SdkSock):
 		reqbuf = self.__advimaginepack.FormSetReq(advimagine,self.SessionId(),self.IncSeqId())
 		rbuf = self.SendAndRecv(reqbuf,'SetNetworkPort')
 		return self.__advimaginepack.ParseSetRsp(rbuf)
+
+
+class SdkAudioDualSock(SdkSock):	
+	def __init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__audiooutpack = sdkproto.audiodual.AudioOutPack()
+		self.__audioinpack = sdkproto.audiodual.AudioInPack()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__audiooutpack = None
+		self.__audioinpack = None
+		return
 	
