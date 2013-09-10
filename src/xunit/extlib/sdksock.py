@@ -721,4 +721,8 @@ class SdkAudioDualSock(SdkSock):
 		self.__audiooutpack = None
 		self.__audioinpack = None
 		return
+
+	def SendData(self,framepack,data):
+		reqbuf = self.__audiooutpack.PackStream(framepack,data)
+		self.
 	
