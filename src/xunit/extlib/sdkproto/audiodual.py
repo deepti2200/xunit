@@ -173,6 +173,67 @@ class StartTalkRequest:
 			self.__channel = val
 		return ov
 
+	def BitPerSample(self,val=None):
+		ov = self.__bitpersample
+		if val is not None:
+			self.__bitpersample = val
+		return ov
+
+	def Reserv2(self,val=None):
+		ov = self.__reserv2
+		if val is not None:
+			self.__reserv2 = val
+		return ov
+
+	def SamplePerSec(self,val=None):
+		ov = self.__samplepersec
+		if val is not None:
+			self.__samplepersec = val
+		return ov
+
+	def AvgBytesPerSec(self,val=None):
+		ov = self.__avgbytespersec
+		if val is not None:
+			self.__avgbytespersec = val
+		return ov
+
+	def FrameRate(self,val=None):
+		ov = self.__framerate
+		if val is not None:
+			self.__framerate = val
+		return ov
+
+	def BitRate(self,val=None):
+		ov = self.__bitrate
+		if val is not None:
+			self.__bitrate = val
+		return ov
+
+	def Volume(self,val=None):
+		ov = self.__volume
+		if val is not None:
+			self.__volume = val
+		return ov
+
+	def AecFlag(self,val=None):
+		ov = self.__aecflag
+		if val is not None:
+			self.__aecflag = val
+		return ov
+
+	def AecDelayTime(self,val=None):
+		ov = self.__aecdelaytime
+		if val is not None:
+			self.__aecdelaytime = val
+		return ov
+
+	def Reserv3(self,val=None):
+		ov = self.__reserv3
+		if val is not None:
+			self.__reserv3 = val
+		return ov
+
+
 class AudioOutPack:
 	def __ResetVar(self):
 		return
