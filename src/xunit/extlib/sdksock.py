@@ -105,7 +105,7 @@ class SdkSock:
 				xsock = []
 				retrsock,retwsock,retxsock = select.select(rsock,wsock,xsock,ltime)
 				if len(retrsock)>0:
-					cbuf = self.__sock.read(leftsize)
+					cbuf = self.__sock.recv(leftsize)
 					rbuf += cbuf
 					leftsize -= len(cbuf)
 					rcved += len(cbuf)
