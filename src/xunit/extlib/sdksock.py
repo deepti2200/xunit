@@ -284,7 +284,7 @@ class SdkSock:
 		sbuf = self.__basepack.Pack(self.SessionId(),self.IncSeqId(),typeid,reqbuf)
 		return sbuf
 	def UnPackGsspBuf(self,gssphdr):
-		return self.__basepack.ParseHeader(rbuf)
+		return self.__basepack.ParseHeader(gssphdr)
 
 	def SendAndRecv(self,reqbuf,msg=None):
 		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
