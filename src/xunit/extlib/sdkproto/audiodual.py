@@ -13,10 +13,12 @@ import struct
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 
-START_TALK_REQUEST_LENGTH=64
-START_TALK_RESPONSE_LENGTH=60
+START_TALK_REQUEST_LENGTH=68
+START_TALK_RESPONSE_LENGTH=68
 AUDIO_FRAME_BASIC_LENGTH=24
 AUDIO_FRAME_CMD=0x6
+AUDIO_DUAL_START_REQUEST=0x9
+AUDIO_DUAL_START_RESPONSE=0xa
 
 class AudioInInvalidError(xunit.utils.exception.XUnitException):
 	pass
@@ -80,24 +82,27 @@ class StartTalkRequest:
 		return rbuf
 
 	def ParseBuf(self,rbuf):
-		if len(rbuf) < START_TALK_REQUEST_LENGTH:
-			raise AudioInInvalidError('len(%d) < (%d)'%(len(rbuf),START_TALK_REQUEST_LENGTH))
-
-		self.__transtype = ord(rbuf[0])
-		self.__broadcast = ord(rbuf[1])
-		self.__reserv1 = struct.unpack('>H',rbuf[2:4])[0]
-		self.__dstaddr = self.GetString(rbuf[4:36],32)
-		self.__dstport = struct.unpack('>I',rbuf[36:40])[0]
-		self.__encodetype = ord(rbuf[40])
-		self.__channel = ord(rbuf[41])
-		self.__bitpersample = ord(rbuf[42])
-		self.__reserv2 = ord(rbuf[43])
-		self.__samplepersec , self.__avgbytespersec = struct.unpack('>II',rbuf[44:52])
-		self.__framerate , self.__bitrate , self.__volume , self.__aecflag , self.__aecdelaytime,self.__reserv3 = struct.unpack('>HHHHHH',rbuf[52:64])
+		if len(rbuf) < (START_TALK_REQUEST_LENGTH ):
+			raise AudioInInvalidError('len(%d) < (%d )'%(len(rbuf),START_TALK_REQUEST_LENGTH))
+		code = struct.unpack('>I',rbuf[:4])[0]
+		if code != AUDIO_DUAL_START_REQUEST:
+			raise AudioInInvalidError('startrequest code (%d) != (%d)'%(code,AUDIO_DUAL_START_REQUEST))
+		self.__transtype = ord(rbuf[4])
+		self.__broadcast = ord(rbuf[5])
+		self.__reserv1 = struct.unpack('>H',rbuf[6:8])[0]
+		self.__dstaddr = self.GetString(rbuf[8:40],32)
+		self.__dstport = struct.unpack('>I',rbuf[40:44])[0]
+		self.__encodetype = ord(rbuf[44])
+		self.__channel = ord(rbuf[45])
+		self.__bitpersample = ord(rbuf[46])
+		self.__reserv2 = ord(rbuf[47])
+		self.__samplepersec , self.__avgbytespersec = struct.unpack('>II',rbuf[48:56])
+		self.__framerate , self.__bitrate , self.__volume , self.__aecflag , self.__aecdelaytime,self.__reserv3 = struct.unpack('>HHHHHH',rbuf[56:68])
 		return rbuf[START_TALK_REQUEST_LENGTH:]
 
 	def FormatBuf(self):
 		rbuf = ''
+		rbuf += struct.pack('>I',AUDIO_DUAL_START_REQUEST)
 		rbuf += chr(self.__transtype)
 		rbuf += chr(self.__broadcast)
 		rbuf += struct.pack('>H',self.__reserv1)
@@ -242,6 +247,7 @@ class StartTalkRequest:
 
 class StartTalkResponse:
 	def __ResetVar(self):
+		self.__result = 0
 		self.__dstaddr = ''
 		self.__dstport = 0
 		self.__encodetype = 1
@@ -295,22 +301,27 @@ class StartTalkResponse:
 	def ParseBuf(self,rbuf):
 		if len(rbuf) < START_TALK_RESPONSE_LENGTH:
 			raise AudioInInvalidError('len(%d) < (%d)'%(len(rbuf),START_TALK_RESPONSE_LENGTH))
-
-		self.__dstaddr = self.GetString(rbuf[:32],32)
-		self.__dstport = struct.unpack('>I',rbuf[32:36])[0]
-		self.__encodetype = ord(rbuf[36])
-		self.__channel = ord(rbuf[37])
-		self.__bitpersample = ord(rbuf[38])
-		self.__reserv1 = ord(rbuf[39])
-		self.__samplepersec , self.__avgbytespersec = struct.unpack('>II',rbuf[40:48])
+		code,self.__result = struct.unpack('>II',rbuf[:8])
+		if code != AUDIO_DUAL_START_RESPONSE:
+			raise AudioInInvalidError('code (%d) != (%d)'%(code,AUDIO_DUAL_START_RESPONSE))
+		if self.__result != 0:
+			raise AudioInInvalidError('result (%d) != 0'%(self.__result))
+		self.__dstaddr = self.GetString(rbuf[8:40],32)
+		self.__dstport = struct.unpack('>I',rbuf[40:44])[0]
+		self.__encodetype = ord(rbuf[44])
+		self.__channel = ord(rbuf[45])
+		self.__bitpersample = ord(rbuf[46])
+		self.__reserv1 = ord(rbuf[47])
+		self.__samplepersec , self.__avgbytespersec = struct.unpack('>II',rbuf[48:56])
 		if self.__avgbytespersec != (self.__samplepersec * self.__bitspersample * self.__channel / 8):
 			raise AudioInInvalidError('avgbytes (%d) != (%d * %d *%d /8)'%(self.__avgbytespersec,\
 				self.__channel,self.__bitspersample,self.__samplepersec))
-		self.__framerate , self.__bitrate , self.__volume , self.__aecflag , self.__aecdelaytime,self.__reserv3 = struct.unpack('>HHHHHH',rbuf[48:60])
+		self.__framerate , self.__bitrate , self.__volume , self.__aecflag , self.__aecdelaytime,self.__reserv3 = struct.unpack('>HHHHHH',rbuf[56:68])
 		return rbuf[START_TALK_RESPONSE_LENGTH:]
 
 	def FormatBuf(self):
 		rbuf = ''
+		rbuf += struct.pack('>II',AUDIO_DUAL_START_RESPONSE,self.__result)
 		rbuf += self.FormatString(self.dstaddr,32)
 		rbuf += struct.pack('>I',self.__dstport)
 		rbuf += chr(self.__encodetype)
@@ -323,6 +334,7 @@ class StartTalkResponse:
 
 	def __Format(self):
 		rbuf = ''
+		rbuf += 'result                  : %d\n'%(self.__result)
 		rbuf += 'dstaddr                 : (%s)\n'%(self.__dstaddr)
 		rbuf += 'dstport                 : %d\n'%(self.__dstport)
 		rbuf += 'encodetype              : %d\n'%(self.__encodetype)
