@@ -610,7 +610,7 @@ class AudioInPack:
 			raise AudioInInvalidError('cmd (%d) != (%d)'%(cmd,AUDIO_FRAME_CMD))
 		self.__framepack = AudioFramePack()
 		self.__framedata = self.__framepack.ParseBuf(rbuf[4:])		
-		return len(self.__framedata)
+		return self.__framedata
 
 	def FramePack(self):
 		return self.__framepack
