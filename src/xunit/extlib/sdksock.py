@@ -28,6 +28,7 @@ import sdkproto.netport
 import sdkproto.advimagine
 import sdkproto.workstate
 import sdkproto.userinfo
+import sdkproto.audiodual
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -768,12 +769,12 @@ class SdkAudioDualSock(SdkSock):
 		return 
 
 	def ReceiveData(self,timeout=10):
-		gssphdr = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,'receive audio buffer header')
+		gssphdr = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,timeout,'receive audio buffer header')
 		fraglen , bodylen = self.UnPackGsspBuf(gssphdr)
 		if fraglen > 0 :
 			raise SdkSockRecvError('receive pack fraglen (%d)(%s)'%(fraglen,repr(gssphdr)))
 
-		body = self.RcvBufTimeout(bodylen,'receive audio buffer')
+		body = self.RcvBufTimeout(bodylen,timeout,'receive audio buffer')
 		if self.__audioinpack is None:
 			self.__audioinpack = sdkproto.audiodual.AudioInPack()
 		return self.__audioinpack.UnPackStream(body)
@@ -791,11 +792,22 @@ class SdkAudioDualSock(SdkSock):
 	def StartAudioDual(self,starttalkreq):
 		if not isinstance(starttalkreq,sdkproto.audiodual.StartTalkRequest):
 			raise SdkSockInvalidParam('starttalkreq is not sdkproto.audiodual.StartTalkRequest')
-		
+		logging.info('\n')
 		# now we form the pack
 		reqbuf = starttalkreq.FormatBuf()
-		rbuf = self.SendAndRecv(reqbuf,'StartAudioDual')
+		sbuf = self.PackGsspBuf(sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL,reqbuf)
+		self.SendBuf(sbuf,'StartAudioDual')
+		gssphdr = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'Wait StartAudioDual')
+		logging.info('\n')
+		fraglen,bodylen = self.UnPackGsspBuf(gssphdr)
+		if fraglen != 0:
+			raise SdkSockInvalidParam('receive StartAudioDual len(%d) != 0'%(fraglen))
+		rbuf = self.RcvBufTimeout(bodylen,3.0,'StartAudioDual ok')
+		# now we should do the stream pack job
+		logging.info('\n')
 		starttalkresp = sdkproto.audiodual.StartTalkResponse()
+		logging.info('\n')
 		starttalkresp.ParseBuf(rbuf)
+		logging.info('\n')
 		return starttalkresp
 	

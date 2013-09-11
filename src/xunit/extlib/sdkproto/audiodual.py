@@ -6,10 +6,10 @@ this is the file for handling of audio dual packet handling
 '''
 import struct
 
-        import sys
-        import os
-        import hashlib
-        import logging
+import sys
+import os
+import hashlib
+import logging
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 
@@ -94,7 +94,7 @@ class StartTalkRequest:
 		self.__dstport = struct.unpack('>I',rbuf[40:44])[0]
 		self.__encodetype = ord(rbuf[44])
 		self.__channel = ord(rbuf[45])
-		self.__bitpersample = ord(rbuf[46])
+		self.__bitspersample = ord(rbuf[46])
 		self.__reserv2 = ord(rbuf[47])
 		self.__samplepersec , self.__avgbytespersec = struct.unpack('>II',rbuf[48:56])
 		self.__framerate , self.__bitrate , self.__volume , self.__aecflag , self.__aecdelaytime,self.__reserv3 = struct.unpack('>HHHHHH',rbuf[56:68])
@@ -106,14 +106,14 @@ class StartTalkRequest:
 		rbuf += chr(self.__transtype)
 		rbuf += chr(self.__broadcast)
 		rbuf += struct.pack('>H',self.__reserv1)
-		rbuf += self.FormatString(self.dstaddr,32)
+		rbuf += self.FormatString(self.__dstaddr,32)
 		rbuf += struct.pack('>I',self.__dstport)
 		rbuf += chr(self.__encodetype)
 		rbuf += chr(self.__channel)
-		rbuf += chr(self.__bitpersample)
+		rbuf += chr(self.__bitspersample)
 		rbuf += chr(self.__reserv2)
 		rbuf += struct.pack('>II',self.__samplepersec,self.__avgbytespersec)
-		rbuf += struct.pack('>HHHHHH',self.__framerate,self.__bitrate,self.__volume,self__aecflag,self.__aecdelaytime,self.__reserv3)
+		rbuf += struct.pack('>HHHHHH',self.__framerate,self.__bitrate,self.__volume,self.__aecflag,self.__aecdelaytime,self.__reserv3)
 		return rbuf
 
 	def __Format(self):
@@ -125,7 +125,7 @@ class StartTalkRequest:
 		rbuf += 'dstport                 : %d\n'%(self.__dstport)
 		rbuf += 'encodetype              : %d\n'%(self.__encodetype)
 		rbuf += 'channel                 : %d\n'%(self.__channel)
-		rbuf += 'bitpersample            : %d\n'%(self.__bitpersample)
+		rbuf += 'bitspersample           : %d\n'%(self.__bitspersample)
 		rbuf += 'reserv2                 : %d\n'%(self.__reserv2)
 		rbuf += 'samplepersec            : %d\n'%(self.__samplepersec)
 		rbuf += 'avgbytespersec          : %d\n'%(self.__avgbytespersec)
@@ -184,10 +184,10 @@ class StartTalkRequest:
 			self.__channel = val
 		return ov
 
-	def BitPerSample(self,val=None):
-		ov = self.__bitpersample
+	def BitsPerSample(self,val=None):
+		ov = self.__bitspersample
 		if val is not None:
-			self.__bitpersample = val
+			self.__bitspersample = val
 		return ov
 
 	def Reserv2(self,val=None):
@@ -310,7 +310,7 @@ class StartTalkResponse:
 		self.__dstport = struct.unpack('>I',rbuf[40:44])[0]
 		self.__encodetype = ord(rbuf[44])
 		self.__channel = ord(rbuf[45])
-		self.__bitpersample = ord(rbuf[46])
+		self.__bitspersample = ord(rbuf[46])
 		self.__reserv1 = ord(rbuf[47])
 		self.__samplepersec , self.__avgbytespersec = struct.unpack('>II',rbuf[48:56])
 		if self.__avgbytespersec != (self.__samplepersec * self.__bitspersample * self.__channel / 8):
@@ -322,14 +322,14 @@ class StartTalkResponse:
 	def FormatBuf(self):
 		rbuf = ''
 		rbuf += struct.pack('>II',AUDIO_DUAL_START_RESPONSE,self.__result)
-		rbuf += self.FormatString(self.dstaddr,32)
+		rbuf += self.FormatString(self.__dstaddr,32)
 		rbuf += struct.pack('>I',self.__dstport)
 		rbuf += chr(self.__encodetype)
 		rbuf += chr(self.__channel)
-		rbuf += chr(self.__bitpersample)
+		rbuf += chr(self.__bitspersample)
 		rbuf += chr(self.__reserv1)
 		rbuf += struct.pack('>II',self.__samplepersec,self.__avgbytespersec)
-		rbuf += struct.pack('>HHHHHH',self.__framerate,self.__bitrate,self.__volume,self__aecflag,self.__aecdelaytime,self.__reserv2)
+		rbuf += struct.pack('>HHHHHH',self.__framerate,self.__bitrate,self.__volume,self.__aecflag,self.__aecdelaytime,self.__reserv2)
 		return rbuf
 
 	def __Format(self):
@@ -339,7 +339,7 @@ class StartTalkResponse:
 		rbuf += 'dstport                 : %d\n'%(self.__dstport)
 		rbuf += 'encodetype              : %d\n'%(self.__encodetype)
 		rbuf += 'channel                 : %d\n'%(self.__channel)
-		rbuf += 'bitpersample            : %d\n'%(self.__bitpersample)
+		rbuf += 'bitspersample           : %d\n'%(self.__bitspersample)
 		rbuf += 'reserv1                 : %d\n'%(self.__reserv1)
 		rbuf += 'samplepersec            : %d\n'%(self.__samplepersec)
 		rbuf += 'avgbytespersec          : %d\n'%(self.__avgbytespersec)
@@ -387,10 +387,10 @@ class StartTalkResponse:
 			self.__channel = val
 		return ov
 
-	def BitPerSample(self,val=None):
-		ov = self.__bitpersample
+	def BitsPerSample(self,val=None):
+		ov = self.__bitspersample
 		if val is not None:
-			self.__bitpersample = val
+			self.__bitspersample = val
 		return ov
 
 	def Reserv2(self,val=None):
