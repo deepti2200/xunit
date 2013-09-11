@@ -764,6 +764,7 @@ class SdkAudioDualSock(SdkSock):
 		if self.__audiooutpack is None:
 			self.__audiooutpack = sdkproto.audiodual.AudioOutPack()
 		reqbuf = self.__audiooutpack.PackStream(framepack,data)
+		#logging.info('reqbuf[:28] %s'%(repr(reqbuf[:28])))
 		# now we should send buffer 
 		self.SendBuf(self.PackGsspBuf(sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_DATA,reqbuf),'Send Data')
 		return 
@@ -777,6 +778,7 @@ class SdkAudioDualSock(SdkSock):
 		body = self.RcvBufTimeout(bodylen,timeout,'receive audio buffer')
 		if self.__audioinpack is None:
 			self.__audioinpack = sdkproto.audiodual.AudioInPack()
+		#logging.info('body[:28] %s'%(repr(body[:28])))
 		return self.__audioinpack.UnPackStream(body)
 
 	def GetReceiveHdr(self):

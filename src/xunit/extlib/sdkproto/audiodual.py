@@ -482,6 +482,7 @@ class AudioFramePack:
 		if self.__avgbytespersec != (self.__channel * self.__bitspersample * self.__samplepersec / 8):
 			raise AudioInInvalidError('avgbytespersec (%d) != (%d * %d *%d / 8)'%(self.__avgbytespersec,\
 				self.__channel,self.__bitspersample,self.__samplepersec))
+		#logging.info('data %s'%(repr(rbuf[:40])))
 		return rbuf[AUDIO_FRAME_BASIC_LENGTH:]
 
 	def FormatBuf(self):
@@ -608,8 +609,9 @@ class AudioInPack:
 		cmd = struct.unpack('>I',rbuf[:4])[0]
 		if cmd != AUDIO_FRAME_CMD:
 			raise AudioInInvalidError('cmd (%d) != (%d)'%(cmd,AUDIO_FRAME_CMD))
-		self.__framepack = AudioFramePack()
-		self.__framedata = self.__framepack.ParseBuf(rbuf[4:])		
+		if self.__framepack is None:
+			self.__framepack = AudioFramePack()
+		self.__framedata = self.__framepack.ParseBuf(rbuf[4:])
 		return self.__framedata
 
 	def FramePack(self):
