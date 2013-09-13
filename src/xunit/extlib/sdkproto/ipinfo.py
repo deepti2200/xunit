@@ -160,6 +160,7 @@ class NetInfo:
 	def __Format(self):
 		rbuf = ''
 		rbuf += 'netid        : %d\n'%(self.__netid)
+		rbuf += 'ipaddr       : %s\n'%(self.__ipaddr)
 		rbuf += 'ifname       : %s\n'%(self.__ifname)
 		rbuf += 'submask      : %s\n'%(self.__submask)
 		rbuf += 'gateway      : %s\n'%(self.__gateway)

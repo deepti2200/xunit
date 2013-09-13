@@ -19,6 +19,7 @@ AUDIO_FRAME_BASIC_LENGTH=24
 AUDIO_FRAME_CMD=0x6
 AUDIO_DUAL_START_REQUEST=0x9
 AUDIO_DUAL_START_RESPONSE=0xa
+CODEC_G711A=516
 
 class AudioInInvalidError(xunit.utils.exception.XUnitException):
 	pass
@@ -33,6 +34,7 @@ class StartTalkRequest:
 		self.__reserv1 = 0
 		self.__dstaddr = ''
 		self.__dstport = 0
+		# we sent for the encode type as the default GMI_
 		self.__encodetype = 1
 		self.__channel = 1
 		self.__bitspersample = 16
@@ -40,7 +42,8 @@ class StartTalkRequest:
 		self.__samplepersec = 8000
 		self.__avgbytespersec = self.__channel * self.__bitspersample * self.__samplepersec / 8
 		self.__framerate = 50
-		self.__bitrate = self.__samplepersec
+		# 64 kps
+		self.__bitrate = 64
 		self.__volume = 50
 		self.__aecflag = 0
 		self.__aecdelaytime = 0
