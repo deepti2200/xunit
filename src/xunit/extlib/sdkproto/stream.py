@@ -46,7 +46,7 @@ class StreamPack:
 
 
 	def __UnPackIFrame(self,buf):
-		self.__frametype = 1
+		self.__frametype = 'I'
 		self.__frameid = ord(buf[1])
 		self.__framefreq = ord(buf[2])
 		self.__frameenctype = ord(buf[3])
@@ -72,7 +72,7 @@ class StreamPack:
 		return 
 
 	def __UnPackPFrame(self,buf):
-		self.__frametype = 0
+		self.__frametype = 'P'
 		self.__frameid = ord(buf[1])
 		self.__frameidx = struct.unpack('>I',buf[4:8])[0]
 		ptsh,ptsl = struct.unpack('>II',buf[8:16])
@@ -114,8 +114,8 @@ class StreamPack:
 	def UnPackStream(self,buf):
 		# now unpack for the streams first to test for the type of frame
 		vcode = struct.unpack('>I',buf[:4])[0]
-		if vcode != SDK_STREAM_VD_SEND and vcode != SDK_STREAM_OD_SEND :
-			raise SdkStreamInvalidHeader('vcode (%d) != (%d)'%(vcode,SDK_STREAM_VD_SEND))
+		if vcode != SDK_STREAM_VD_SEND and vcode != SDK_STREAM_AD_SEND :
+			raise SdkStreamInvalidHeader('vcode (%d) != (%d)'%(vcode,SDK_STREAM_AD_SEND))
 
 		if vcode == SDK_STREAM_VD_SEND:
 			return self.__UnPackVideoFrame(buf)
@@ -165,7 +165,11 @@ class StreamPack:
 		if result != 0:
 			logging.error('open audio failed')
 			return 0
-		encodetype,rsvd,channel,bitpersample,samplepersec = struct.unpack('>CCCCI',buf[8:16])
+		encodetype = ord(buf[8])
+		rsvd = ord(buf[9])
+		channel = ord(buf[10])
+		bitpersample = ord(buf[11])		
+		samplepersec = struct.unpack('>I',buf[12:16])[0]
 		self.__ainfo = [encodetype,channel,bitpersample,samplepersec]
 		self.__ctrlcode = SDK_STREAM_OA_RESPONSE
 		return SDK_STREAM_OA_RESPONSE

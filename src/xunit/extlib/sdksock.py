@@ -363,6 +363,8 @@ class SdkStreamSock(SdkSock):
 
 	def GetAInfo(self):
 		return self.__streampack.GetAInfo()
+	def GetFrameType(self):
+		return self.__streampack.GetFrameType()
 	
 	def GetStreamData(self):
 		return self.__streampack.GetFrameData()
