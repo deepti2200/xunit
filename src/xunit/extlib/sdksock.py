@@ -434,7 +434,8 @@ class SdkVideoCfgSock(SdkSock):
 
 	def GetVideoCfg(self):
 		reqbuf = self.__sysvcpack.FormatQuery(self.SessionId(),self.IncSeqId())
-		rbuf = self.SendAndRecv(reqbuf,'GetVideoCfg')		
+		rbuf = self.SendAndRecv(reqbuf,'GetVideoCfg')
+		logging.info('rbuf %s'%(repr(rbuf)))
 		self.__sysvcpack.ParseQuery(rbuf)
 		return self.__sysvcpack.VideoCfg()
 

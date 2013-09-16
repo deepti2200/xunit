@@ -165,6 +165,7 @@ class StreamPack:
 		if result != 0:
 			logging.error('open audio failed')
 			return 0
+		self.__frametype = 'A'
 		encodetype = ord(buf[8])
 		rsvd = ord(buf[9])
 		channel = ord(buf[10])

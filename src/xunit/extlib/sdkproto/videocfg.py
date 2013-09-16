@@ -26,13 +26,14 @@ class SdkVideoCfgInvalidError(xunit.utils.exception.XUnitException):
 class EncodeCfgInvalidError(xunit.utils.exception.XUnitException):
 	pass
 
-ENCODE_CFG_LENGTH=52
+ENCODE_CFG_LENGTH=60
 TYPE_ENCODECFG=24
 
 class EncodeCfg:
 
 	def __InitEncodeCfg(self):
 		self.__videoid = 0
+		self.__streamtype = 0
 		self.__compression = 0
 		self.__picwidth = 0
 		self.__picheight = 0
@@ -45,6 +46,7 @@ class EncodeCfg:
 		self.__gop = 0
 		self.__rotate = 0
 		self.__flag = 0
+		self.__reserv1 = 0
 		return
 
 	def VideoId(self,val=None):
@@ -119,25 +121,31 @@ class EncodeCfg:
 			self.__flag = val
 		return ov
 
+	def StreamType(self,val=None):
+		ov = self.__streamtype
+		if val is not None:
+			self.__streamtype = val
+		return ov
+
 
 
 	def __ParseEncodeCfg(self,buf):
 		if len(buf) < ENCODE_CFG_LENGTH:
 			raise EncodeCfgInvalidError('len(%d) < (%d)'%(len(buf),ENCODE_CFG_LENGTH))
 
-		self.__videoid,self.__compression,self.__picwidth,self.__picheight, \
+		self.__videoid,self.__streamtype,self.__compression,self.__picwidth,self.__picheight, \
 		self.__bitratectrl,self.__quality,self.__fps,self.__bitrateaverage ,\
 		self.__bitrateup,self.__bitratedown,self.__gop,self.__roate,\
-		self.__flag = struct.unpack('>IIIIIIIIIIIII',buf[:ENCODE_CFG_LENGTH])
+		self.__flag,self.__reserv1 = struct.unpack('>IIIIIIIIIIIIIII',buf[:ENCODE_CFG_LENGTH])
 		lbuf = buf[ENCODE_CFG_LENGTH:]
 		return lbuf
 
 	def __FormatEncodeCfg(self):
 		rbuf = ''
-		rbuf += struct.pack('>IIIIIIIIIIIII',self.__videoid,self.__compression,self.__picwidth,self.__picheight, \
+		rbuf += struct.pack('>IIIIIIIIIIIIIII',self.__videoid,self.__streamtype,self.__compression,self.__picwidth,self.__picheight, \
 		self.__bitratectrl,self.__quality,self.__fps,self.__bitrateaverage ,\
 		self.__bitrateup,self.__bitratedown,self.__gop,self.__roate,\
-		self.__flag)
+		self.__flag,self.__reserv1)
 		return rbuf
 
 	def Format(self):
@@ -156,19 +164,21 @@ class EncodeCfg:
 
 	def __FormatStr(self):
 		buf = ''
-		buf += 'videoid %d;\n'%(self.__videoid)
-		buf += 'compression %d;\n'%(self.__compression)
-		buf += 'picwidth %d;\n'%(self.__picwidth)
-		buf += 'picheight %d;\n'%(self.__picheight)
-		buf += 'bitratectrl %d;\n'%(self.__bitratectrl)
-		buf += 'quality %d;\n'%(self.__quality)
-		buf += 'fps %d;\n'%(self.__fps)
-		buf += 'bitrateaverage %d;\n'%(self.__bitrateaverage)
-		buf += 'bitrateup %d;\n'%(self.__bitrateup)
-		buf += 'bitratedown %d;\n'%(self.__bitratedown)
-		buf += 'gop %d;\n'%(self.__gop)
-		buf += 'rotate %d;\n'%(self.__rotate)
-		buf += 'flag %d;\n'%(self.__flag)
+		buf += 'videoid                 :%d;\n'%(self.__videoid)
+		buf += 'streamtype              :%d;\n'%(self.__streamtype)
+		buf += 'compression             :%d;\n'%(self.__compression)
+		buf += 'picwidth                :%d;\n'%(self.__picwidth)
+		buf += 'picheight               :%d;\n'%(self.__picheight)
+		buf += 'bitratectrl             :%d;\n'%(self.__bitratectrl)
+		buf += 'quality                 :%d;\n'%(self.__quality)
+		buf += 'fps                     :%d;\n'%(self.__fps)
+		buf += 'bitrateaverage          :%d;\n'%(self.__bitrateaverage)
+		buf += 'bitrateup               :%d;\n'%(self.__bitrateup)
+		buf += 'bitratedown             :%d;\n'%(self.__bitratedown)
+		buf += 'gop                     :%d;\n'%(self.__gop)
+		buf += 'rotate                  :%d;\n'%(self.__rotate)
+		buf += 'flag                    :%d;\n'%(self.__flag)
+		buf += 'reserv1                 :%d;\n'%(self.__reserv1)
 		return buf
 
 	def __str__(self):
