@@ -10,6 +10,7 @@ import os
 import sys
 import logging
 import re
+import select
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 import xunit.utils.exception
@@ -50,6 +51,10 @@ class SdkSockRecvTimeoutError(xunit.utils.exception.XUnitException):
 	pass
 
 
+class SdkSockSendTimeoutError(xunit.utils.exception.XUnitException):
+	pass
+
+
 class SdkSock:
 	def __SeqIdInit(self):
 		random.seed(time.time())
@@ -75,6 +80,36 @@ class SdkSock:
 			raise SdkSockSendError('could not send %d (%s)'%(len(buf),msg))
 		return
 
+	def SendBufTimeout(self,buf,msg=None,timeout=0):
+		leftsize = len(buf)
+		cursize = 0
+		lbuf = buf
+		
+		stime = time.time()
+		etime = stime + timeout
+		ctime = stime
+
+		try:
+			while leftsize > 0:
+				if ctime >= etime and timeout != 0:
+					raise SdkSockRecvTimeoutError('receive %s timeout(%d)'%(msg,timeout))
+				ltime = None
+				if timeout != 0:
+					ltime = etime - ctime
+				rsock = []
+				wsock = [self.__sock]
+				xsock = []
+				retrsock,retwsock,retxsock = select.select(rsock,wsock,xsock,ltime)
+				if len(retwsock)>0:
+					cursize = self.__sock.send(lbuf)
+					lbuf = lbuf[cursize:]
+					leftsize -= cursize
+				ctime = time.time()
+		except:
+			raise SdkSockSendError('could not send %d (%s)'%(len(buf),msg))
+		return
+
+
 	def RcvBuf(self,size,msg=None):
 		leftsize = size
 		rcved = 0
@@ -88,7 +123,7 @@ class SdkSock:
 			rbuf += cbuf
 		return rbuf
 
-	def RcvBufTimeout(self,size,timeout=3.0,msg=None):
+	def RcvBufTimeout(self,size,msg=None,timeout=3.0):
 		leftsize = size
 		rcved = 0
 		rbuf = ''
@@ -303,6 +338,23 @@ class SdkSock:
 		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'Cmd'))
 		return rbuf
 
+	def SendAndRecvTimeout(self,reqbuf,msg=None,timeout=0):
+		sbuf = self.__basepack.Pack(self.SessionId(),self.SeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF,reqbuf)
+		self.SendBufTimeout(sbuf,'request %s'%(msg and msg or 'Cmd'),timeout)
+		rbuf = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,'response %s'%(msg and msg or 'Cmd'),timeout)
+		fraglen , bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen > 0 :
+			raise SdkSockRecvError('fraglen (%d) != 0'%(fraglen))
+		if self.__basepack.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF:
+			raise SdkSockRecvError('get typeid %d != (%d)'%(self.__basepack.TypeId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_CONF))
+
+		if self.__basepack.SesId() != self.SessionId():
+			raise SdkSockRecvError('session id %d != (%d)'%(self.__basepack.SesId(),self.SessionId()))
+		if self.__basepack.SeqId() != self.SeqId():
+			raise SdkSockRecvError('seq id %d != (%d) (%s)'%(self.__basepack.SeqId(),self.SeqId(),repr(rbuf)))
+		rbuf = self.RcvBuf(bodylen,'response body %s'%(msg and msg or 'Cmd'))
+		return rbuf
+
 
 class SdkStreamSock(SdkSock):
 	def	__init__(self,host,port):
@@ -405,6 +457,13 @@ class SdkIpInfoSock(SdkSock):
 		self.__ipinfopack.ParseSetIpInfoResp(rbuf)
 		return
 
+	def SetInfoTimeout(self,netinfo,timeout=5.0):
+		reqbuf = self.__ipinfopack.FormatSetIpInfo(netinfo,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecvTimeout(reqbuf,'SetIpInfo',timeout)
+		self.__ipinfopack.ParseSetIpInfoResp(rbuf)
+		return
+		
+
 class SdkSysCtlSock(SdkSock):
 	def	__init__(self,host,port):
 		SdkSock.__init__(self,host,port)
@@ -435,7 +494,7 @@ class SdkVideoCfgSock(SdkSock):
 	def GetVideoCfg(self):
 		reqbuf = self.__sysvcpack.FormatQuery(self.SessionId(),self.IncSeqId())
 		rbuf = self.SendAndRecv(reqbuf,'GetVideoCfg')
-		logging.info('rbuf %s'%(repr(rbuf)))
+		#logging.info('rbuf %s'%(repr(rbuf)))
 		self.__sysvcpack.ParseQuery(rbuf)
 		return self.__sysvcpack.VideoCfg()
 
@@ -773,12 +832,12 @@ class SdkAudioDualSock(SdkSock):
 		return 
 
 	def ReceiveData(self,timeout=10):
-		gssphdr = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,timeout,'receive audio buffer header')
+		gssphdr = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,'receive audio buffer header',timeout)
 		fraglen , bodylen = self.UnPackGsspBuf(gssphdr)
 		if fraglen > 0 :
 			raise SdkSockRecvError('receive pack fraglen (%d)(%s)'%(fraglen,repr(gssphdr)))
 
-		body = self.RcvBufTimeout(bodylen,timeout,'receive audio buffer')
+		body = self.RcvBufTimeout(bodylen,'receive audio buffer',timeout)
 		if self.__audioinpack is None:
 			self.__audioinpack = sdkproto.audiodual.AudioInPack()
 		#logging.info('body[:28] %s'%(repr(body[:28])))
@@ -807,7 +866,7 @@ class SdkAudioDualSock(SdkSock):
 		fraglen,bodylen = self.UnPackGsspBuf(gssphdr)
 		if fraglen != 0:
 			raise SdkSockInvalidParam('receive StartAudioDual len(%d) != 0'%(fraglen))
-		rbuf = self.RcvBufTimeout(bodylen,3.0,'StartAudioDual ok')
+		rbuf = self.RcvBufTimeout(bodylen,'StartAudioDual ok',3.0)
 		# now we should do the stream pack job
 		#logging.info('\n')
 		starttalkresp = sdkproto.audiodual.StartTalkResponse()
