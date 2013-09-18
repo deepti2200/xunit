@@ -797,22 +797,22 @@ class SdkAudioDualSock(SdkSock):
 	def StartAudioDual(self,starttalkreq):
 		if not isinstance(starttalkreq,sdkproto.audiodual.StartTalkRequest):
 			raise SdkSockInvalidParam('starttalkreq is not sdkproto.audiodual.StartTalkRequest')
-		logging.info('\n')
+		#logging.info('\n')
 		# now we form the pack
 		reqbuf = starttalkreq.FormatBuf()
 		sbuf = self.PackGsspBuf(sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL,reqbuf)
 		self.SendBuf(sbuf,'StartAudioDual')
 		gssphdr = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'Wait StartAudioDual')
-		logging.info('\n')
+		#logging.info('\n')
 		fraglen,bodylen = self.UnPackGsspBuf(gssphdr)
 		if fraglen != 0:
 			raise SdkSockInvalidParam('receive StartAudioDual len(%d) != 0'%(fraglen))
 		rbuf = self.RcvBufTimeout(bodylen,3.0,'StartAudioDual ok')
 		# now we should do the stream pack job
-		logging.info('\n')
+		#logging.info('\n')
 		starttalkresp = sdkproto.audiodual.StartTalkResponse()
-		logging.info('\n')
+		#logging.info('\n')
 		starttalkresp.ParseBuf(rbuf)
-		logging.info('\n')
+		#logging.info('\n')
 		return starttalkresp
 	
