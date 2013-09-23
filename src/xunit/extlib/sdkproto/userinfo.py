@@ -159,12 +159,24 @@ class SdkUserInfo(syscp.SysCP):
 		return
 
 	def FormatUserInfoSetReq(self,userinfo,sesid=None,seqid=None):
-		if not isinstance(userinfo,UserInfo):
-			raise UserInfoInvalidError('typeof(userinfo) not UserInfo')
+		if not isinstance(userinfo,UserInfo) and not isinstance(userinfo,list):
+			raise UserInfoInvalidError('typeof(userinfo) not UserInfo or list')
 
-		seqbuf = userinfo.FormatBuf()
-		seqbuf = self.TypeCodeForm(TYPE_USERINFOR,seqbuf)
-		sbuf =  self.FormatSysCp(SYSCODE_SET_USERINFO_REQ,1,seqbuf,sesid,seqid)
+		if isinstance(userinfo,UserInfo):
+			seqbuf = userinfo.FormatBuf()
+			seqbuf = self.TypeCodeForm(TYPE_USERINFOR,seqbuf)
+			sbuf =  self.FormatSysCp(SYSCODE_SET_USERINFO_REQ,1,seqbuf,sesid,seqid)
+		else:
+			i = 0
+			seqbuf = ''
+			sbuf = ''
+			for u in userinfo:
+				if not isinstance(u,UserInfo):
+					raise UserInfoInvalidError('[%d]not UserInfo in list'%(i))
+				curbuf = u.FormatBuf()
+				seqbuf += self.TypeCodeForm(TYPE_USERINFOR,curbuf)
+				i += 1
+			sbuf = self.FormatSysCp(SYSCODE_SET_USERINFO_REQ,len(userinfo),seqbuf,sesid,seqid)
 		#logging.info('sbuf (%s)'%(repr(sbuf)))
 		return sbuf
 
@@ -174,12 +186,24 @@ class SdkUserInfo(syscp.SysCP):
 		return sbuf
 
 	def FormatUserInfoDelReq(self,userinfo,sesid=None,seqid=None):
-		if not isinstance(userinfo,UserInfo):
-			raise UserInfoInvalidError('typeof(userinfo) not UserInfo')
+		if not isinstance(userinfo,UserInfo) and not isinstance(userinfo,list):
+			raise UserInfoInvalidError('typeof(userinfo) not UserInfo and list')
 
-		seqbuf = userinfo.FormatBuf()
-		seqbuf = self.TypeCodeForm(TYPE_USERINFOR,seqbuf)
-		sbuf = self.FormatSysCp(SYSCODE_DEL_USERINFO_REQ,1,seqbuf,sesid,seqid)
+		if isinstance(userinfo,UserInfo):
+			seqbuf = userinfo.FormatBuf()
+			seqbuf = self.TypeCodeForm(TYPE_USERINFOR,seqbuf)
+			sbuf = self.FormatSysCp(SYSCODE_DEL_USERINFO_REQ,1,seqbuf,sesid,seqid)
+		else:
+			sbuf = ''
+			seqbuf = ''
+			i = 0
+			for u in userinfo:
+				if not isinstance(u,UserInfo):
+					raise UserInfoInvalidError('[%d] not valid UserInfo'%(i))
+				cbuf = u.FormatBuf()
+				seqbuf += self.TypeCodeForm(TYPE_USERINFOR,cbuf)
+				i += 1
+			sbuf = self.FormatSysCp(SYSCODE_DEL_USERINFO_REQ,len(userinfo),seqbuf,sesid,seqid)
 		#logging.info('sbuf (%s)'%(repr(sbuf)))
 		return sbuf
 		
