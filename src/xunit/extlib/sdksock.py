@@ -268,6 +268,7 @@ class SdkSock:
 			raise SdkSockRecvError('recv seqid (%d) != seqid (%d)'%(packproto.SeqId(),self.__seqid))
 
 		if packproto.SesId() == 0 :
+			logging.error('rbuf (%s)'%(repr(rbuf)))
 			raise SdkSockRecvError('recv sesid (0x%x) == sesid (0)'%(packproto.SesId()))
 		rbuf = self.RcvBuf(fraglen + bodylen,'response init login')
 		#logging.info('rbuf [%d] (%s)'%(bodylen,repr(rbuf[fraglen:])))

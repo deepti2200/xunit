@@ -220,7 +220,7 @@ class SdkVideoCfg(syscp.SysCP):
 		# now first to parse
 		self.__videocount = 0
 		self.__videocfgs = []
-		logging.info('attrcount %d'%(self.AttrCount()))
+		#logging.info('attrcount %d'%(self.AttrCount()))
 		for i in xrange(self.AttrCount()):
 			attrbuf = self.ParseTypeCode(attrbuf,'video encode')
 			if self.TypeCode() != TYPE_ENCODECFG:

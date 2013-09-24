@@ -80,6 +80,7 @@ class LoginPack:
 		#logging.info('passkey %s(%d) password[%s] %s(%d)'%(repr(salt),len(salt),repr(password),repr(m),len(m)))
 		if len(m) < 64:
 			m += '\0' * (64 - len(m))
+			
 		self.__buf += m
 		self.__buf += struct.pack('>I',exptime)
 		keeptime *= 1000000
