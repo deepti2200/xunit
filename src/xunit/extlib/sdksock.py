@@ -30,6 +30,7 @@ import sdkproto.advimagine
 import sdkproto.workstate
 import sdkproto.userinfo
 import sdkproto.audiodual
+import sdkproto.encparam
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -874,4 +875,27 @@ class SdkAudioDualSock(SdkSock):
 		starttalkresp.ParseBuf(rbuf)
 		#logging.info('\n')
 		return starttalkresp
-	
+
+class SdkEncParamSock(SdkSock):
+	def __init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__encparampack = sdkproto.encparam.SdkEncParam()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__encparampack = None
+		return
+
+	def GetEncParam(self):
+		reqbuf = self.__encparampack.FormatEncParamGetReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetEncParam')
+		return self.__encparampack.ParseEncParamGetRsp(rbuf)
+
+
+	def SetEncParam(self,encparam):
+		reqbuf = self.__encparampack.FormatEncParamSetReq(encparam,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'SetEncParam')
+		return self.__encparampack.ParseEncParamSetRsp(rbuf)
+
+		

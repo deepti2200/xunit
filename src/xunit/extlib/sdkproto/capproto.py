@@ -50,6 +50,7 @@ class SdkCapProto(syscp.SysCP):
 		if self.AttrCount() != 1:
 			raise CapProtoInvalidError('attrcount (%d) != 1'%(self.AttrCount()))
 
+		#logging.info('%s'%(repr(buf)))
 		attrbuf = self.ParseTypeCode(attrbuf)
 		if self.TypeCode() != typexml.TYPE_XML:
 			raise CapProtoInvalidError('typecode (%d) != (%d)'%(self.TypeCode(),typexml.TYPE_XML))
