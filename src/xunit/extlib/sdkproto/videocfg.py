@@ -146,6 +146,7 @@ class EncodeCfg:
 		self.__bitratectrl,self.__quality,self.__fps,self.__bitrateaverage ,\
 		self.__bitrateup,self.__bitratedown,self.__gop,self.__roate,\
 		self.__flag,self.__reserv1)
+		logging.info('rbuf (%s)'%(repr(rbuf)))
 		return rbuf
 
 	def Format(self):
