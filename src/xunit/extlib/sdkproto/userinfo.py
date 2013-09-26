@@ -31,7 +31,14 @@ class UserInfoInvalidError(xunit.utils.exception.XUnitException):
 
 class UserInfo:
 	def __init__(self,passkey):
-		if passkey is None or len(passkey) != 8:
+		if issubclass(passkey.__class__,UserInfo):
+			self.__username = passkey.__username
+			self.__userpass = passkey.__userpass
+			self.__userflag = passkey.__userflag
+			self.__userlevel = passkey.__userlevel
+			self.__passkey = passkey.__passkey
+			return
+		elif passkey is None or len(passkey) != 8:
 			raise Exception('can not be passkey none')
 		self.__username = ''
 		self.__userpass = ''

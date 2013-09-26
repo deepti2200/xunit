@@ -726,6 +726,11 @@ class SdkUserInfoSock(SdkIpInfoSock):
 		rbuf = self.SendAndRecv(reqbuf,'SetUserInfoReq')
 		return self.__userinfopack.ParseUserInfoSetRsp(rbuf)
 
+	def SetUserInfoTimeout(self,userinfo,timeout=3.0):
+		reqbuf = self.__userinfopack.FormatUserInfoSetReq(userinfo,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecvTimeout(reqbuf,'SetUserInfoReq',timeout)
+		return self.__userinfopack.ParseUserInfoSetRsp(rbuf)
+
 	def DelUserInfo(self,userinfo):
 		reqbuf = self.__userinfopack.FormatUserInfoDelReq(userinfo,self.SessionId(),self.IncSeqId())
 		rbuf = self.SendAndRecv(reqbuf,'DelUserInfoReq')
