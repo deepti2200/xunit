@@ -31,6 +31,7 @@ import sdkproto.workstate
 import sdkproto.userinfo
 import sdkproto.audiodual
 import sdkproto.encparam
+import sdkproto.ptzpreset
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -904,4 +905,24 @@ class SdkEncParamSock(SdkSock):
 		rbuf = self.SendAndRecv(reqbuf,'SetEncParam')
 		return self.__encparampack.ParseEncParamSetRsp(rbuf)
 
-		
+
+class SdkPtzPresetSock(SdkSock):
+	def __init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__ptzpreset = sdkproto.ptzpreset.SdkPtzPreset()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__ptzpreset = None
+		return
+
+	def SetPreset(self,preset):
+		reqbuf = self.__ptzpreset.FormatSetReq(preset,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'SetPreset')
+		return self.__ptzpreset.ParseSetRsp(rbuf)
+
+	def GetPreset(self,ptzid):
+		reqbuf = self.__ptzpreset.FormatGetReq(ptzid,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetPreset')
+		return self.__ptzpreset.ParseGetRsp(rbuf)
