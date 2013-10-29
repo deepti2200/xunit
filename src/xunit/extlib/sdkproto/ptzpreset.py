@@ -95,6 +95,24 @@ class PtzPreset:
 	def __repr__(self):
 		return self.__Format()
 
+	def PtzId(self,val=None):
+		ov = self.__ptzid
+		if val is not None:
+			self.__ptzid = val
+		return ov
+
+	def PresetIdx(self,val=None):
+		ov = self.__presetidx
+		if val is not None:
+			self.__presetidx = val
+		return ov
+
+	def PresetName(self,val=None):
+		ov = self.__presetname
+		if val is not None:
+			self.__presetname = val
+		return ov
+
 
 class SdkPtzPreset(syscp.SysCP):
 	def __init__(self):
