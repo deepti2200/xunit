@@ -71,7 +71,7 @@ class PtzPreset:
 
 	def ParseBuf(self,buf):
 		if len(buf) < STRUCT_PTZPRESET_SIZE:
-			raise SdkPtzPresetInvalidError('len(%d) < %d'%((len(buf),STRUCT_PTZPRESET_SIZE))
+			raise SdkPtzPresetInvalidError('len(%d) < %d'%((len(buf),STRUCT_PTZPRESET_SIZE)))
 		self.__ptzid,self.__presetidx = struct.unpack('>II',buf[:8])
 		self.__presetname = self.GetString(buf[8:],128)
 		return buf[STRUCT_PTZPRESET_SIZE:]
