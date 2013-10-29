@@ -924,5 +924,6 @@ class SdkPtzPresetSock(SdkSock):
 
 	def GetPreset(self,ptzid):
 		reqbuf = self.__ptzpreset.FormatGetReq(ptzid,self.SessionId(),self.IncSeqId())
+		logging.info('get preset reqbuf(%s)'%(repr(reqbuf)))
 		rbuf = self.SendAndRecv(reqbuf,'GetPreset')
 		return self.__ptzpreset.ParseGetRsp(rbuf)

@@ -146,6 +146,7 @@ class SdkPtzPreset(syscp.SysCP):
 		rbuf = struct.pack('>I',ptzid)
 		reqbuf = self.TypeCodeForm(syscp.TYPE_INTVALUE,rbuf)
 		sbuf =  self.FormatSysCp(SYSCODE_GET_PTZPRESET_REQ,1,reqbuf,sesid,seqid)
+		logging.info('sbuf (%s)'%(repr(sbuf)))
 		return sbuf
 
 	def ParseGetRsp(self,rbuf):
