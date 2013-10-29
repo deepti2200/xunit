@@ -127,12 +127,14 @@ class SdkPtzPreset(syscp.SysCP):
 	def FormatSetReq(self,preset,sesid=None,seqid=None):
 		if preset is None or not isinstance(preset,PtzPreset):
 			raise SdkPtzPresetInvalidError('preset parameter not PtzPreset Class')
+		logging.info('preset %s'%(repr(preset)))
 		rbuf = preset.FormatBuf()
 		reqbuf = self.TypeCodeForm(TYPE_PTZPRESET,rbuf)
+		logging.info('rbuf %s'%(repr(reqbuf)))
 		return self.FormatSysCp(SYSCODE_SET_PTZPRESET_REQ,1,reqbuf,sesid,seqid)
 
 	def ParseSetRsp(self,rbuf):
-		attrbuf = self.UnPackSysCp(buf)
+		attrbuf = self.UnPackSysCp(rbuf)
 		if self.Code() != SYSCODE_SET_PTZPRESET_RSP:
 			raise SdkPtzPresetInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_PTZPRESET_RSP))
 
@@ -150,7 +152,7 @@ class SdkPtzPreset(syscp.SysCP):
 		return sbuf
 
 	def ParseGetRsp(self,rbuf):
-		attrbuf = self.UnPackSysCp(buf)
+		attrbuf = self.UnPackSysCp(rbuf)
 		if self.Code() != SYSCODE_GET_PTZPRESET_RSP:
 			raise SdkPtzPresetInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_PTZPRESET_RSP))
 
@@ -158,8 +160,10 @@ class SdkPtzPreset(syscp.SysCP):
 			raise SdkPtzPresetInvalidError('attrcount (%d) < 1'%(self.AttrCount()))
 
 		self.__presets = []		
+		logging.info('attrcount %d'%(self.AttrCount()))
 		for i in xrange(self.AttrCount()):
 			p = PtzPreset()
+			attrbuf = self.ParseTypeCode(attrbuf,'Preset Info')
 			attrbuf = p.ParseBuf(attrbuf)
 			self.__presets.append(p)
 		return self.__presets
