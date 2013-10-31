@@ -41,7 +41,7 @@ class StartTalkRequest:
 		self.__reserv2 = 0
 		self.__samplepersec = 8000
 		self.__avgbytespersec = self.__channel * self.__bitspersample * self.__samplepersec / 8
-		self.__framerate = 50
+		self.__framerate = 8
 		# 64 kps
 		self.__bitrate = 64
 		self.__volume = 50
