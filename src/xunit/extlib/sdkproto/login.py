@@ -31,6 +31,7 @@ class LoginRespAuthNotMd5(xunit.utils.exception.XUnitException):
 class LoginPack:
 	def __init__(self):
 		self.__buf = ''
+		self.__keeptimems = 0
 		return
 
 	def __PackStringSize(self,s,size):
@@ -130,8 +131,12 @@ class LoginPack:
 
 		sesid = struct.unpack('>H',buf[8:10])[0]
 		keeptimems = struct.unpack('>I',buf[12:16])[0]
+		self.__keeptimems = keeptimems
 		#logging.info('keeptimems %d'%(keeptimems))
 		return sesid
+
+	def KeepTimeMs(self):
+		return self.__keeptimems
 
 	def __GetDes(self,password,key):
 		p = password

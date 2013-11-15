@@ -62,6 +62,7 @@ class SdkSock:
 		random.seed(time.time())
 		self.__seqid = random.randint(0,((1<<16)-1))
 		self.__sesid = None
+		self.__keeptimems = 0
 		return
 
 	def IncSeqId(self):
@@ -277,9 +278,11 @@ class SdkSock:
 		if getsesid != packproto.SesId():
 			raise SdkSockRecvError('from packet response sesid(%d) != packet sessionid (%d)'%(getsesid,packproto.SesId()))
 		self.__sesid = getsesid
+		self.__keeptimems = sdklogin.KeepTimeMs()
 		return getsesid
 		
-		
+	def KeepTimeMs(self):
+		return self.__keeptimems
 
 	def LoginSessionId(self,sesid):
 		if self.__sock is None:
@@ -310,6 +313,7 @@ class SdkSock:
 		if getsesid != sesid:
 			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
 		self.__sesid = sesid
+		self.__keeptimems = sdklogin.KeepTimeMs()
 		return sesid
 
 	def LoginHeartBeat(self,sesid):
@@ -341,6 +345,7 @@ class SdkSock:
 		if getsesid != sesid:
 			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
 		self.__sesid = sesid
+		self.__keeptimems = sdklogin.KeepTimeMs()
 		return sesid
 
 	def SessionId(self,val=None):
