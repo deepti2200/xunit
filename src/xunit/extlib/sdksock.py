@@ -240,7 +240,7 @@ class SdkSock:
 		# now we should handle for the connect user and password
 		sdklogin = sdkproto.login.LoginPack()
 		packproto = sdkproto.pack.SdkProtoPack()
-		reqbuf = sdklogin.PackLoginRequest(0,user,password,900,10)
+		reqbuf = sdklogin.PackLoginRequest(0,user,password,900,0)
 		sbuf = packproto.Pack(0,self.IncSeqId(),0x80,reqbuf)
 		self.SendBuf(sbuf,'login init')
 		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'received login init')
@@ -259,7 +259,7 @@ class SdkSock:
 		assert(authcode == 0x4)
 
 		# now we should give the handle
-		reqbuf = sdklogin.PackLoginSaltRequest(self.IncSeqId(),authcode,user,password,deskey,900,10)
+		reqbuf = sdklogin.PackLoginSaltRequest(self.IncSeqId(),authcode,user,password,deskey,900,0)
 		sbuf = packproto.Pack(0,self.__seqid,sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)		
 		#logging.info('sending req (%d) %s seqid %d'%(len(reqbuf),repr(reqbuf),self.__seqid))
 		self.SendBuf(sbuf,'login check request')
