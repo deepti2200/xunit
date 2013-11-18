@@ -348,6 +348,39 @@ class SdkSock:
 		self.__keeptimems = sdklogin.KeepTimeMs()
 		return sesid
 
+	def LoginHeartBeatTimeout(self,sesid,timeout=3):
+		if self.__sock is None:
+			raise SdkSockInvalidParam('Not connect %s:%d'%(self.__host,self.__port))
+
+		# now we should handle for the connect user and password
+		sdklogin = sdkproto.login.LoginPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+		reqbuf = sdklogin.LoginPackSession(sesid)
+		sbuf = packproto.PackHeartBeat(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
+		self.SendBufTimeout(sbuf,'session login request',timeout)
+		rbuf = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,'session login response',timeout)
+		fraglen,bodylen = packproto.ParseHeader(rbuf)
+		rbody = self.RcvBufTimeout(fraglen+bodylen,'receive packet',timeout)
+		if fraglen != 0:
+			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+		if bodylen != 80:
+			raise SdkSockRecvError('bodylen %d != 76'%(bodylen))
+
+		if (packproto.Flag() & sdkproto.pack.GSSP_HEADER_FLAG_FHB ) == 0:
+			raise SdkSockRecvError('not set heart beat flag')
+
+		if packproto.SeqId() != self.__seqid:
+			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.__seqid))
+		#logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
+
+		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
+		if getsesid != sesid:
+			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
+		self.__sesid = sesid
+		self.__keeptimems = sdklogin.KeepTimeMs()
+		return sesid
+		
+
 	def SessionId(self,val=None):
 		ov = self.__sesid
 		if val is not None:
