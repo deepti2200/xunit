@@ -133,23 +133,20 @@ class SdkSock:
 		stime  = time.time()
 		ctime  = stime
 		etime  = stime + timeout
-		try:
-			while leftsize > 0:
-				if ctime >= etime:
-					raise SdkSockRecvTimeoutError('receive %s timeout(%d)'%(msg,timeout))
-				ltime = etime - ctime
-				rsock = [self.__sock]
-				wsock = []
-				xsock = []
-				retrsock,retwsock,retxsock = select.select(rsock,wsock,xsock,ltime)
-				if len(retrsock)>0:
-					cbuf = self.__sock.recv(leftsize)
-					rbuf += cbuf
-					leftsize -= len(cbuf)
-					rcved += len(cbuf)
-				ctime = time.time()
-		except:
-			raise SdkSockRecvTimeoutError('receive %s error'%(msg))
+		while leftsize > 0:
+			if ctime >= etime:
+				raise SdkSockRecvTimeoutError('receive %s timeout(%d)'%(msg,timeout))
+			ltime = etime - ctime
+			rsock = [self.__sock]
+			wsock = []
+			xsock = []
+			retrsock,retwsock,retxsock = select.select(rsock,wsock,xsock,ltime)
+			if len(retrsock)>0:
+				cbuf = self.__sock.recv(leftsize)
+				rbuf += cbuf
+				leftsize -= len(cbuf)
+				rcved += len(cbuf)
+			ctime = time.time()
 		return rbuf
 			
 		
@@ -996,3 +993,20 @@ class SdkPtzPresetSock(SdkSock):
 		rbuf = self.SendAndRecv(reqbuf,'GetPreset')
 		logging.info('rbuf (%s)'%(repr(rbuf)))
 		return self.__ptzpreset.ParseGetRsp(rbuf)
+
+class AlarmSock(SdkSock):
+	def __init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__alarmpack = sdkproto.alarm.AlarmInfoPack()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__alarmpack = None
+		return
+
+	def ChangeAlarmState(self):
+		# now first to make sure
+
+
+	
