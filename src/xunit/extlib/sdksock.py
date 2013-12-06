@@ -1005,8 +1005,124 @@ class AlarmSock(SdkSock):
 		self.__alarmpack = None
 		return
 
+	def LoginSessionAlarm(self,sesid):
+		if self.__sock is None:
+			raise SdkSockInvalidParam('Not connect %s:%d'%(self.__host,self.__port))
+
+		# now we should handle for the connect user and password
+		sdklogin = sdkproto.login.LoginPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+		reqbuf = sdklogin.LoginPackSession(sesid)
+		sbuf = packproto.Pack(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_WARNING,reqbuf)
+		self.SendBuf(sbuf,'session login request')
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'session login response')
+		fraglen,bodylen = packproto.ParseHeader(rbuf)
+		rbody = self.RcvBuf(fraglen+bodylen,'receive packet')
+		if fraglen != 0:
+			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+		if bodylen != 80:
+			raise SdkSockRecvError('bodylen %d != 76'%(bodylen))
+
+		if (packproto.Flag() & sdkproto.pack.GSSP_HEADER_FLAG_FHB ) == 1:
+			raise SdkSockRecvError('set heart beat flag')
+
+		if packproto.SeqId() != self.__seqid:
+			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.__seqid))
+		#logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
+
+		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
+		if getsesid != sesid:
+			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
+		self.__sesid = sesid
+		self.__keeptimems = sdklogin.KeepTimeMs()
+		return sesid
+
 	def ChangeAlarmState(self):
-		# now first to make sure
+		if self.__sock is None:
+			raise SdkSockInvalidParam('Not connect %s:%d'%(self.__host,self.__port))
+
+		# now we should handle for the connect user and password
+		sdklogin = sdkproto.login.LoginPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+		reqbuf = sdklogin.LoginPackSession(self.SessionId())
+		sbuf = packproto.Pack(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_WARNING,reqbuf)
+		self.SendBuf(sbuf,'session login request')
+		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'session login response')
+		fraglen,bodylen = packproto.ParseHeader(rbuf)
+		rbody = self.RcvBuf(fraglen+bodylen,'receive packet')
+		if fraglen != 0:
+			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+		if bodylen != 80:
+			raise SdkSockRecvError('bodylen %d != 76'%(bodylen))
+
+		if (packproto.Flag() & sdkproto.pack.GSSP_HEADER_FLAG_FHB ) == 1:
+			raise SdkSockRecvError('set heart beat flag')
+
+		if packproto.SeqId() != self.__seqid:
+			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.__seqid))
+		#logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
+
+		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
+		if getsesid != sesid:
+			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
+		self.__sesid = sesid
+		self.__keeptimems = sdklogin.KeepTimeMs()
+		return sesid
+
+	def __HandleHeartBeat(self,rbuf):
+		sdklogin = sdkproto.login.LoginPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+		fraglen,bodylen = packproto.ParseHeader(rbuf)
+		rbody = self.RcvBufTimeout(fraglen+bodylen,'receive packet',1)
+		if fraglen != 0:
+			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+		if bodylen != 80:
+			raise SdkSockRecvError('bodylen %d != 80'%(bodylen))
+
+		if (packproto.Flag() & sdkproto.pack.GSSP_HEADER_FLAG_FHB ) == 0:
+			raise SdkSockRecvError('not set heart beat flag')
+
+		if packproto.SeqId() != self.SeqId():
+			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.SeqId()))
+		#logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
+
+		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
+		if getsesid != self.SessionId():
+			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))\
+		logging.info('renew sessionId(%d)'%(getsesid))
+		return
+		
+
+	def SendHeartBeatTimeout(self):
+		sdklogin = sdkproto.login.LoginPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+		reqbuf = sdklogin.LoginPackSession(self.SessionId())
+		sbuf = packproto.PackHeartBeat(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
+		self.SendBufTimeout(sbuf,'session login request',1)
+		return 
+
+	def GetAlarmInfo(self,timeout=5):
+		inprocessing = 0
+		try:
+			while 1:
+				inprocessing = 0
+				packproto = sdkproto.pack.SdkProtoPack()
+				rbuf = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,'Get AlarmInfo',timeout)
+				fraglen,bodylen = packproto.ParseHeader(rbuf)
+				inprocessing = 1
+				if fraglen != 0:
+					raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+				if  packproto.TypeId() != sdkproto.pack.GMIS_PROTOCOL_TYPE_WARNING:
+					self.__HandleHeartBeat(rbuf)
+					continue
+				rbuf = self.RcvBufTimeout(bodylen,'Get Alarm Body',timeout)
+				return self.__alarmpack.ParseAlarmInfo(rbuf)
+		except SdkSockRecvTimeoutError as e:
+			if inprocessing  == 1:
+				# raise the error again
+				raise e
+			return None
+		
 
 
 	
