@@ -994,7 +994,7 @@ class SdkPtzPresetSock(SdkSock):
 		logging.info('rbuf (%s)'%(repr(rbuf)))
 		return self.__ptzpreset.ParseGetRsp(rbuf)
 
-class AlarmSock(SdkSock):
+class SdkAlarmSock(SdkSock):
 	def __init__(self,host,port):
 		SdkSock.__init__(self,host,port)
 		self.__alarmpack = sdkproto.alarm.AlarmInfoPack()
@@ -1089,7 +1089,7 @@ class AlarmSock(SdkSock):
 		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
 		if getsesid != self.SessionId():
 			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))\
-		logging.info('renew sessionId(%d)'%(getsesid))
+		#logging.info('renew sessionId(%d)'%(getsesid))
 		return
 		
 
