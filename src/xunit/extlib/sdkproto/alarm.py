@@ -87,6 +87,8 @@ class AlarmInfo:
 		rbuf = ''
 		rbuf += 'warningid        : (%d)\n'%(self.__warningid)
 		rbuf += 'warningtype      : (%d)\n'%(self.__warningtype)
+		rbuf += 'warninglevel     : (%d)\n'%(self.__warninglevel)
+		rbuf += 'warningonoff     : (%d)\n'%(self.__onoff)
 		rbuf += 'time             : (%s)\n'%(self.__time)
 		rbuf += 'devid            : (%s)\n'%(self.__devid)
 		rbuf += 'description      : (%s)\n'%(self.__description)
