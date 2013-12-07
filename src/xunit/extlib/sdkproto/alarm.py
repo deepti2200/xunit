@@ -71,7 +71,7 @@ class AlarmInfo:
 			rbuf += '\0'
 		return rbuf
 
-	def ParseBuf(sbuf):
+	def ParseBuf(self,sbuf):
 		if len(sbuf) < ALARM_INFO_SIZE:
 			raise AlarmInfoInvalidError('len(%d) < ALARM_INFO_SIZE(%d)'%(len(sbuf),ALARM_INFO_SIZE))
 		hll,lll = struct.unpack('>II',sbuf[:8])
@@ -135,7 +135,7 @@ class AlarmInfoPack(syscp.SysCP):
 		for i in xrange(self.AttrCount()):
 			typebuf = attrbuf[:syscp.TYPE_INFO_LENGTH]
 			typecode,typelen = struct.unpack('>HH',typebuf[:syscp.TYPE_INFO_LENGTH])
-			if typecode != syscp.TYPE_IPINFOR:
+			if typecode != TYPE_WARNING_INFO:
 				raise AlarmInfoPackInvalidError('typecode (%d) != (%d)'%(typecode,TYPE_WARNING_INFO))
 			if(typelen) > len(attrbuf):
 				raise AlarmInfoPackInvalidError('left len (%d) < (%d + %d)'%(len(attrbuf),typelen ,syscp.TYPE_INFO_LENGTH))

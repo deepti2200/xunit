@@ -1099,7 +1099,7 @@ class SdkAlarmSock(SdkSock):
 		sdklogin = sdkproto.login.LoginPack()
 		packproto = sdkproto.pack.SdkProtoPack()
 		reqbuf = sdklogin.LoginPackSession(self.SessionId())
-		sbuf = packproto.PackHeartBeat(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
+		sbuf = packproto.PackHeartBeat(self.SessionId(),self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_LOGGIN,reqbuf)
 		self.SendBufTimeout(sbuf,'session login request',1)
 		return 
 
