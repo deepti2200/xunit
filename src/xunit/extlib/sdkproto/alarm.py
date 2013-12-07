@@ -6,9 +6,9 @@ this is the file for capabilities get
 
 import struct
 
-        import sys
-        import os
-        import logging
+import sys
+import os
+import logging
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
@@ -103,7 +103,7 @@ class AlarmInfo:
 		rbuf += self.FormatString(self.__devid,64)
 		rbuf += self.FormatString(self.__description,128)
 		rbuf += self.__extrainfo
-        return rbuf
+		return rbuf
 
 
 	def __str__(self):

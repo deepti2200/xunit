@@ -32,6 +32,7 @@ import sdkproto.userinfo
 import sdkproto.audiodual
 import sdkproto.encparam
 import sdkproto.ptzpreset
+import sdkproto.alarm
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -82,6 +83,11 @@ class SdkSock:
 		except:
 			raise SdkSockSendError('could not send %d (%s)'%(len(buf),msg))
 		return
+
+	def SockIsConnected(self):
+		if self.__sock:
+			return 1
+		return 0
 
 	def SendBufTimeout(self,buf,msg=None,timeout=0):
 		leftsize = len(buf)
@@ -1038,14 +1044,12 @@ class SdkAlarmSock(SdkSock):
 		return sesid
 
 	def ChangeAlarmState(self):
-		if self.__sock is None:
-			raise SdkSockInvalidParam('Not connect %s:%d'%(self.__host,self.__port))
 
 		# now we should handle for the connect user and password
 		sdklogin = sdkproto.login.LoginPack()
 		packproto = sdkproto.pack.SdkProtoPack()
 		reqbuf = sdklogin.LoginPackSession(self.SessionId())
-		sbuf = packproto.Pack(sesid,self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_WARNING,reqbuf)
+		sbuf = packproto.Pack(self.SessionId(),self.IncSeqId(),sdkproto.pack.GMIS_PROTOCOL_TYPE_WARNING,reqbuf)
 		self.SendBuf(sbuf,'session login request')
 		rbuf = self.RcvBuf(sdkproto.pack.GMIS_BASE_LEN,'session login response')
 		fraglen,bodylen = packproto.ParseHeader(rbuf)
@@ -1058,16 +1062,14 @@ class SdkAlarmSock(SdkSock):
 		if (packproto.Flag() & sdkproto.pack.GSSP_HEADER_FLAG_FHB ) == 1:
 			raise SdkSockRecvError('set heart beat flag')
 
-		if packproto.SeqId() != self.__seqid:
-			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.__seqid))
+		if packproto.SeqId() != self.SeqId():
+			raise SdkSockRecvError('Recv seqid(%d) != (%d)'%(packproto.SeqId(),self.SeqId()))
 		#logging.info('at [%d] seqid %d sessionid %d'%(time.time(),self.__seqid,sesid))
 
 		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
-		if getsesid != sesid:
-			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
-		self.__sesid = sesid
-		self.__keeptimems = sdklogin.KeepTimeMs()
-		return sesid
+		if getsesid != self.SessionId():
+			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,self.SessionId()))
+		return self.SessionId()
 
 	def __HandleHeartBeat(self,rbuf):
 		sdklogin = sdkproto.login.LoginPack()
@@ -1088,8 +1090,8 @@ class SdkAlarmSock(SdkSock):
 
 		getsesid = sdklogin.UnPackSession(rbody[fraglen:])
 		if getsesid != self.SessionId():
-			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))\
-		#logging.info('renew sessionId(%d)'%(getsesid))
+			raise SdkSockRecvError('getsesid (%d) != (%d)'%(getsesid,sesid))
+		logging.info('renew sessionId(%d)'%(getsesid))
 		return
 		
 
