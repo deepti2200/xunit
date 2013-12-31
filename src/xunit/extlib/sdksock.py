@@ -485,6 +485,27 @@ class SdkStreamSock(SdkSock):
 			raise SdkSockRecvError('typeid (0x%x) not valid'%(self.__basepack.TypeId()))
 		return None
 
+	def GetStreamPacketTimeout(self,timeout=3):
+		rbuf = self.RcvBufTimeout(sdkproto.pack.GMIS_BASE_LEN,'packet receive',timeout)
+		sdkpack = sdkproto.stream.StreamPack()
+		packproto = sdkproto.pack.SdkProtoPack()
+
+		# now to give the socket packet
+		fraglen,bodylen = self.__basepack.ParseHeader(rbuf)
+		if fraglen != 0 :
+			raise SdkSockRecvError('fraglen %d != 0'%(fraglen))
+		rbuf = self.RcvBufTimeout(fraglen+bodylen,'read stream packet',timeout)
+		if self.__basepack.TypeId() == sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL:
+			self.__streampack.UnPackCtrl(rbuf[fraglen:])
+			return sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_CTRL
+		elif self.__basepack.TypeId() == sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_DATA:
+			self.__streampack.UnPackStream(rbuf[fraglen:])
+			return sdkproto.pack.GMIS_PROTOCOL_TYPE_MEDIA_DATA
+		else:
+			raise SdkSockRecvError('typeid (0x%x) not valid'%(self.__basepack.TypeId()))
+		return None
+		
+
 	def GetVInfo(self):
 		return self.__streampack.GetVInfo()
 
