@@ -1,7 +1,7 @@
 #! python
 
 '''
-this is the file for capabilities get
+this is the file for alarm info
 '''
 
 import struct

@@ -1147,5 +1147,23 @@ class SdkAlarmSock(SdkSock):
 			return None
 		
 
+class SdkLogInfoSock(SdkSock):
+	def __init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__loginfopack = sdkproto.loginfo.LogInfoPack()
+		return
 
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__loginfopack = None
+		return
+
+	
+	def QuerySearch(self,search):
+		#logging.info('\n')
+		reqbuf = self.__loginfopack.FormatReq(self.SessionId(),self.IncSeqId(),search)
+		rbuf = self.SendAndRecvTimeout(reqbuf,'Query Loginfo Search',5)
+		return self.__loginfopack.ParseRsp(rbuf)
+	
+		
 	
