@@ -33,6 +33,7 @@ import sdkproto.audiodual
 import sdkproto.encparam
 import sdkproto.ptzpreset
 import sdkproto.alarm
+import sdkproto.whitebalance
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -1147,5 +1148,29 @@ class SdkLogInfoSock(SdkSock):
 		rbuf = self.SendAndRecvTimeout(reqbuf,'Query Loginfo Search',5)
 		return self.__loginfopack.ParseRsp(rbuf)
 	
+
+
+class SdkWhiteBalanceSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__whitebalance = sdkproto.whitebalance.SdkWhiteBalance()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__whitebalance = None
+		return
+
+	def GetWhiteBalance(self):
+		reqbuf = self.__whitebalance.FormatQuery(self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'WhiteBalance')
+		#logging.info('rbuf %s'%(repr(rbuf)))
+		return self.__whitebalance.ParseQuery(rbuf)
 		
+	def SetWhiteBalance(self,wb):
+		reqbuf = self.__whitebalance.FormatSet(wb,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'WhiteBalance')
+		self.__whitebalance.ParseSet(rbuf)
+		return 
+	
 	

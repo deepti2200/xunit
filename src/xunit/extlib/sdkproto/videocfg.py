@@ -215,8 +215,8 @@ class SdkVideoCfg(syscp.SysCP):
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_GET_ENCODECFG_RSP:
 			raise SdkVideoCfgInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_GET_ENCODECFG_RSP))
-		if self.AttrCount() < 2:
-			raise SdkVideoCfgInvalidError('attrcount (%d) < 2'%(self.AttrCount()))
+		if self.AttrCount() < 1:
+			raise SdkVideoCfgInvalidError('attrcount (%d) < 1'%(self.AttrCount()))
 
 		# now first to parse
 		self.__videocount = 0
