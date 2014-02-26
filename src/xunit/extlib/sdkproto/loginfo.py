@@ -14,8 +14,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..'
 import xunit.utils.exception
 import xunit.extlib.sdkproto.syscp as syscp
 
-LOGINFO_SIZE=168
+LOGINFO_SIZE=248
 LOGINFO_SEARCH_SIZE=84
+LOG_INT_SIZE=8
 TYPE_LOGINFO_SEARCH=119
 TYPE_LOGINFO=120
 TYPE_LOGINFO_INT=121
@@ -38,10 +39,14 @@ class LogInfoSearchPackInvalidError(xunit.utils.exception.XUnitException):
 
 class LogInfo:
 	def __ResetVar(self):
+		self.__logid = 0
 		self.__majortype = 0
 		self.__minortype = 0
 		self.__logtime = ''
+		self.__username=''
+		self.__remotehost=''
 		self.__logdata = ''
+		self.__reserv1 = ''
 		return
 	def __init__(self):
 		self.__ResetVar()
@@ -64,20 +69,29 @@ class LogInfo:
 			rbuf = s[:-2]
 		return rbuf
 
-	def ParseBuffer(self,buf):
+	def ParseBuf(self,buf):
 		if len(buf) < LOGINFO_SIZE:
 			raise LogInfoInvalidError('len(%d) < (%d)'%(len(buf),LOGINFO_SIZE))
-		self.__majortype,self.__minortype = struct.unpack('>II',buf[:8])
-		self.__logtime = self.GetString(buf[8:40],32)
-		self.__logdata = self.GetString(buf[40:168],128)
+		idh,idl=struct.unpack('>II',buf[:8])
+		self.__logid = (idh << 32) + idl
+		self.__majortype,self.__minortype = struct.unpack('>II',buf[8:16])
+		self.__logtime = self.GetString(buf[16:48],32)
+		self.__username = self.GetString(buf[48:80],32)
+		self.__remotehost = self.GetString(buf[80:112],32)
+		self.__logdata = self.GetString(buf[112:240],128)
+		self.__reserv1 = self.GetString(buf[240:248],8)
 		return buf[LOGINFO_SIZE:]
 
 	def __Format(self):
 		rbuf = ''
+		rbuf += 'logid               :(%d)\n'%(self.__logid)
 		rbuf += 'majortype       :(%d)\n'%(self.__majortype)
 		rbuf += 'minortype       :(%d)\n'%(self.__minortype)
-		rbuf += 'logtime         :(%s)\n'%(self.__logtime)
-		rbuf += 'logdata         :(%s)\n'%(self.__logdata)
+		rbuf += 'logtime           :(%s)\n'%(self.__logtime)
+		rbuf += 'username       :(%s)\n'%(self.__username)
+		rbuf += 'remote           :(%s)\n'%(self.__remotehost)
+		rbuf += 'logdata           :(%s)\n'%(self.__logdata)
+		rbuf += 'reserv1           :(%s)\n'%(self.__reserv1)
 		return rbuf
 
 	def __repr__(self):
@@ -88,20 +102,38 @@ class LogInfo:
 
 	def MajorType(self,val=None):
 		ov = self.__majortype
-		if ov is not None:
+		if val is not None:
 			self.__majortype = val
 		return ov
 
 	def MinorType(self,val=None):
 		ov = self.__minortype
-		if ov is not None:
+		if val is not None:
 			self.__minortype = val
 		return ov
 
 	def LogTime(self,val=None):
 		ov = self.__logtime
-		if ov is not None:
+		if val is not None:
 			self.__logtime = val
+		return ov
+
+	def Username(self,val=None):
+		ov = self.__username
+		if val is not None:
+			self.__username = val
+		return ov
+
+	def Remotehost(self,val=None):
+		ov = self.__remotehost
+		if val is not None:
+			self.__remotehost = val
+		return ov
+
+	def Reserv1(self,val=None):
+		ov = self.__reserv1
+		if val is not None:
+			self.__reserv1 = val
 		return ov
 
 	def LogData(self,val=None):
@@ -109,6 +141,38 @@ class LogInfo:
 		if val is not None:
 			self.__logdata = val
 		return ov
+
+class LogInt:
+	def __ResetVar(self):
+		self.__total = 0
+		self.__cnt = 0
+		return 
+
+	def __init__(self):
+		self.__ResetVar()
+		return
+
+	def __del__(self):
+		self.__ResetVar()
+		return
+
+	def ParseBuf(self,buf):
+		if len(buf) < LOG_INT_SIZE:
+			raise LogInfoPackInvalidError('Log Int size(%d) < LOG_INT_SIZE(%d)'%(len(buf),LOG_INT_SIZE))
+		self.__total,self.__cnt = struct.unpack('>II',buf[:8])
+		return buf[8:]
+
+	def __Format(self):
+		rbuf = ''
+		rbuf += 'total          :(%d)\n'%(self.__total)
+		rbuf += 'cnt            :(%d)\n'%(self.__cnt)
+		return rbuf
+
+	def __repr__(self):
+		return self.__Format()
+
+	def __str__(self):
+		return self.__Format()
 
 class LogInfoSearch:
 	def __ResetVar(self):
@@ -261,8 +325,8 @@ class LogInfoPack(syscp.SysCP):
 				attrbuf = li.ParseBuf(attrbuf)
 				self.__logs.append(li)
 			elif self.TypeCode() == TYPE_LOGINFO_INT:
-				cnt = struct.unpack('>I',attrbuf[:4])[0]
-				return cnt 
+				self.__logint = LogInt()
+				attrbuf = self.__logint.ParseBuf(attrbuf)
 			else:
 				raise LogInfoSearchPackInvalidError('[%d] attr is TypeCode(%d) Length(%d) %s '%(i,self.TypeCode(),self.TypeLen(),repr(attrbuf)))
 

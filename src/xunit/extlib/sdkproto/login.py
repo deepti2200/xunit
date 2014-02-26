@@ -11,7 +11,6 @@ import sys
 import os
 import hashlib
 import logging
-import pyDes
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..','..')))
 import xunit.utils.exception
 import xunit.extlib.xDES as xDES
