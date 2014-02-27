@@ -34,6 +34,7 @@ import sdkproto.encparam
 import sdkproto.ptzpreset
 import sdkproto.alarm
 import sdkproto.whitebalance
+import sdkproto.alarmconfig
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -1173,4 +1174,27 @@ class SdkWhiteBalanceSock(SdkSock):
 		self.__whitebalance.ParseSet(rbuf)
 		return 
 	
-	
+class SdkAlarmConfigSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__alarmconfig = sdkproto.alarmconfig.SdkAlarmConfig()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__alarmconfig = None
+		return
+
+	def GetAlarmConfig(self,getconfig):
+		reqbuf = self.__alarmconfig.FormGetReq(getconfig,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetAlarmConfig')
+		#logging.info('rbuf %s'%(repr(rbuf)))
+		return self.__alarmconfig.ParseGetRsp(rbuf)
+		
+	def SetAlarmConfig(self,configs):
+		reqbuf = self.__alarmconfig.FormSetReq(configs,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'SetAlarmConfig')
+		self.__alarmconfig.ParseSetRsp(rbuf)
+		return 
+		
+
