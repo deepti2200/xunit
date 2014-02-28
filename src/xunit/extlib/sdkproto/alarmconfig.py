@@ -1,7 +1,7 @@
 #! python
 
 '''
-this is the file for alarm info
+this is the file for alarm config
 '''
 
 import struct
@@ -32,7 +32,7 @@ TYPE_ALARM_IN=123
 TYPE_ALARM_OUT=124
 TYPE_ALARM_EVENT=125
 
-class AlarmInvalidError(xunit.utils.exception.XUnitException):
+class AlarmConfigInvalidError(xunit.utils.exception.XUnitException):
 	pass
 
 
@@ -57,7 +57,7 @@ class AlarmExtInfo:
 
 	def ParseBuf(self,buf):
 		if len(buf) < ALARM_EXT_INFO_SIZE:
-			raise AlarmInvalidError('buf(%d) < ALARM_EXT_INFO_SIZE(%d)'%(len(buf),ALARM_EXT_INFO_SIZE))
+			raise AlarmConfigInvalidError('buf(%d) < ALARM_EXT_INFO_SIZE(%d)'%(len(buf),ALARM_EXT_INFO_SIZE))
 		self.__ionum = ord(buf[0])
 		self.__operatecmd = ord(buf[1])
 		self.__operateseqnum = struct.unpack('>H',buf[2:4])[0]
@@ -172,7 +172,7 @@ class AlarmInConfig:
 
 	def ParseBuf(self,buf):
 		if len(buf) < ALARM_IN_CONFIG_SIZE:
-			raise AlarmInvalidError('buf(%d) < ALARM_IN_CONFIG_SIZE(%d)'%(len(buf),ALARM_IN_CONFIG_SIZE))
+			raise AlarmConfigInvalidError('buf(%d) < ALARM_IN_CONFIG_SIZE(%d)'%(len(buf),ALARM_IN_CONFIG_SIZE))
 		self.__enableflag,self.__inputnumber = struct.unpack('>II',buf[:8])
 		self.__name = self.GetString(buf[8:40],32)
 		self.__checktime,self.__normalstatus,self.__linkalarmstrategy = struct.unpack('>III',buf[40:52])
@@ -296,7 +296,7 @@ class AlarmOutConfig:
 
 	def ParseBuf(self,buf):
 		if len(buf) < ALARM_OUT_CONFIG_SIZE:
-			raise AlarmInvalidError('buf(%d) < ALARM_OUT_CONFIG_SIZE(%d)'%(len(buf),ALARM_OUT_CONFIG_SIZE))
+			raise AlarmConfigInvalidError('buf(%d) < ALARM_OUT_CONFIG_SIZE(%d)'%(len(buf),ALARM_OUT_CONFIG_SIZE))
 		self.__enableflag ,self.__outputnumber = struct.unpack('>II',buf[:8])
 		self.__name = self.GetString(buf[8:40],32)
 		self.__normalstatus,self.__delaytime = struct.unpack('>II',buf[40:48])
@@ -375,7 +375,7 @@ class PIRDectData:
 
 	def ParseBuf(self,buf):
 		if  len(buf) < PIR_DECT_DATA_SIZE:
-			raise AlarmInvalidError('buf(%d) < PIR_DECT_DATA_SIZE(%d)'%(len(buf),PIR_DECT_DATA_SIZE))
+			raise AlarmConfigInvalidError('buf(%d) < PIR_DECT_DATA_SIZE(%d)'%(len(buf),PIR_DECT_DATA_SIZE))
 		self.__sensitive = struct.unpack('>I',buf[:4])[0]
 		self.__reserv1 = buf[4:PIR_DECT_DATA_SIZE]
 		return buf[PIR_DECT_DATA_SIZE:]
@@ -429,7 +429,7 @@ class AlarmEventConfig:
 
 	def ParseBuf(self,buf):
 		if len(buf) < ALARM_EVENT_CONFIG_SIZE:
-			raise AlarmInvalidError('buf(%d) < ALARM_EVENT_CONFIG_SIZE(%d)'%(len(buf),ALARM_EVENT_CONFIG_SIZE))
+			raise AlarmConfigInvalidError('buf(%d) < ALARM_EVENT_CONFIG_SIZE(%d)'%(len(buf),ALARM_EVENT_CONFIG_SIZE))
 		self.__alarmid,self.__enableflag,self.__checktime,self.__linkalarmstrategy = struct.unpack('>IIII',buf[:16])
 		
 		rbuf = self.__alarmunionextdata.ParseBuf(buf[16:])
@@ -519,7 +519,7 @@ class AlarmConfig:
 
 	def ParseBuf(self,buf):
 		if len(buf) < ALARM_CONFIG_SIZE:
-			raise AlarmInvalidError('buf(%d) < ALARM_CONFIG_SIZE(%d)'%(len(buf),ALARM_CONFIG_SIZE))
+			raise AlarmConfigInvalidError('buf(%d) < ALARM_CONFIG_SIZE(%d)'%(len(buf),ALARM_CONFIG_SIZE))
 		self.__alarmid,self.__idx = struct.unpack('>II',buf[:8])
 		self.__reserv1 = buf[8:16]
 		return buf[ALARM_CONFIG_SIZE:]
@@ -572,7 +572,7 @@ class SdkAlarmConfig(syscp.SysCP):
 
 	def FormGetReq(self,alarmconfig,sesid=None,seqid=None):
 		if not isinstance(alarmconfig,AlarmConfig):
-			raise AlarmInvalidError('alarmconfig parameter not AlarmConfig type')
+			raise AlarmConfigInvalidError('alarmconfig parameter not AlarmConfig type')
 		rbuf = alarmconfig.FormatBuf()
 		reqbuf = self.TypeCodeForm(TYPE_GET_ALMCONFIG,rbuf)
 		return self.FormatSysCp(SYSCODE_GET_ALMCFG_REQ,1,reqbuf,sesid,seqid)
@@ -581,7 +581,7 @@ class SdkAlarmConfig(syscp.SysCP):
 		#logging.info('buf (%s)'%(repr(buf)))
 		attrbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_GET_ALMCFG_RSP:
-			raise AlarmInvalidError('code(%d) != SYSCODE_GET_ALMCFG_RSP(%d)'%(self.Code(),SYSCODE_GET_ALMCFG_RSP))
+			raise AlarmConfigInvalidError('code(%d) != SYSCODE_GET_ALMCFG_RSP(%d)'%(self.Code(),SYSCODE_GET_ALMCFG_RSP))
 		self.__alarmconfigs = []
 		for i in xrange(self.AttrCount()):
 			attrbuf = self.ParseTypeCode(attrbuf)
@@ -598,7 +598,7 @@ class SdkAlarmConfig(syscp.SysCP):
 				attrbuf = alarmevent.ParseBuf(attrbuf)
 				self.__alarmconfigs.append(alarmevent)
 			else:
-				raise AlarmInvalidError('[%d]Typecode(%d) not valid'%(i,self.TypeCode()))
+				raise AlarmConfigInvalidError('[%d]Typecode(%d) not valid'%(i,self.TypeCode()))
 		return self.__alarmconfigs
 
 	def FormSetReq(self,configs,sesid=None,seqid=None):
@@ -611,14 +611,14 @@ class SdkAlarmConfig(syscp.SysCP):
 			elif isinstance(config,AlarmEventConfig):
 				rbuf += self.TypeCodeForm(TYPE_ALARM_EVENT,c.FormatBuf())
 			else:
-				raise AlarmInvalidError('config not valid types')
+				raise AlarmConfigInvalidError('config not valid types')
 
 		return self.FormatSysCp(SYSCODE_SET_ALMCFG_REQ,len(configs),rbuf,sesid,seqid)
 
 	def ParseSetRsp(self,buf):
 		rbuf = self.UnPackSysCp(buf)
 		if self.Code() != SYSCODE_SET_ALMCFG_RSP:
-			raise AlarmInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_ALMCFG_RSP))
+			raise AlarmConfigInvalidError('code (%d) != (%d)'%(self.Code(),SYSCODE_SET_ALMCFG_RSP))
 		rbuf = self.MessageCodeParse(rbuf)
 		return rbuf
 

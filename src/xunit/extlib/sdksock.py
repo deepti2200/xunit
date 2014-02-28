@@ -35,6 +35,7 @@ import sdkproto.ptzpreset
 import sdkproto.alarm
 import sdkproto.whitebalance
 import sdkproto.alarmconfig
+import sdkproto.alarmdeploy
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -1197,4 +1198,28 @@ class SdkAlarmConfigSock(SdkSock):
 		self.__alarmconfig.ParseSetRsp(rbuf)
 		return 
 		
+
+class SdkAlarmDeploySock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__alarmdeploy = sdkproto.alarmdeploy.SdkAlarmDeploy()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__alarmdeploy = None
+		return
+
+	def GetAlarmDeploy(self,getscheduletimeinfo):
+		reqbuf = self.__alarmdeploy.FormGetReq(getscheduletimeinfo,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetAlarmDeploy')
+		#logging.info('rbuf %s'%(repr(rbuf)))
+		return self.__alarmdeploy.ParseGetRsp(rbuf)
+		
+	def SetAlarmDeploy(self,ad):
+		reqbuf = self.__alarmdeploy.FormSetReq(ad,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'SetAlarmDeploy')
+		self.__alarmdeploy.ParseSetRsp(rbuf)
+		return 
+
 
