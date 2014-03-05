@@ -36,6 +36,7 @@ import sdkproto.alarm
 import sdkproto.whitebalance
 import sdkproto.alarmconfig
 import sdkproto.alarmdeploy
+import sdkproto.daynight
 import xunit.extlib.xDES as xDES
 
 class SdkSockInvalidParam(xunit.utils.exception.XUnitException):
@@ -1222,4 +1223,26 @@ class SdkAlarmDeploySock(SdkSock):
 		self.__alarmdeploy.ParseSetRsp(rbuf)
 		return 
 
+class SdkDayNightSock(SdkSock):
+	def	__init__(self,host,port):
+		SdkSock.__init__(self,host,port)
+		self.__daynight = sdkproto.daynight.SdkDayNight()
+		return
+
+	def __del__(self):
+		SdkSock.__del__(self)
+		self.__daynight = None
+		return
+
+	def GetDayNight(self):
+		reqbuf = self.__daynight.FormGetReq(self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'GetDayNight')
+		#logging.info('rbuf %s'%(repr(rbuf)))
+		return self.__daynight.ParseGetRsp(rbuf)
+		
+	def SetDayNight(self,dn):
+		reqbuf = self.__daynight.FormSetReq(dn,self.SessionId(),self.IncSeqId())
+		rbuf = self.SendAndRecv(reqbuf,'SetDayNight')
+		self.__daynight.ParseSetRsp(rbuf)
+		return 
 
